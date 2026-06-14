@@ -4,22 +4,67 @@ Thank you for your interest in Flowdown.
 
 ## Development
 
-This repository uses pnpm through Corepack.
+This repository uses pnpm.
 
 ```bash
-corepack pnpm install
-corepack pnpm typecheck
-corepack pnpm lint
-corepack pnpm test
-corepack pnpm build
+pnpm install
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+pnpm build:storybook
 ```
+
+## Package Boundaries
+
+- `@flowdown/core` is headless pure computation. It should not depend on React,
+  Storybook, DOM rendering, hooks, or UI-only packages.
+- `@flowdown/react` owns React rendering, Storybook, tests, hooks, and
+  rendering-layer dependencies.
+- Shared coordinated versions belong in `pnpm-workspace.yaml` catalog entries.
+- Type/env declarations belong under `src/typings/`.
+
+## Branches
+
+Create a focused topic branch for PR-based work:
+
+```text
+feat/core-stream-state
+fix/react-render-cache
+docs/open-source-guidelines
+```
+
+Avoid mixing unrelated changes in one branch.
+
+## Commit Messages
+
+Use Conventional Commits:
+
+```text
+type(scope): summary
+```
+
+Examples:
+
+```text
+feat(core): add streaming markdown parser state
+fix(react): avoid rerendering stable markdown blocks
+docs: document package boundaries
+chore: update pnpm catalog entries
+```
+
+Use `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `build`, or `ci` when
+one of those clearly fits. Keep the summary imperative and concise.
 
 ## Pull Requests
 
 - Keep changes focused and easy to review.
 - Add or update tests when behavior changes.
 - Run the validation commands before opening a pull request.
-- Use clear commit messages. Conventional Commits are preferred.
+- Use a Conventional Commit PR title, matching the intended squash commit.
+- Include a clear summary, exact test plan, and related issue links.
+- Include screenshots or recordings for visible React/Storybook changes.
+- Do not include private environment details, credentials, or local-only paths.
 
 ## Reporting Issues
 
