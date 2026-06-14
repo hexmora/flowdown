@@ -1,0 +1,87 @@
+{
+  "name": "@flowdown/react",
+  "version": "0.1.0",
+  "description": "React wrapper around @flowdown/core for high-performance rendering of streaming Markdown text.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexmora/flowdown.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/react#readme",
+  "keywords": [
+    "markdown",
+    "streaming",
+    "llm",
+    "react",
+    "renderer",
+    "hast"
+  ],
+  "scripts": {
+    "dev": "storybook dev -p 6006 --no-open",
+    "storybook": "storybook dev -p 6006",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "build:storybook": "storybook build",
+    "lint": "oxlint .",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flowdown/core": "workspace:*",
+    "ahooks": "catalog:",
+    "classnames": "catalog:",
+    "katex": "catalog:",
+    "mathjax-full": "catalog:",
+    "react-error-boundary": "catalog:",
+    "shallow-equal": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@storybook/addon-docs": "catalog:",
+    "@storybook/react-vite": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/katex": "catalog:",
+    "@types/mathjax": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "oxlint": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "snapshot-diff": "catalog:",
+    "storybook": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
