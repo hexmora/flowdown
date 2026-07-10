@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [],
+  "overrides": [
+    {
+      "files": ["*.js", "*.jsx", "*.ts", "*.tsx", "*.mjs", "*.cjs", "*.mts", "*.cts"],
+      "options": {
+        "singleQuote": true,
+        "jsxSingleQuote": false
+      }
+    }
+  ],
+  "sortImports": false
+}

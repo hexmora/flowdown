@@ -1,33 +1,46 @@
 {
-  "name": "flowdown",
+  "name": "flowdown-monorepo",
   "version": "0.1.0",
   "private": true,
   "description": "Extensible, headless-capable, reactive Markdown rendering for LLM streaming scenarios.",
+  "keywords": [
+    "hast",
+    "headless",
+    "llm",
+    "markdown",
+    "react",
+    "streaming"
+  ],
+  "homepage": "https://github.com/hexmora/flowdown#readme",
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
   "license": "MIT",
-  "type": "module",
-  "packageManager": "pnpm@11.6.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hexmora/flowdown.git"
   },
-  "bugs": {
-    "url": "https://github.com/hexmora/flowdown/issues"
-  },
-  "homepage": "https://github.com/hexmora/flowdown#readme",
-  "keywords": [
-    "markdown",
-    "streaming",
-    "llm",
-    "headless",
-    "react",
-    "hast"
-  ],
+  "type": "module",
   "scripts": {
-    "build": "pnpm --filter @flowdown/core build && pnpm --filter @flowdown/react build",
-    "build:storybook": "pnpm --filter @flowdown/react build:storybook",
-    "dev": "pnpm --filter @flowdown/react dev",
+    "build": "pnpm --filter @flowdown/utils build && pnpm --filter @flowdown/types build && pnpm --filter @flowdown/reactive build && pnpm --filter @flowdown/preset-plugins build && pnpm --filter @flowdown/core build && pnpm --filter flowdown build",
+    "build:storybook": "pnpm --filter flowdown build:storybook",
+    "commitlint": "commitlint --from=HEAD~1 --to=HEAD --verbose",
+    "commitlint:edit": "commitlint --edit",
+    "dev": "pnpm --filter flowdown dev",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "lint": "pnpm -r --if-present lint",
+    "prepare": "husky",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck"
-  }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
+    "eslint-plugin-perfectionist": "catalog:",
+    "husky": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
+  },
+  "packageManager": "pnpm@11.6.0"
 }

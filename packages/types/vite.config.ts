@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
+import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
-import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [
@@ -10,15 +10,11 @@ export default defineConfig({
     }),
   ],
   build: {
-    cssCodeSplit: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'Flowdown',
+      name: 'FlowdownTypes',
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
-  },
-  test: {
-    environment: 'node',
   },
 });

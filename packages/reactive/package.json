@@ -1,16 +1,16 @@
 {
-  "name": "@flowdown/core",
+  "name": "@flowdown/reactive",
   "version": "0.1.0",
-  "description": "Headless pure-computation utilities for turning streaming Markdown strings into HAST structures.",
+  "description": "Headless reactive primitives for Flowdown streaming state.",
   "keywords": [
-    "hast",
     "headless",
     "llm",
     "markdown",
-    "streaming",
-    "unified"
+    "reactive",
+    "rxjs",
+    "streaming"
   ],
-  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/core#readme",
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/reactive#readme",
   "bugs": {
     "url": "https://github.com/hexmora/flowdown/issues"
   },
@@ -18,7 +18,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hexmora/flowdown.git",
-    "directory": "packages/core"
+    "directory": "packages/reactive"
   },
   "files": [
     "dist"
@@ -41,26 +41,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@flowdown/preset-plugins": "workspace:*",
-    "@flowdown/reactive": "workspace:*",
-    "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
-    "@types/hast": "catalog:",
-    "@types/mdast": "catalog:",
     "lodash-es": "catalog:",
-    "marked": "catalog:",
-    "remark-parse": "catalog:",
-    "remark-rehype": "catalog:",
-    "shallow-equal": "catalog:",
-    "unified": "catalog:"
+    "rxjs": "catalog:",
+    "shallow-equal": "catalog:"
   },
   "devDependencies": {
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
-    "mdast-util-gfm-table": "catalog:",
-    "micromark-extension-gfm-table": "catalog:",
     "oxlint": "catalog:",
-    "rxjs": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",

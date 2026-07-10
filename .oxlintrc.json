@@ -1,0 +1,56 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "import"],
+  "jsPlugins": ["eslint-plugin-perfectionist"],
+  "env": {
+    "node": true,
+    "es2024": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "eqeqeq": "error",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["error"]
+      }
+    ],
+    "no-debugger": "error",
+    "no-var": "error",
+    "import/no-unassigned-import": "off",
+    "prefer-const": "error",
+    "sort-imports": "off",
+    "perfectionist/sort-imports": [
+      "error",
+      {
+        "type": "alphabetical",
+        "order": "asc",
+        "ignoreCase": true,
+        "sortBy": "path"
+      }
+    ],
+    "perfectionist/sort-named-imports": [
+      "error",
+      {
+        "type": "alphabetical",
+        "order": "asc",
+        "ignoreCase": true
+      }
+    ],
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "unicorn/no-empty-file": "off",
+    "unicorn/filename-case": "off"
+  },
+  "ignorePatterns": ["dist", "storybook-static", "coverage", "node_modules"]
+}
