@@ -4,6 +4,8 @@ export * from './syntax-autolink';
 export * from './syntax-footnote';
 export * from './syntax-math';
 export * from './patches';
+export * from './syntax-policy';
+export * from './syntax-soft-endline';
 export * from './syntax-strikethrough';
 export * from './table-noralizer';
 export * from './syntax-table';
