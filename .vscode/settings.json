@@ -1,0 +1,19 @@
+{
+  "editor.formatOnSave": false,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "oxc.lint.run": "onType",
+  "oxc.enable.oxfmt": true,
+  "oxc.fixKind": "safe_fix_or_suggestion",
+  "editor.codeActionsOnSave": {
+    "source.format.oxc": "always",
+    "source.fixAll.oxc": "always",
+    "source.removeUnusedImports": "always"
+  }
+}
