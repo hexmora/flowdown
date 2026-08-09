@@ -1,0 +1,5 @@
+# Default owners for all repository content.
+* @hexmora @lennondotw
+
+# Protect changes to the ownership policy itself.
+/.github/CODEOWNERS @hexmora @lennondotw
