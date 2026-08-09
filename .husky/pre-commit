@@ -1,0 +1,24 @@
+if ! git diff --cached --quiet --diff-filter=ACMR -- \
+  '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.mts' '*.cts'; then
+  git diff --cached --name-only --diff-filter=ACMR -z -- \
+    '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.mts' '*.cts' \
+    | xargs -0 pnpm exec oxlint --
+fi
+
+if ! git diff --cached --quiet -- package.json pnpm-lock.yaml pnpm-workspace.yaml; then
+  pnpm typecheck
+else
+  set --
+
+  for package_dir in $(
+    git diff --cached --name-only --diff-filter=ACMRTUXBD -- packages \
+      | sed -n 's#^packages/\([^/]*\)/.*#\1#p' \
+      | sort -u
+  ); do
+    set -- "$@" --filter "...{packages/$package_dir}..."
+  done
+
+  if [ "$#" -gt 0 ]; then
+    pnpm "$@" --if-present typecheck
+  fi
+fi
