@@ -5,3 +5,5 @@ coverage
 .agent/logs
 .DS_Store
 *.log
+AGENTS.md
+CLAUDE.md
