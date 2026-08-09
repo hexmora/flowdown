@@ -17,7 +17,7 @@ If an AI agent is preparing a lettered PR sequence at the maintainer's request:
 
 <!-- What changed and why? Keep this specific and reviewable. -->
 
-- 
+-
 
 ## Test Plan
 
@@ -33,7 +33,8 @@ If an AI agent is preparing a lettered PR sequence at the maintainer's request:
 ## Package Boundary Checklist
 
 - [ ] `@flowdown/core` remains headless and free of React/rendering dependencies.
-- [ ] React, Storybook, DOM, hooks, and UI rendering concerns live in `@flowdown/react`.
+- [ ] `@flowdown/reactive` remains headless and framework-free.
+- [ ] React, Storybook, DOM, hooks, and UI rendering concerns live in `flowdown`.
 - [ ] Type/env declarations are under `src/typings/`.
 - [ ] Generated artifacts are not committed.
 
