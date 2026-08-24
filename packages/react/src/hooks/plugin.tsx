@@ -1,12 +1,13 @@
 import type { PluginConfigs } from '@flowdown/core';
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
-import { isPluggableEqual, PluginBuilderStateClosure } from '@flowdown/core';
+import { PluginBuilderStateClosure } from '@flowdown/core';
 import { get, has, set } from 'lodash-es';
 import { useMemo } from 'react';
 
 import type { AnySlotPluggable, AnySlotPlugin, IPluginItem, Slots } from '../types';
 
+import { isPluggablesEqual } from '../utils';
 import { useDeferredUnmount, useStatic } from './base';
 import { useStateOf, useStateValue } from './reactive';
 
@@ -25,20 +26,6 @@ const configurePluggable = (
   }
 
   return [pluggable, get(config, [pluggable.key])];
-};
-
-const arePluggablesEqual = (
-  left: readonly PackPluggable[],
-  right: readonly PackPluggable[],
-): boolean => {
-  return (
-    left.length === right.length &&
-    left.every((pluggable, index) => {
-      const other = right[index];
-
-      return other !== undefined && isPluggableEqual(pluggable, other);
-    })
-  );
 };
 
 export function usePlugins<T extends PluginChannel>(
@@ -63,7 +50,7 @@ export function usePlugins(
     }),
   ];
 
-  if (cache.value && arePluggablesEqual(cache.value, flattened)) {
+  if (cache.value && isPluggablesEqual(cache.value, flattened)) {
     return cache.value;
   }
 
@@ -73,7 +60,7 @@ export function usePlugins(
 }
 
 export const useSlots = (pluggables: readonly AnySlotPluggable[]): Partial<Slots> => {
-  const plugins = useStateOf<AnySlotPluggable[]>([...pluggables], arePluggablesEqual);
+  const plugins = useStateOf<AnySlotPluggable[]>([...pluggables], isPluggablesEqual);
 
   const builder = useStatic(
     () =>
