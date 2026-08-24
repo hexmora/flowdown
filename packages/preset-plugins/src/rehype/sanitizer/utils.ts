@@ -1,4 +1,4 @@
-import { defaultsPartial, type ExcludeNil } from '@flowdown/utils';
+import { defaultsBy, type ExcludeNil } from '@flowdown/utils';
 import { concat, isArray, uniq } from 'lodash-es';
 import { defaultSchema } from 'rehype-sanitize';
 
@@ -60,7 +60,7 @@ export const createSchema = ({
 
   const tagNames = uniq(concat(initialSchema.tagNames ?? [], DEFAULT_ALLOWED_TAGS, extraTags));
 
-  const attributes = defaultsPartial<AttributesSchema>(
+  const attributes = defaultsBy<AttributesSchema>(
     {
       span: spanAttrs,
       a: aAttrs,
@@ -69,7 +69,7 @@ export const createSchema = ({
     initialSchema.attributes ?? {},
   );
 
-  const protocols = defaultsPartial<ProtocolsSchema>(
+  const protocols = defaultsBy<ProtocolsSchema>(
     {
       href: hrefProtocols,
       src: srcProtocols,
@@ -77,5 +77,5 @@ export const createSchema = ({
     initialSchema.protocols ?? {},
   );
 
-  return defaultsPartial<SanitizationSchema>({ tagNames, attributes, protocols }, initialSchema);
+  return defaultsBy<SanitizationSchema>({ tagNames, attributes, protocols }, initialSchema);
 };

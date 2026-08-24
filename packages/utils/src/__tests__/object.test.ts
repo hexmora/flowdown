@@ -1,14 +1,17 @@
 import { describe, expect, test } from 'vitest';
 
-import { defaultsPartial } from '../object';
+import { defaultsBy } from '../object';
 
-describe('defaultsPartial', () => {
-  test('fills missing values without mutating either input', () => {
-    const value = { enabled: true };
+describe('defaultsBy', () => {
+  test('returns a fresh shallow-defaulted object without mutating either input', () => {
+    const value = { enabled: true, label: undefined };
     const source = { enabled: false, label: 'default' };
+    const result = defaultsBy(value, source);
 
-    expect(defaultsPartial(value, source)).toEqual({ enabled: true, label: 'default' });
-    expect(value).toEqual({ enabled: true });
+    expect(result).toEqual({ enabled: true, label: 'default' });
+    expect(result).not.toBe(value);
+    expect(result).not.toBe(source);
+    expect(value).toEqual({ enabled: true, label: undefined });
     expect(source).toEqual({ enabled: false, label: 'default' });
   });
 });

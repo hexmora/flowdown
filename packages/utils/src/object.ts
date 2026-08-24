@@ -1,5 +1,5 @@
 import { defaults } from 'lodash-es';
 
-export const defaultsPartial = <T>(value: T, source: Partial<T>) => {
+export const defaultsBy = <T>(value: Partial<T>, source: T): T => {
   return defaults({}, value, source);
 };
