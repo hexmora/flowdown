@@ -22,8 +22,8 @@ const DEFAULT_ALLOWED_TAGS = ['u', 'br', 'a', 'span', 'em'];
 
 const DEFAULT_ALLOWED_ATTRS: AttributeDefinition[] = [
   'dataParserPatch',
-  'dataParserKey',
-  'dataParserText',
+  'dataPatchKey',
+  'dataPatchText',
   'dataType',
   'style',
   'className',

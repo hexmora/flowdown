@@ -66,7 +66,7 @@ describe('remark plugin contracts', () => {
   test('publishes AST bridge protocol types from the package root', () => {
     const properties: ParserPatchProperties = {
       dataParserPatch: '1',
-      dataParserKey: 'cursor',
+      dataPatchKey: 'cursor',
     };
     const data: ParserPatchData = {
       key: 'cursor',
@@ -80,7 +80,7 @@ describe('remark plugin contracts', () => {
     const mode: PandocMathMode = 'display';
     const math: PandocMathData = { mode };
 
-    expect(patch.data.hProperties.dataParserKey).toBe('cursor');
+    expect(patch.data.hProperties.dataPatchKey).toBe('cursor');
     expect(math.mode).toBe('display');
   });
 });

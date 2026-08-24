@@ -93,8 +93,8 @@ describe('SanitizerRehypePlugin', () => {
 
     expect(span?.properties).toMatchObject({
       dataParserPatch: '1',
-      dataParserKey: 'middle',
-      dataParserText: 'ell',
+      dataPatchKey: 'middle',
+      dataPatchText: 'ell',
     });
   });
 
@@ -197,8 +197,8 @@ describe('SanitizerRehypePlugin', () => {
         'title',
         'dataType',
         'dataParserPatch',
-        'dataParserKey',
-        'dataParserText',
+        'dataPatchKey',
+        'dataPatchText',
         'style',
         'className',
       ],

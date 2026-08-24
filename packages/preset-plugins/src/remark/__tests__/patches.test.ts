@@ -235,7 +235,7 @@ describe('PatchesRemarkPlugin', () => {
       expect(paragraph.children.map((node) => node.type)).toEqual(['text', 'parserPatch', 'text']);
       expect(getText(first(paragraph.children)).value).toBe('h');
       expect(patch.data.key).toBe('replacement');
-      expect(patch.data.hProperties.dataParserText).toBe('ell');
+      expect(patch.data.hProperties.dataPatchText).toBe('ell');
       expect(getText(nth(paragraph.children, 2)).value).toBe('o');
     });
 
@@ -243,7 +243,7 @@ describe('PatchesRemarkPlugin', () => {
       const paragraph = getParagraph(parseWithPatches('hello', [{ key: 'all', range: [0, 5] }]));
 
       expect(paragraph.children).toHaveLength(1);
-      expect(getParserPatch(first(paragraph.children)).data.hProperties.dataParserText).toBe(
+      expect(getParserPatch(first(paragraph.children)).data.hProperties.dataPatchText).toBe(
         'hello',
       );
     });
@@ -289,7 +289,7 @@ describe('PatchesRemarkPlugin', () => {
         'late',
       ]);
       expect(
-        collectParserPatches(paragraph).map(({ data }) => data.hProperties.dataParserText),
+        collectParserPatches(paragraph).map(({ data }) => data.hProperties.dataPatchText),
       ).toEqual([undefined, undefined, 'c', 'e']);
     });
 
@@ -335,7 +335,7 @@ describe('PatchesRemarkPlugin', () => {
       const applied = collectParserPatches(paragraph);
 
       expect(applied.map(({ data }) => data.key)).toEqual(['shorter']);
-      expect(first(applied)?.data.hProperties.dataParserText).toBe('cd');
+      expect(first(applied)?.data.hProperties.dataPatchText).toBe('cd');
     });
 
     test.each([
@@ -371,7 +371,7 @@ describe('PatchesRemarkPlugin', () => {
         'after',
       ]);
       expect(
-        collectParserPatches(paragraph).map(({ data }) => data.hProperties.dataParserText),
+        collectParserPatches(paragraph).map(({ data }) => data.hProperties.dataPatchText),
       ).toEqual([decoded, 'x']);
     });
 
@@ -455,7 +455,7 @@ describe('PatchesRemarkPlugin', () => {
       const strong = getStrong(nth(paragraph.children, 1));
 
       expect(strong.children.map((node) => node.type)).toEqual(['parserPatch', 'text']);
-      expect(getParserPatch(first(strong.children)).data.hProperties.dataParserText).toBe('b');
+      expect(getParserPatch(first(strong.children)).data.hProperties.dataPatchText).toBe('b');
       expect(getText(nth(strong.children, 1)).value).toBe('c');
     });
 
@@ -495,8 +495,8 @@ describe('PatchesRemarkPlugin', () => {
           hName: 'span',
           hProperties: {
             dataParserPatch: '1',
-            dataParserKey: 'replacement',
-            dataParserText: 'ell',
+            dataPatchKey: 'replacement',
+            dataPatchText: 'ell',
           },
         },
       });
@@ -515,8 +515,8 @@ describe('PatchesRemarkPlugin', () => {
       expect(prefix.value).toBe('h');
       expect(patch.properties).toMatchObject({
         dataParserPatch: '1',
-        dataParserKey: 'replacement',
-        dataParserText: 'ell',
+        dataPatchKey: 'replacement',
+        dataPatchText: 'ell',
       });
       expect(suffix.value).toBe('o');
     });
@@ -743,7 +743,7 @@ describe('PatchesRemarkPlugin', () => {
       expect(patchIndex).toBeLessThan(headingIndex);
       expect(patch.properties).toMatchObject({
         dataParserPatch: '1',
-        dataParserKey: 'gap',
+        dataPatchKey: 'gap',
       });
     });
   });

@@ -4,9 +4,9 @@ import type { Node, Data as UnistData } from 'unist';
 export interface ParserPatchProperties extends Properties {
   dataParserPatch: '1';
 
-  dataParserKey: string;
+  dataPatchKey: string;
 
-  dataParserText?: string;
+  dataPatchText?: string;
 }
 
 export interface ParserPatchData extends UnistData {

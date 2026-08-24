@@ -128,11 +128,11 @@ const normalizePatches = (patches: IRawPatchItem[]): NormalizedPatch[] => {
 const createParserPatch = (patch: NormalizedPatch, replacement?: string): ParserPatch => {
   const hProperties: ParserPatch['data']['hProperties'] = {
     dataParserPatch: PARSER_PATCH_MARKER,
-    dataParserKey: patch.item.key,
+    dataPatchKey: patch.item.key,
   };
 
   if (replacement !== undefined) {
-    hProperties.dataParserText = replacement;
+    hProperties.dataPatchText = replacement;
   }
 
   return {
