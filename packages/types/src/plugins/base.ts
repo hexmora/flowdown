@@ -35,7 +35,7 @@ export type IBasePluginConfig = {
    * Controls the order in which plugins run.
    * @default 'PluginPriority.Default'
    */
-  priority?: PluginPriority;
+  priority?: PluginPriority | number;
 };
 
 export type IPluginWithConfig<C = {}> = {
