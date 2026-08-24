@@ -1,4 +1,5 @@
 import type {
+  IPluggable,
   IPluginWithConfig,
   IRawPatchItem,
   IRehypePlugin,
@@ -18,7 +19,7 @@ import {
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import { get, isArray, isEqual, isObjectLike } from 'lodash-es';
+import { isArray, isEqual, isObjectLike } from 'lodash-es';
 
 import type { IRenderPatchItem } from '../../externals/base-renderer';
 import type { BlockCompilerConfig, BlockRemarksConfig } from '../hast/block-compiler';
@@ -36,9 +37,12 @@ export const isKeyablesEqual = <T extends Keyable>(left: T[], right: T[]): boole
 };
 
 export const splitPatches = <R>(patches: IPatchItem<R>[]) => {
-  const usedKeys = new Set(patches.flatMap(({ key }) => (key === undefined ? [] : [key])));
+  const usedKeys = patches.flatMap(({ key }) => (key === undefined ? [] : [key]));
+
   const rawPatches: IRawPatchItem[] = [];
+
   const renderPatches: IRenderPatchItem<R>[] = [];
+
   let fallbackIndex = 0;
 
   for (const { key: explicitKey, range, render } of patches) {
@@ -46,16 +50,18 @@ export const splitPatches = <R>(patches: IPatchItem<R>[]) => {
 
     if (key === undefined) {
       key = String(fallbackIndex);
+
       fallbackIndex += 1;
 
-      while (usedKeys.has(key)) {
+      while (usedKeys.includes(key)) {
         key = `_${key}`;
       }
 
-      usedKeys.add(key);
+      usedKeys.push(key);
     }
 
     rawPatches.push({ key, range });
+
     renderPatches.push({ key, render });
   }
 
@@ -74,29 +80,68 @@ export const toRenderPatches = <R>(patches: IPatchItem<R>[]): IRenderPatchItem<R
   return renderPatches;
 };
 
-type RuntimePluginConfigs = Record<string, unknown>;
-
-type PluginClassesParams<T extends IPluginWithConfig> = {
+type PluginPluggablesParams<T extends IPluginWithConfig> = {
   config: BlockCompilerConfig;
-  extras: readonly PluginClass<T>[];
+
+  extras: readonly IPluggable<T, unknown>[];
 };
 
-const mergePluginClasses = <T>(presets: readonly T[], extras: readonly T[]): T[] => {
-  const classes: T[] = [];
+const getPluggableClass = <T extends IPluginWithConfig>(
+  pluggable: IPluggable<T, unknown>,
+): PluginClass<T> => (isArray(pluggable) ? pluggable[0] : pluggable);
 
-  for (const Plugin of [...presets, ...extras]) {
-    if (!classes.includes(Plugin)) {
-      classes.push(Plugin);
+const mergePluginPluggables = <T extends IPluginWithConfig>(
+  presets: readonly IPluggable<T, unknown>[],
+  extras: readonly IPluggable<T, unknown>[],
+): IPluggable<T, unknown>[] => {
+  const pluggables = [...presets];
+
+  for (const extra of extras) {
+    const Plugin = getPluggableClass(extra);
+
+    const index = pluggables.findIndex((item) => getPluggableClass(item) === Plugin);
+
+    if (index === -1) {
+      pluggables.push(extra);
+
+      continue;
     }
+
+    pluggables[index] = extra;
   }
 
-  return classes;
+  return pluggables;
 };
 
-export const getRemarkClasses = ({
+const isPluginConfig = (value: unknown): value is Record<string, unknown> => {
+  return isObjectLike(value) && !isArray(value);
+};
+
+const getPluggableConfig = <T extends IPluginWithConfig>(
+  pluggable: IPluggable<T, unknown>,
+): Record<string, unknown> => {
+  if (!isArray(pluggable)) {
+    return {};
+  }
+
+  const config = pluggable[1];
+
+  return isPluginConfig(config) ? config : {};
+};
+
+type RemarkPluggablesParams = {
+  config: BlockRemarksConfig;
+
+  extras: readonly IPluggable<IRemarkPlugin, unknown>[];
+
+  repairs: IRepairPlugin[];
+};
+
+export const getRemarkPluggables = ({
   config,
   extras,
-}: PluginClassesParams<IRemarkPlugin>): PluginClass<IRemarkPlugin>[] => {
+  repairs,
+}: RemarkPluggablesParams): IPluggable<IRemarkPlugin, unknown>[] => {
   const presets = PRESET_REMARK_PLUGINS.filter((Plugin) => {
     if (Plugin === SyntaxFootnoteRemarkPlugin) {
       return config.footnote;
@@ -113,24 +158,63 @@ export const getRemarkClasses = ({
     return true;
   });
 
-  return mergePluginClasses(presets, extras);
+  const pluggables = mergePluginPluggables(presets, extras);
+
+  return pluggables.map((pluggable) => {
+    const Plugin = getPluggableClass(pluggable);
+
+    const pluginConfig = getPluggableConfig(pluggable);
+
+    if (Plugin === PatchesRemarkPlugin) {
+      return [
+        Plugin,
+        {
+          ...pluginConfig,
+          patches: config.patches,
+        },
+      ];
+    }
+
+    if (Plugin === SyntaxMathRemarkPlugin) {
+      return [
+        Plugin,
+        {
+          ...pluginConfig,
+          repairEnding: config.repair && config.repairEnding,
+        },
+      ];
+    }
+
+    if (Plugin === ApplyRepairsRemarkPlugin) {
+      return [
+        Plugin,
+        {
+          ...pluginConfig,
+          plugins: repairs,
+          ending: config.repairEnding,
+        },
+      ];
+    }
+
+    return pluggable;
+  });
 };
 
-export const getRehypeClasses = ({
+export const getRehypePluggables = ({
   config,
   extras,
-}: PluginClassesParams<IRehypePlugin>): PluginClass<IRehypePlugin>[] => {
+}: PluginPluggablesParams<IRehypePlugin>): IPluggable<IRehypePlugin, unknown>[] => {
   const presets = PRESET_REHYPE_PLUGINS.filter(
     (Plugin) => Plugin !== HoistFootnoteRehypePlugin || config.footnote,
   );
 
-  return mergePluginClasses(presets, extras);
+  return mergePluginPluggables(presets, extras);
 };
 
-export const getRepairClasses = ({
+export const getRepairPluggables = ({
   config,
   extras,
-}: PluginClassesParams<IRepairPlugin>): PluginClass<IRepairPlugin>[] => {
+}: PluginPluggablesParams<IRepairPlugin>): IPluggable<IRepairPlugin, unknown>[] => {
   if (!config.repair) {
     return [];
   }
@@ -139,42 +223,5 @@ export const getRepairClasses = ({
     (Plugin) => Plugin !== DanglingFootnoteRepairPlugin || config.footnote,
   );
 
-  return mergePluginClasses(presets, extras);
+  return mergePluginPluggables(presets, extras);
 };
-
-const isPluginConfig = (value: unknown): value is RuntimePluginConfigs => {
-  return isObjectLike(value) && !isArray(value);
-};
-
-const getPluginConfig = (configs: RuntimePluginConfigs, key: string): RuntimePluginConfigs => {
-  const config = get(configs, [key]);
-
-  return isPluginConfig(config) ? config : {};
-};
-
-type RemarkPluginConfigsParams = {
-  configs: RuntimePluginConfigs;
-  blockConfig: BlockRemarksConfig;
-  repairs: IRepairPlugin[];
-};
-
-export const getRemarkPluginConfigs = ({
-  configs,
-  blockConfig: { patches, repair, repairEnding },
-  repairs,
-}: RemarkPluginConfigsParams): RuntimePluginConfigs => ({
-  ...configs,
-  [PatchesRemarkPlugin.key]: {
-    ...getPluginConfig(configs, PatchesRemarkPlugin.key),
-    patches,
-  },
-  [SyntaxMathRemarkPlugin.key]: {
-    ...getPluginConfig(configs, SyntaxMathRemarkPlugin.key),
-    repairEnding: repair && repairEnding,
-  },
-  [ApplyRepairsRemarkPlugin.key]: {
-    ...getPluginConfig(configs, ApplyRepairsRemarkPlugin.key),
-    plugins: repairs,
-    ending: repairEnding,
-  },
-});

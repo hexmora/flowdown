@@ -1,8 +1,8 @@
 import type { StateSource } from '@flowdown/reactive';
-import type { IPluginWithConfig, PluginClass } from '@flowdown/types';
+import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
 export interface PluginBuilderStateClosureParams<T extends IPluginWithConfig> {
-  plugins: StateSource<PluginClass<T>[]>;
+  plugins: StateSource<IPluggable<T, unknown>[]>;
 
-  configs: StateSource<Record<string, unknown>>;
+  sort?: boolean;
 }

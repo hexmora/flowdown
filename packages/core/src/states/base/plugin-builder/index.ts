@@ -6,32 +6,26 @@ import { cacheDiffMap } from '@flowdown/utils';
 
 import type { PluginBuilderStateClosureParams } from './type';
 
-import {
-  buildPluggables,
-  isPluggableEqual,
-  pluginsToPluggables,
-  sortPluginInstances,
-} from './utils';
+import { buildPluggables, isPluggableEqual, sortPluginInstances } from './utils';
 
 export * from './type';
 export * from './utils';
 
 type PluginEntry<T extends IPluginWithConfig> = {
   instance: T;
+
   pluggable: IPluggable<T, unknown>;
 };
 
 export class PluginBuilderStateClosure<
   T extends IPluginWithConfig & IDestructible,
 > extends BaseStateClosure<T[]> {
-  constructor({ plugins, configs }: PluginBuilderStateClosureParams<T>) {
+  constructor({ plugins, sort = true }: PluginBuilderStateClosureParams<T>) {
     super({
       source: () => {
         let entries: PluginEntry<T>[] = [];
 
-        const state = this.combineMap([plugins, configs], ([currentPlugins, currentConfigs]) => {
-          const currentPluggables = pluginsToPluggables(currentPlugins, currentConfigs);
-
+        const state = this.map(plugins, (currentPluggables) => {
           entries = cacheDiffMap({
             prev: entries.map((entry) => [entry.pluggable, entry]),
             current: currentPluggables,
@@ -43,7 +37,9 @@ export class PluginBuilderStateClosure<
             teardown: ({ instance }) => instance.destroy(),
           });
 
-          return sortPluginInstances(entries.map(({ instance }) => instance));
+          const instances = entries.map(({ instance }) => instance);
+
+          return sort ? sortPluginInstances(instances) : instances;
         });
 
         this.clearable(() => {

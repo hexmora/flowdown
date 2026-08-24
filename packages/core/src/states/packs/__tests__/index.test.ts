@@ -9,9 +9,7 @@ import {
   BaseRepairPlugin,
   DanglingFootnoteRepairPlugin,
   HoistFootnoteRehypePlugin,
-  IncompleteCodeFenceRepairPlugin,
   IncompleteImageRepairPlugin,
-  type IncompleteImageRepairPluginConfig,
   PatchesRemarkPlugin,
   PRESET_REHYPE_PLUGINS,
   PRESET_REMARK_PLUGINS,
@@ -21,10 +19,10 @@ import {
 import { type IReactiveState, MutableState, ReactiveState } from '@flowdown/reactive';
 import {
   type IBasePluginConfig,
+  type IPluggable,
   type IRehypePlugin,
   type IRemarkPlugin,
   type IRepairPlugin,
-  type PluginClass,
   PluginPriority,
   type RepairPluginRunner,
   type RepairPluginSystemConfig,
@@ -36,11 +34,13 @@ import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
 import type { BlockCompilerConfig } from '../../hast/block-compiler';
 
-import { CoreStateClosure, type IPatchItem, type PluginConfigs } from '..';
+import { CoreStateClosure, type IPatchItem } from '..';
 import {
   BaseRendererStateClosure,
   BaseRenderPlugin,
   type IRenderPatchItem,
+  type IRenderPluggable,
+  type IRenderPlugin,
 } from '../../../externals';
 
 interface AppendRemarkPluginConfig {
@@ -152,16 +152,36 @@ const DEFAULT_CONFIG: BlockCompilerConfig = {
 interface RenderedBlock extends IBlockState<HastRoot> {
   renderPatches: IReactiveState<IRenderPatchItem<RenderedBlock>[]>;
 
-  renderPlugins: BaseRenderPlugin<ElementContent, Parent, RenderedBlock>[];
+  renderPlugins: IRenderPlugin<ElementContent, Parent, RenderedBlock>[];
 }
 
 class TestRenderPlugin extends BaseRenderPlugin<ElementContent, Parent, RenderedBlock> {
+  static readonly key = 'render-test';
+
+  static readonly constructed = vi.fn();
+
+  static readonly destroyed = vi.fn();
+
+  constructor() {
+    super();
+
+    TestRenderPlugin.constructed();
+  }
+
   match() {
     return true;
   }
 
   render(): RenderedBlock {
     throw new Error('Test render plugins are not invoked by the test renderer.');
+  }
+
+  override destroy() {
+    if (!this.destroyed) {
+      TestRenderPlugin.destroyed();
+    }
+
+    super.destroy();
   }
 }
 
@@ -185,13 +205,6 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
     };
   }
 }
-
-type TestPluginConfigs = PluginConfigs &
-  PluginConfigs<typeof AppendRemarkPlugin | typeof EndingMarkerRepairPlugin>;
-
-const asRuntimePluginConfigs = (configs: Record<string, unknown>): TestPluginConfigs => {
-  return configs as TestPluginConfigs;
-};
 
 const collectText = (node: HastRoot | RootContent): string => {
   if (node.type === 'text') {
@@ -254,20 +267,20 @@ const setupCoreStateClosure = (initialText = 'base') => {
   const text = MutableState.of(initialText);
   const patches = MutableState.of<IPatchItem<RenderedBlock>[]>([]);
   const config = MutableState.of(DEFAULT_CONFIG);
-  const pluginConfigs = MutableState.of<TestPluginConfigs>({
-    [AppendRemarkPlugin.key]: { suffix: '|remark' },
-  });
-  const remarks = MutableState.of<(typeof AppendRemarkPlugin)[]>([AppendRemarkPlugin]);
-  const rehypes = MutableState.of<(typeof AppendRehypePlugin)[]>([AppendRehypePlugin]);
-  const repairs = MutableState.of<(typeof EndingMarkerRepairPlugin)[]>([EndingMarkerRepairPlugin]);
-  const renders = MutableState.of<BaseRenderPlugin<ElementContent, Parent, RenderedBlock>[]>([]);
+  const remarks = MutableState.of<IPluggable<IRemarkPlugin, unknown>[]>([
+    [AppendRemarkPlugin, { suffix: '|remark' }] as unknown as IPluggable<IRemarkPlugin, unknown>,
+  ]);
+  const rehypes = MutableState.of<IPluggable<IRehypePlugin, unknown>[]>([AppendRehypePlugin]);
+  const repairs = MutableState.of<IPluggable<IRepairPlugin, unknown>[]>([EndingMarkerRepairPlugin]);
+  const renders = MutableState.of<
+    IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
+  >([]);
   const state = new CoreStateClosure({
     Renderer: TestRendererStateClosure,
     text,
     patches,
     config,
     renders,
-    pluginConfigs,
     remarks,
     rehypes,
     repairs,
@@ -276,7 +289,6 @@ const setupCoreStateClosure = (initialText = 'base') => {
   return {
     config,
     patches,
-    pluginConfigs,
     rehypes,
     remarks,
     renders,
@@ -290,82 +302,19 @@ beforeEach(() => {
   AppendRemarkPlugin.destroyed.mockClear();
   AppendRehypePlugin.destroyed.mockClear();
   EndingMarkerRepairPlugin.destroyed.mockClear();
+  TestRenderPlugin.constructed.mockClear();
+  TestRenderPlugin.destroyed.mockClear();
 });
 
 describe('CoreStateClosure', () => {
-  test('derives plugin config keys and constructor config shapes', () => {
-    const config: PluginConfigs<typeof AppendRemarkPlugin> = {
-      [AppendRemarkPlugin.key]: { suffix: '|typed' },
-    };
-    const managedApplyConfig: PluginConfigs<typeof ApplyRepairsRemarkPlugin> = {
-      [ApplyRepairsRemarkPlugin.key]: { safe: false },
-    };
-    const presetRepairConfig: PluginConfigs<typeof IncompleteImageRepairPlugin> = {
-      [IncompleteImageRepairPlugin.key]: { strategy: 'discard' },
-    };
-
-    expectTypeOf(config[AppendRemarkPlugin.key]).toEqualTypeOf<
-      AppendRemarkPluginConfig | undefined
-    >();
-    expectTypeOf(managedApplyConfig[ApplyRepairsRemarkPlugin.key]).toEqualTypeOf<
-      { safe?: boolean } | undefined
-    >();
-    expectTypeOf(presetRepairConfig[IncompleteImageRepairPlugin.key]).toEqualTypeOf<
-      IncompleteImageRepairPluginConfig | undefined
-    >();
+  test('exposes a reactive rendered value and preset plugin classes', () => {
     expectTypeOf<CoreStateClosure<RenderedBlock>['value']>().toEqualTypeOf<
       IReactiveState<RenderedBlock[]>
     >();
-    expectTypeOf(AppendRemarkPlugin).toMatchTypeOf<PluginClass<IRemarkPlugin>>();
-    expectTypeOf(AppendRehypePlugin).toMatchTypeOf<PluginClass<IRehypePlugin>>();
-    expectTypeOf(EndingMarkerRepairPlugin).toMatchTypeOf<PluginClass<IRepairPlugin>>();
-    expectTypeOf(PRESET_REMARK_PLUGINS).toEqualTypeOf<PluginClass<IRemarkPlugin>[]>();
-    expectTypeOf(PRESET_REHYPE_PLUGINS).toEqualTypeOf<PluginClass<IRehypePlugin>[]>();
-    expectTypeOf(PRESET_REPAIR_PLUGINS).toEqualTypeOf<PluginClass<IRepairPlugin>[]>();
-    expectTypeOf(SyntaxMathRemarkPlugin).toMatchTypeOf<PluginClass<IRemarkPlugin>>();
-    expectTypeOf(HoistFootnoteRehypePlugin).toMatchTypeOf<PluginClass<IRehypePlugin>>();
-    expectTypeOf(DanglingFootnoteRepairPlugin).toMatchTypeOf<PluginClass<IRepairPlugin>>();
 
-    const invalidConfig: PluginConfigs<typeof AppendRemarkPlugin> = {
-      // @ts-expect-error The config is derived from AppendRemarkPlugin's constructor.
-      [AppendRemarkPlugin.key]: { missing: true },
-    };
-    const invalidKey: PluginConfigs<typeof AppendRemarkPlugin> = {
-      // @ts-expect-error Unknown static plugin keys are rejected.
-      'remark-unknown': {},
-    };
-    const invalidApplyPlugins: PluginConfigs<typeof ApplyRepairsRemarkPlugin> = {
-      [ApplyRepairsRemarkPlugin.key]: {
-        // @ts-expect-error Repair instances are managed by CoreStateClosure.
-        plugins: [],
-      },
-    };
-    const invalidApplyEnding: PluginConfigs<typeof ApplyRepairsRemarkPlugin> = {
-      [ApplyRepairsRemarkPlugin.key]: {
-        // @ts-expect-error Ending state is managed by CoreStateClosure.
-        ending: false,
-      },
-    };
-    // @ts-expect-error Math ending repair is managed by CoreStateClosure.
-    const invalidMathConfig: PluginConfigs<typeof SyntaxMathRemarkPlugin> = {
-      [SyntaxMathRemarkPlugin.key]: { repairEnding: false },
-    };
-    // @ts-expect-error Block patches are managed by CoreStateClosure.
-    const invalidPatchesConfig: PluginConfigs<typeof PatchesRemarkPlugin> = {
-      [PatchesRemarkPlugin.key]: { patches: [] },
-    };
-    // @ts-expect-error Configless preset plugins do not accept per-key config.
-    const invalidConfiglessRepair: PluginConfigs<typeof IncompleteCodeFenceRepairPlugin> = {
-      [IncompleteCodeFenceRepairPlugin.key]: {},
-    };
-
-    expect(invalidConfig).toBeDefined();
-    expect(invalidKey).toBeDefined();
-    expect(invalidApplyPlugins).toBeDefined();
-    expect(invalidApplyEnding).toBeDefined();
-    expect(invalidMathConfig).toBeDefined();
-    expect(invalidPatchesConfig).toBeDefined();
-    expect(invalidConfiglessRepair).toBeDefined();
+    expect(PRESET_REMARK_PLUGINS).toContain(SyntaxMathRemarkPlugin);
+    expect(PRESET_REHYPE_PLUGINS).toContain(HoistFootnoteRehypePlugin);
+    expect(PRESET_REPAIR_PLUGINS).toContain(DanglingFootnoteRepairPlugin);
   });
 
   test('builds from direct inputs with default plugin sources', () => {
@@ -374,7 +323,9 @@ describe('CoreStateClosure', () => {
       text: 'base',
       patches: ReactiveState.of<IPatchItem<RenderedBlock>[]>([]),
       config: DEFAULT_CONFIG,
-      renders: ReactiveState.of<BaseRenderPlugin<ElementContent, Parent, RenderedBlock>[]>([]),
+      renders: ReactiveState.of<
+        IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
+      >([]),
     });
 
     expect(collectText(getFirstBlockTree(state))).toBe('base');
@@ -387,34 +338,31 @@ describe('CoreStateClosure', () => {
   test('uses the injected renderer and reacts to render plugin changes', () => {
     const harness = setupCoreStateClosure();
     const initial = first(harness.state.value.value);
-    const plugin = new TestRenderPlugin();
 
-    harness.renders.next([plugin]);
+    harness.renders.next([TestRenderPlugin]);
 
     const updated = first(harness.state.value.value);
+    const plugin = first(updated?.renderPlugins ?? []);
 
     expect(updated).not.toBe(initial);
-    expect(updated?.renderPlugins).toEqual([plugin]);
+    expect(plugin).toBeInstanceOf(TestRenderPlugin);
+    expect(TestRenderPlugin.constructed).toHaveBeenCalledOnce();
 
     harness.state.destroy();
-    plugin.destroy();
+
+    expect(TestRenderPlugin.destroyed).toHaveBeenCalledOnce();
   });
 
-  test('reacts to extra class lists and per-key configs while preserving block identity', () => {
+  test('reacts to configured extra pluggables while preserving block identity', () => {
     const harness = setupCoreStateClosure();
     const initialBlock = first(harness.state.value.value);
 
     expect(initialBlock).toBeDefined();
     expect(collectText(getBlockTree(initialBlock))).toBe('base|remark|rehype');
 
-    harness.remarks.next([AppendRemarkPlugin, AppendRemarkPlugin]);
-
-    expect(collectText(getFirstBlockTree(harness.state))).toBe('base|remark|rehype');
-    expect(AppendRemarkPlugin.destroyed).not.toHaveBeenCalled();
-
-    harness.pluginConfigs.next({
-      [AppendRemarkPlugin.key]: { suffix: '|updated' },
-    });
+    harness.remarks.next([
+      [AppendRemarkPlugin, { suffix: '|updated' }] as unknown as IPluggable<IRemarkPlugin, unknown>,
+    ]);
 
     const configuredBlock = first(harness.state.value.value);
 
@@ -477,29 +425,27 @@ describe('CoreStateClosure', () => {
     expect(enabled).toBe('first');
   });
 
-  test('injects block patches and last-block ending after user plugin configs', () => {
+  test('lets framework-managed remark fields override user tuple options', () => {
     const harness = setupCoreStateClosure('abc');
     const renderPatch = vi.fn(() => first(harness.state.value.value)!);
 
-    harness.remarks.next([]);
+    harness.remarks.next([
+      [
+        PatchesRemarkPlugin,
+        { patches: [{ key: 'ignored', range: [0, 0] }] },
+      ] as unknown as IPluggable<IRemarkPlugin, unknown>,
+    ]);
     harness.rehypes.next([]);
-    harness.pluginConfigs.next(
-      asRuntimePluginConfigs({
-        [PatchesRemarkPlugin.key]: {
-          patches: [{ key: 'ignored', range: [0, 0] }],
-        },
-      }),
-    );
     harness.patches.next([{ key: 'actual', range: [1, 1], render: renderPatch }]);
 
     const patchTree = getFirstBlockTree(harness.state);
     const renderedBlock = first(harness.state.value.value);
 
     expect(
-      findElement(patchTree, (element) => element.properties?.dataParserKey === 'actual'),
+      findElement(patchTree, (element) => element.properties?.dataPatchKey === 'actual'),
     ).toBeDefined();
     expect(
-      findElement(patchTree, (element) => element.properties?.dataParserKey === 'ignored'),
+      findElement(patchTree, (element) => element.properties?.dataPatchKey === 'ignored'),
     ).toBeUndefined();
     expect(renderedBlock?.renderPatches.value).toEqual([{ key: 'actual', render: renderPatch }]);
 
@@ -512,7 +458,7 @@ describe('CoreStateClosure', () => {
 
     expect(updatedParagraph?.children).toMatchObject([
       { type: 'text', value: 'ab' },
-      { properties: { dataParserKey: 'actual' }, type: 'element' },
+      { properties: { dataPatchKey: 'actual' }, type: 'element' },
       { type: 'text', value: 'c' },
     ]);
     expect(renderedBlock?.renderPatches.value).toEqual([
@@ -521,14 +467,14 @@ describe('CoreStateClosure', () => {
 
     const math = setupCoreStateClosure('prefix$a+b');
 
-    math.remarks.next([]);
+    math.remarks.next([
+      [SyntaxMathRemarkPlugin, { repairEnding: true }] as unknown as IPluggable<
+        IRemarkPlugin,
+        unknown
+      >,
+    ]);
     math.rehypes.next([]);
     math.repairs.next([]);
-    math.pluginConfigs.next(
-      asRuntimePluginConfigs({
-        [SyntaxMathRemarkPlugin.key]: { repairEnding: true },
-      }),
-    );
     math.config.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
 
     expect(
@@ -537,11 +483,12 @@ describe('CoreStateClosure', () => {
       }),
     ).toBeUndefined();
 
-    math.pluginConfigs.next(
-      asRuntimePluginConfigs({
-        [SyntaxMathRemarkPlugin.key]: { repairEnding: false },
-      }),
-    );
+    math.remarks.next([
+      [SyntaxMathRemarkPlugin, { repairEnding: false }] as unknown as IPluggable<
+        IRemarkPlugin,
+        unknown
+      >,
+    ]);
     math.config.next({
       ...DEFAULT_CONFIG,
       tex: true,
@@ -557,15 +504,13 @@ describe('CoreStateClosure', () => {
 
     const ending = setupCoreStateClosure('first\n\nsecond');
 
-    ending.remarks.next([]);
+    ending.remarks.next([
+      [ApplyRepairsRemarkPlugin, { ending: false, plugins: [] }] as unknown as IPluggable<
+        IRemarkPlugin,
+        unknown
+      >,
+    ]);
     ending.rehypes.next([]);
-    // Simulate untyped JavaScript input to verify system fields still win at runtime.
-    ending.pluginConfigs.next({
-      [ApplyRepairsRemarkPlugin.key]: {
-        plugins: [],
-        ending: false,
-      },
-    } as unknown as TestPluginConfigs);
     ending.config.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
 
     const values = ending.state.value.value.map((block) => collectText(block.value.value));
@@ -594,13 +539,38 @@ describe('CoreStateClosure', () => {
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base');
     expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
 
-    harness.repairs.next([EndingMarkerRepairPlugin]);
-    harness.pluginConfigs.next({
-      [EndingMarkerRepairPlugin.key]: { marker: '|configured' },
-    });
+    harness.repairs.next([
+      [EndingMarkerRepairPlugin, { marker: '|configured' }] as unknown as IPluggable<
+        IRepairPlugin,
+        unknown
+      >,
+    ]);
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base|configured');
-    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledTimes(2);
+    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
+  });
+
+  test('uses an extra configured tuple for a preset class without appending a duplicate', () => {
+    const harness = setupCoreStateClosure('prefix ![tail');
+
+    harness.remarks.next([]);
+    harness.rehypes.next([]);
+    harness.repairs.next([
+      [IncompleteImageRepairPlugin, { strategy: 'discard' }] as unknown as IPluggable<
+        IRepairPlugin,
+        unknown
+      >,
+    ]);
+    harness.config.next({
+      ...DEFAULT_CONFIG,
+      repair: true,
+      repairEnding: true,
+    });
+
+    const tree = getFirstBlockTree(harness.state);
+
+    expect(findElement(tree, (element) => element.tagName === 'img')).toBeUndefined();
+    expect(collectText(tree)).toBe('prefix ');
   });
 
   test('keeps the compiled block graph reactive without taking ownership of inputs', () => {
@@ -624,7 +594,6 @@ describe('CoreStateClosure', () => {
       harness.text,
       harness.patches,
       harness.config,
-      harness.pluginConfigs,
       harness.remarks,
       harness.rehypes,
       harness.renders,
@@ -640,7 +609,6 @@ describe('CoreStateClosure', () => {
     expect(harness.text.closed).toBe(false);
     expect(harness.patches.closed).toBe(false);
     expect(harness.config.closed).toBe(false);
-    expect(harness.pluginConfigs.closed).toBe(false);
     expect(harness.remarks.closed).toBe(false);
     expect(harness.rehypes.closed).toBe(false);
     expect(harness.renders.closed).toBe(false);
@@ -656,7 +624,6 @@ describe('CoreStateClosure', () => {
     expect(harness.state.value.value).toHaveLength(3);
 
     const initialRemarkObservers = getObserverCount(harness.remarks);
-    const initialConfigObservers = getObserverCount(harness.pluginConfigs);
 
     expect(initialRemarkObservers).toBe(3);
 
@@ -664,14 +631,12 @@ describe('CoreStateClosure', () => {
 
     expect(harness.state.value.value).toHaveLength(1);
     expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers - 2);
-    expect(getObserverCount(harness.pluginConfigs)).toBe(initialConfigObservers - 4);
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(2);
 
     harness.text.next('first\n\nfourth');
 
     expect(harness.state.value.value).toHaveLength(2);
     expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers - 1);
-    expect(getObserverCount(harness.pluginConfigs)).toBe(initialConfigObservers - 2);
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(2);
 
     harness.state.destroy();

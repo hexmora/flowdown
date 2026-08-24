@@ -6,15 +6,15 @@ import type {
 import type { IReactiveState, StateSource } from '@flowdown/reactive';
 import type {
   IBasePluginConfig,
+  IPluggable,
   IRawPatchRange,
   IRehypePlugin,
   IRemarkPlugin,
   IRepairPlugin,
-  PluginClass,
 } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import type { BaseRenderPlugin } from '../../externals/base-render-plugin';
+import type { IRenderPluggable } from '../../externals/base-render-plugin';
 import type { IRenderPatchRender, RendererClass } from '../../externals/base-renderer';
 import type { HastRoot } from '../../typings';
 import type { BlockCompilerConfig } from '../hast/block-compiler';
@@ -63,13 +63,11 @@ export type CoreStateClosureParams<R, C = {}> = {
 
   config: StateSource<BlockCompilerConfig>;
 
-  renders: IReactiveState<BaseRenderPlugin<ElementContent, Parent, R, C>[]>;
+  renders: IReactiveState<IRenderPluggable<ElementContent, Parent, R, C, unknown>[]>;
 
-  pluginConfigs?: IReactiveState<PluginConfigs>;
+  remarks?: IReactiveState<IPluggable<IRemarkPlugin, unknown>[]>;
 
-  remarks?: IReactiveState<PluginClass<IRemarkPlugin>[]>;
+  rehypes?: IReactiveState<IPluggable<IRehypePlugin, unknown>[]>;
 
-  rehypes?: IReactiveState<PluginClass<IRehypePlugin>[]>;
-
-  repairs?: IReactiveState<PluginClass<IRepairPlugin>[]>;
+  repairs?: IReactiveState<IPluggable<IRepairPlugin, unknown>[]>;
 };

@@ -1,16 +1,17 @@
 import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { ElementContent, Parent } from 'hast';
 
-import { BaseStateClosure, buildDescriptor, D, S } from '@flowdown/reactive';
+import { BaseStateClosure, buildDescriptor, S } from '@flowdown/reactive';
 
+import type { IRenderPlugin } from '../../externals/base-render-plugin';
 import type { CoreStateClosureParams } from './type';
 
 import { PluginBuilderStateClosure, TextChunkerStateClosure } from '../base';
 import { BlockCompilerStateClosure } from '../hast/block-compiler';
 import {
-  getRehypeClasses,
-  getRemarkClasses,
-  getRemarkPluginConfigs,
-  getRepairClasses,
+  getRehypePluggables,
+  getRemarkPluggables,
+  getRepairPluggables,
   isKeyablesEqual,
   toRawPatches,
   toRenderPatches,
@@ -26,13 +27,10 @@ export class CoreStateClosure<R, C = {}> extends BaseStateClosure<R[]> {
     patches,
     config,
     renders,
-    pluginConfigs,
     remarks,
     rehypes,
     repairs,
   }: CoreStateClosureParams<R, C>) {
-    const pluginConfigSource = pluginConfigs ?? {};
-
     const remarkSources = remarks ?? [];
 
     const rehypeSources = rehypes ?? [];
@@ -47,7 +45,10 @@ export class CoreStateClosure<R, C = {}> extends BaseStateClosure<R[]> {
               Renderer,
               {
                 patches: S([toRenderPatches<R>, patches, isKeyablesEqual]),
-                plugins: renders,
+                plugins: S([
+                  PluginBuilderStateClosure<IRenderPlugin<ElementContent, Parent, R, C>>,
+                  { plugins: renders },
+                ]),
                 source: S([
                   BlockCompilerStateClosure,
                   {
@@ -64,19 +65,17 @@ export class CoreStateClosure<R, C = {}> extends BaseStateClosure<R[]> {
                         PluginBuilderStateClosure<IRemarkPlugin>,
                         {
                           plugins: S([
-                            getRemarkClasses,
-                            { config: blockConfig, extras: remarkSources },
-                          ]),
-                          configs: S([
-                            getRemarkPluginConfigs,
+                            getRemarkPluggables,
                             {
-                              configs: pluginConfigSource,
-                              blockConfig,
+                              config: blockConfig,
+                              extras: remarkSources,
                               repairs: S([
                                 PluginBuilderStateClosure<IRepairPlugin>,
                                 {
-                                  plugins: S([getRepairClasses, { config, extras: repairSources }]),
-                                  configs: D(pluginConfigSource),
+                                  plugins: S([
+                                    getRepairPluggables,
+                                    { config, extras: repairSources },
+                                  ]),
                                 },
                               ]),
                             },
@@ -87,8 +86,7 @@ export class CoreStateClosure<R, C = {}> extends BaseStateClosure<R[]> {
                       S([
                         PluginBuilderStateClosure<IRehypePlugin>,
                         {
-                          plugins: S([getRehypeClasses, { config, extras: rehypeSources }]),
-                          configs: D(pluginConfigSource),
+                          plugins: S([getRehypePluggables, { config, extras: rehypeSources }]),
                         },
                       ]),
                   },
