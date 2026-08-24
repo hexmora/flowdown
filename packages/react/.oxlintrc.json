@@ -8,10 +8,13 @@
     "es2024": true
   },
   "rules": {
+    "eslint/no-underscore-dangle": "off",
     "react/jsx-key": "error",
-    "react/react-in-jsx-scope": "off",
     "react/no-array-index-key": "warn",
+    "react/no-object-type-as-default-prop": "off",
+    "react/react-in-jsx-scope": "off",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "unicorn/prefer-set-has": "off"
   }
 }

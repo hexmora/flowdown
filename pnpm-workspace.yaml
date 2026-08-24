@@ -28,6 +28,7 @@ catalog:
   micromark-util-character: ^2.1.1
   micromark-util-types: ^2.0.2
   react-error-boundary: ^6.1.2
+  react-use: ^17.6.1
   rehype-raw: ^7.0.0
   rehype-sanitize: ^6.0.0
   remark-breaks: ^4.0.0
@@ -35,6 +36,7 @@ catalog:
   react: ^18.3.1
   react-dom: ^18.3.1
   rxjs: ^7.8.2
+  sass: ^1.103.1
   shallow-equal: ^3.1.0
   unified: ^11.0.5
   "@types/katex": ^0.16.8
@@ -79,5 +81,6 @@ overrides:
   "@types/react-dom": "catalog:"
 
 allowBuilds:
+  "@parcel/watcher": true
   esbuild: true
   unrs-resolver: true
