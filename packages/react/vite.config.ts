@@ -14,19 +14,36 @@ export default defineConfig({
   build: {
     cssCodeSplit: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(__dirname, 'src/index.tsx'),
       name: 'FlowdownReact',
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
     rollupOptions: {
-      external: ['@flowdown/core', 'react', 'react-dom', 'react/jsx-runtime'],
+      external: [
+        '@flowdown/core',
+        '@flowdown/reactive',
+        '@flowdown/types',
+        '@flowdown/utils',
+        'lodash-es',
+        'react',
+        'react-dom',
+        'react-error-boundary',
+        'react/jsx-runtime',
+        'shallow-equal',
+      ],
       output: {
         globals: {
           '@flowdown/core': 'FlowdownCore',
+          '@flowdown/reactive': 'FlowdownReactive',
+          '@flowdown/types': 'FlowdownTypes',
+          '@flowdown/utils': 'FlowdownUtils',
+          'lodash-es': 'lodashEs',
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react-error-boundary': 'ReactErrorBoundary',
           'react/jsx-runtime': 'jsxRuntime',
+          'shallow-equal': 'shallowEqual',
         },
       },
     },
