@@ -2,10 +2,10 @@ import type { IReactiveState } from '@flowdown/reactive';
 
 import { BaseStateClosure } from '@flowdown/reactive';
 import { cacheDiffMap } from '@flowdown/utils';
-import { shallowEqualArrays } from 'shallow-equal';
+import { shallowEqual } from 'shallow-equal';
 
 import type { IBlockState } from '../../states/base/base-block';
-import type { BaseRenderPlugin } from '../base-render-plugin';
+import type { IRenderPlugin } from '../base-render-plugin';
 import type { BaseRendererStateClosureParams, IRenderPatchItem } from './type';
 
 export * from './type';
@@ -15,7 +15,7 @@ export abstract class BaseRendererStateClosure<T, E, P, R, C = {}> extends BaseS
 
   protected readonly patches: IReactiveState<IRenderPatchItem<R>[]>;
 
-  protected readonly plugins: IReactiveState<BaseRenderPlugin<E, P, R, C>[]>;
+  protected readonly plugins: IReactiveState<IRenderPlugin<E, P, R, C>[]>;
 
   constructor({ source, patches, plugins }: BaseRendererStateClosureParams<T, E, P, R, C>) {
     super({
@@ -45,7 +45,7 @@ export abstract class BaseRendererStateClosure<T, E, P, R, C = {}> extends BaseS
 
         const [[prevSource, prevPlugins], prevRendered] = prev;
 
-        if (!shallowEqualArrays(prevPlugins, currentPlugins)) {
+        if (!shallowEqual(prevPlugins, currentPlugins)) {
           return this.renderItems(currentSource);
         }
 
@@ -61,7 +61,7 @@ export abstract class BaseRendererStateClosure<T, E, P, R, C = {}> extends BaseS
           comparer: (left, right) => left.meta.value.key === right.meta.value.key,
         });
       },
-      (left, right) => shallowEqualArrays(left, right),
+      (left, right) => shallowEqual(left, right),
     );
   }
 }

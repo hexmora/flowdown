@@ -1,7 +1,7 @@
 import { compute } from '@flowdown/utils';
 import { isFunction, isNaN, isObject, isUndefined, max } from 'lodash-es';
 import { BehaviorSubject, Observable, type Subscription } from 'rxjs';
-import { shallowEqualArrays } from 'shallow-equal';
+import { shallowEqual } from 'shallow-equal';
 
 import type { IStateClosure } from '../state-closure/type';
 import type { Distinctor, IReactiveState } from './type';
@@ -231,7 +231,7 @@ export const combineMapState = <const TSources extends [unknown, ...unknown[]], 
 
         const nextValues = [...latestValues] as TValues;
 
-        if (!previousValues || !shallowEqualArrays(nextValues, previousValues)) {
+        if (!previousValues || !shallowEqual(nextValues, previousValues)) {
           previousValues = nextValues;
 
           const nextResult = mapper(nextValues, prev);
@@ -317,4 +317,4 @@ export const combineMapState = <const TSources extends [unknown, ...unknown[]], 
 export const combineState = <const TSources extends [unknown, ...unknown[]]>(
   ...sources: TSources
 ): ReactiveState<StateValues<TSources>> =>
-  combineMapState<TSources, StateValues<TSources>>(sources, (values) => values, shallowEqualArrays);
+  combineMapState<TSources, StateValues<TSources>>(sources, (values) => values, shallowEqual);

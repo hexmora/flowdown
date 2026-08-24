@@ -11,7 +11,7 @@ import {
 } from '@flowdown/reactive';
 import { assert } from '@flowdown/utils';
 import { isEqual, isNil, zip } from 'lodash-es';
-import { shallowEqualArrays } from 'shallow-equal';
+import { shallowEqual } from 'shallow-equal';
 
 import type { HastRoot } from '../../../typings';
 import type { IBlockMeta, IBlockSection, IBlockState } from '../../base';
@@ -127,11 +127,7 @@ export class BlockCompilerStateClosure
 
         const closures = this.getClosuresState(sections, createClosure);
 
-        const states = this.map(
-          closures,
-          (items) => items.map(({ state }) => state),
-          shallowEqualArrays,
-        );
+        const states = this.map(closures, (items) => items.map(({ state }) => state), shallowEqual);
 
         this.clearable(() => {
           destroyAll(this.closures);

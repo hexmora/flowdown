@@ -10,6 +10,7 @@ import {
 } from '..';
 import {
   BaseRenderPlugin,
+  type IRenderPlugin,
   type IRenderPluginMatchParams,
   type IRenderPluginRenderParams,
 } from '../../base-render-plugin';
@@ -23,7 +24,7 @@ interface RenderedItem {
 
   content: IReactiveState<string>;
 
-  plugins: BaseRenderPlugin<string, string, RenderedItem, TestRenderConfig>[];
+  plugins: IRenderPlugin<string, string, RenderedItem, TestRenderConfig>[];
 
   patches: IReactiveState<IRenderPatchItem<RenderedItem>[]>;
 }
