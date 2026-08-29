@@ -19,6 +19,10 @@ export const isPatchesEqual = <R>(
   left: readonly IPatchItem<R>[],
   right: readonly IPatchItem<R>[],
 ): boolean => {
+  if (left === right) {
+    return true;
+  }
+
   return (
     left.length === right.length &&
     left.every((patch, index) => {

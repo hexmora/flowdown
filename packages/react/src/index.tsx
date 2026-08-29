@@ -8,7 +8,7 @@ import { shallowEqual } from 'shallow-equal';
 import type { FlowdownProps, FlowdownRef, ReactRenderExtraParams } from './types';
 
 import { RootReconciler, SlotProvider } from './components';
-import { DEFAULT_CONFIG } from './consts';
+import { DEFAULT_CONFIG, EL, EO } from './consts';
 import { useDeferredUnmount, usePlugins, useStateOf, useStatic } from './hooks';
 import { ReactRenderer } from './modules';
 import { PRESET_RENDER_PLUGINS, PRESET_SLOT_PLUGINS } from './plugins';
@@ -20,9 +20,9 @@ export const Flowdown = /*#__PURE__*/ memo(
       className,
       style,
       text: _text,
-      config: _config = {},
-      patches: _patches = [],
-      plugins: _plugins = [],
+      config: _config = EO,
+      patches: _patches = EL,
+      plugins: _plugins = EL,
     },
     ref,
   ) {

@@ -1,2 +1,2 @@
 export * from './compose';
-export * from './create-type-of-slot';
+export * from './create';

@@ -1,6 +1,7 @@
 import { MutableState } from '@flowdown/reactive';
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { type ReactNode, StrictMode } from 'react';
+import { renderToString } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 
 import { useStateOf, useStateValue } from '..';
@@ -8,6 +9,12 @@ import { useStateOf, useStateValue } from '..';
 interface ComparableValue {
   id: number;
   label: string;
+}
+
+interface SelectorProps {
+  distinctor: typeof equalById;
+
+  key: 'first' | 'second';
 }
 
 const equalById = (left: ComparableValue, right: ComparableValue) => left.id === right.id;
@@ -163,5 +170,90 @@ describe('useStateValue', () => {
     view.unmount();
 
     expect(state.closed).toBe(false);
+  });
+
+  test('uses a comparer without a selector', () => {
+    const initial = { id: 1, label: 'initial' };
+
+    const state = MutableState.of(initial);
+
+    const { result } = renderHook(() => useStateValue(state, equalById));
+
+    act(() => {
+      state.next({ id: 1, label: 'equal but new' });
+    });
+
+    expect(result.current).toBe(initial);
+
+    act(() => {
+      state.next({ id: 2, label: 'changed' });
+    });
+
+    expect(result.current).toEqual({ id: 2, label: 'changed' });
+  });
+
+  test('retains an equal selection', () => {
+    const initialSelection = { id: 1, label: 'initial' };
+
+    const state = MutableState.of({ ignored: 0, selected: initialSelection });
+
+    const { result } = renderHook(() => useStateValue(state, (value) => value.selected, equalById));
+
+    act(() => {
+      state.next({ ignored: 1, selected: { id: 1, label: 'equal but new' } });
+    });
+
+    expect(result.current).toBe(initialSelection);
+
+    act(() => {
+      state.next({ ignored: 2, selected: { id: 2, label: 'changed' } });
+    });
+
+    expect(result.current).toEqual({ id: 2, label: 'changed' });
+  });
+
+  test('uses changed selectors and comparers without resubscribing to stale closures', () => {
+    const state = MutableState.of({
+      first: { id: 1, label: 'first' },
+      second: { id: 1, label: 'second' },
+    });
+    const initialProps: SelectorProps = { key: 'first', distinctor: equalById };
+
+    const { result, rerender } = renderHook(
+      ({ key, distinctor }: SelectorProps) =>
+        useStateValue(state, (value) => value[key], distinctor),
+      { initialProps },
+    );
+
+    expect(result.current.label).toBe('first');
+
+    rerender({ key: 'second', distinctor: () => false });
+
+    expect(result.current.label).toBe('second');
+
+    act(() => {
+      state.next({
+        first: { id: 1, label: 'first updated' },
+        second: { id: 1, label: 'second updated' },
+      });
+    });
+
+    expect(result.current.label).toBe('second updated');
+  });
+
+  test('provides the selected snapshot during server rendering', () => {
+    const state = MutableState.of({ value: 'server selection' });
+
+    const Harness = () => <output>{useStateValue(state, (current) => current.value)}</output>;
+
+    expect(renderToString(<Harness />)).toContain('server selection');
+  });
+
+  test('recognizes a boolean selector as a selector', () => {
+    const state = MutableState.of({ enabled: true });
+
+    const { result } = renderHook(() => useStateValue(state, (current) => current.enabled));
+
+    expect(result.current).toBe(true);
   });
 });

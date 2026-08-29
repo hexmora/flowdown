@@ -5,9 +5,9 @@ import { defaultsBy } from '@flowdown/utils';
 import { isEqual } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
-import type { FlowdownProps, IPluginItem } from '../types';
+import type { FlowdownConfig, FlowdownProps, IPluginItem } from '../types';
 
-import { DEFAULT_CONFIG } from '../consts';
+import { DEFAULT_CONFIG, EO } from '../consts';
 import { isPatchesEqual } from './patches';
 
 export const isPluggablesEqual = <T extends IPluginWithConfig>(
@@ -80,10 +80,13 @@ const isPluginItemsEqual = (
   return true;
 };
 
-const isConfigEqual = (left: FlowdownProps['config'], right: FlowdownProps['config']): boolean => {
+const isConfigEqual = (
+  left: FlowdownConfig | undefined,
+  right: FlowdownConfig | undefined,
+): boolean => {
   return (
     left === right ||
-    shallowEqual(defaultsBy(left ?? {}, DEFAULT_CONFIG), defaultsBy(right ?? {}, DEFAULT_CONFIG))
+    shallowEqual(defaultsBy(left ?? EO, DEFAULT_CONFIG), defaultsBy(right ?? EO, DEFAULT_CONFIG))
   );
 };
 
@@ -95,7 +98,7 @@ export const isPropsEqual = (
     left === right ||
     (left.text === right.text &&
       left.className === right.className &&
-      shallowEqual(left.style ?? {}, right.style ?? {}) &&
+      shallowEqual(left.style ?? EO, right.style ?? EO) &&
       isConfigEqual(left.config, right.config) &&
       (left.patches === right.patches || isPatchesEqual(left.patches ?? [], right.patches ?? [])) &&
       isPluginItemsEqual(left.plugins, right.plugins))

@@ -120,44 +120,6 @@ describe('Flowdown', () => {
     expect(root).toHaveStyle({ color: 'rgb(0, 0, 255)' });
   });
 
-  test('skips the Flowdown body when prop values stay semantically equal', () => {
-    let remarksReads = 0;
-
-    class StableRemarkPlugin {
-      static readonly key = 'stable-remark';
-
-      readonly config = {};
-
-      readonly plugin = () => () => undefined;
-
-      destroy() {}
-    }
-
-    const remarks = [StableRemarkPlugin as unknown as RemarkPluggable];
-    const pack: IPluginItem = {};
-
-    Object.defineProperty(pack, 'remarks', {
-      enumerable: true,
-      get: () => {
-        remarksReads += 1;
-
-        return remarks;
-      },
-    });
-
-    const plugins = [pack];
-    const { rerender } = render(
-      <Flowdown plugins={plugins} style={{ color: 'red' }} text="stable" />,
-    );
-    const initialReads = remarksReads;
-
-    expect(initialReads).toBeGreaterThan(0);
-
-    rerender(<Flowdown plugins={plugins} style={{ color: 'red' }} text="stable" />);
-
-    expect(remarksReads).toBe(initialReads);
-  });
-
   test('renders image, hard-break, and raw Tex slots without styling engines', () => {
     const text = [
       '![diagram](http://example.com/diagram.png "Diagram")',

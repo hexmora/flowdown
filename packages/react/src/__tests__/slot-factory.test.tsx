@@ -1,5 +1,5 @@
 import type { Element } from 'hast';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ComponentType } from 'react';
 
 import { render, screen } from '@testing-library/react';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
@@ -50,6 +50,8 @@ const preventExpectedError = (event: ErrorEvent) => event.preventDefault();
 
 describe('createTypeOfSlot', () => {
   test('infers the exact prop contract for the requested slot type', () => {
+    expectTypeOf<typeof Paragraph>().toEqualTypeOf<ComponentType<ParagraphProps>>();
+
     expectTypeOf<ComponentProps<typeof Paragraph>>().toEqualTypeOf<ParagraphProps>();
   });
 

@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 
 import type { AnySlotPluggable, AnySlotPlugin, IPluginItem, Slots } from '../types';
 
+import { EL } from '../consts';
 import { isPluggablesEqual } from '../utils';
 import { useDeferredUnmount, useStatic } from './base';
 import { useStateOf, useStateValue } from './reactive';
@@ -37,26 +38,19 @@ export function usePlugins<T extends PluginChannel>(
 export function usePlugins(
   items: readonly IPluginItem[],
   type: PluginChannel,
-  defaults: readonly PackPluggable[] = [],
+  defaults: readonly PackPluggable[] = EL,
 ): PackPluggable[] {
-  const cache = useStatic<{ value: PackPluggable[] | null }>(() => ({ value: null }));
+  return useMemo(
+    () => [
+      ...defaults,
+      ...items.flatMap((item) => {
+        const pluggables = item[type] ?? EL;
 
-  const flattened = [
-    ...defaults,
-    ...items.flatMap((item) => {
-      const pluggables = item[type] ?? [];
-
-      return pluggables.map((pluggable) => configurePluggable(pluggable, item.config));
-    }),
-  ];
-
-  if (cache.value && isPluggablesEqual(cache.value, flattened)) {
-    return cache.value;
-  }
-
-  cache.value = flattened;
-
-  return flattened;
+        return pluggables.map((pluggable) => configurePluggable(pluggable, item.config));
+      }),
+    ],
+    [defaults, items, type],
+  );
 }
 
 export const useSlots = (pluggables: readonly AnySlotPluggable[]): Partial<Slots> => {
