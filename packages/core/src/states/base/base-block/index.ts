@@ -2,7 +2,7 @@ import type { IReactiveState } from '@flowdown/reactive';
 
 import { BaseStateClosure, ReactiveState } from '@flowdown/reactive';
 
-import type { IRangeState } from '../range';
+import type { IRangeState } from './states';
 import type {
   BaseBlockStateClosureParams,
   IBlockMeta,
@@ -10,6 +10,7 @@ import type {
   IBlockStateCloneParams,
 } from './type';
 
+export * from './states';
 export * from './type';
 
 export abstract class BaseBlockStateClosure<T>

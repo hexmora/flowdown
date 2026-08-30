@@ -1,13 +1,12 @@
 import { MutableState, ReactiveState } from '@flowdown/reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { IRangeState } from '../../range';
-
 import {
   BaseBlockStateClosure,
   type BaseBlockStateClosureParams,
   type IBlockMeta,
   type IBlockState,
+  type IRangeState,
 } from '..';
 
 class TextBlockStateClosure extends BaseBlockStateClosure<string> {
