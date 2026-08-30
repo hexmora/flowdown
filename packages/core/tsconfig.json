@@ -12,6 +12,8 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@flowdown/reactive",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

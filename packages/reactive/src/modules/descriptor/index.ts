@@ -1,8 +1,10 @@
 import type { Distinctor } from '../reactive-state';
+import type { IStateClosure } from '../state-closure';
 import type {
   BuiltStateClosure,
   Descriptor,
   ImmediateDescriptor,
+  JSXDescriptor,
   MappedSlottedDescriptor,
   MappingDescriptorNode,
   MappingDescriptorValue,
@@ -34,7 +36,7 @@ export const D = <T>(value: T): ImmediateDescriptor<T> => {
   return { [immediateDescriptor]: value } as unknown as ImmediateDescriptor<T>;
 };
 
-/** Validates a slotted descriptor and returns the original tuple. */
+/** Types a descriptor and returns it unchanged. */
 export function S<
   const C extends OneArgumentStateClosureClass,
   const P extends Descriptor<ConstructorParameters<C>[0]>,
@@ -46,24 +48,31 @@ export function S<const D extends MappingDescriptorNode, R>(
 export function S<const D extends MappingDescriptorNode, R>(
   descriptor: readonly [unknown, D] & readonly [(params: MappingDescriptorValue<D>) => R, unknown],
 ): MappedSlottedDescriptor<(params: MappingDescriptorValue<D>) => R, D>;
-export function S(descriptor: RuntimeSlottedDescriptor): RuntimeSlottedDescriptor {
+export function S<T>(descriptor: JSXDescriptor<T>): JSXDescriptor<T>;
+export function S(
+  descriptor: RuntimeSlottedDescriptor | JSXDescriptor<unknown>,
+): RuntimeSlottedDescriptor | JSXDescriptor<unknown> {
   return descriptor;
 }
 
 /** Builds the root state closure described by a descriptor tree. */
-export const buildDescriptor = <const D extends StateClosureDescriptor<unknown>>(
+export function buildDescriptor<const D extends StateClosureDescriptor<unknown>>(
   descriptor: D,
-): BuiltStateClosure<D> => {
+): BuiltStateClosure<D>;
+export function buildDescriptor<T>(descriptor: StateClosureDescriptor<T>): IStateClosure<T>;
+export function buildDescriptor(
+  descriptor: StateClosureDescriptor<unknown>,
+): IStateClosure<unknown> {
   const scope = createDescriptorScope();
 
   try {
-    return buildStateClosure(descriptor, scope, true) as BuiltStateClosure<D>;
+    return buildStateClosure(descriptor, scope, true);
   } catch (error) {
     destroyDescriptorScope(scope);
 
     throw error;
   }
-};
+}
 
 export const createSlottedDescriptor = S;
 

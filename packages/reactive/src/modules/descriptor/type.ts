@@ -5,10 +5,17 @@ import type { IStateClosure } from '../state-closure';
 
 declare const immediateDescriptor: unique symbol;
 
+declare const jsxDescriptor: unique symbol;
+
 export type StateClosureClass<T, P extends unknown[] = []> = Newable<IStateClosure<T>, P>;
 
 export type ImmediateDescriptor<T> = {
   readonly [immediateDescriptor]: T;
+};
+
+/** Describes a state closure emitted by the JSX runtime. */
+export type JSXDescriptor<T = unknown> = {
+  readonly [jsxDescriptor]: T;
 };
 
 type AnyStateClosureClass = StateClosureClass<any, any[]>;
@@ -49,7 +56,8 @@ export type StateClosureDescriptor<T> =
   | IStateClosure<T>
   | StateClosureClass<T>
   | LooseSlottedDescriptor<T>
-  | LooseMappedSlottedDescriptor<T>;
+  | LooseMappedSlottedDescriptor<T>
+  | JSXDescriptor<T>;
 
 export type DescriptorParameters<P extends unknown[]> = {
   [K in keyof P]: DescriptorParameter<P[K]>;
@@ -78,8 +86,8 @@ export type DescriptorGenerator<P extends unknown[], R> = (
 /** Describes a value that resolves to T inside state closure inputs. */
 export type Descriptor<T> =
   | ImmediateDescriptor<T>
-  | (T extends IReactiveState<infer V>
-      ? IReactiveState<V> | StateClosureDescriptor<V>
+  | (T extends IReactiveState<any>
+      ? IReactiveState<T['value']> | StateClosureDescriptor<T['value']>
       : T extends (...params: infer P) => infer R
         ? [StateResult<R>] extends [never]
           ? never
@@ -97,6 +105,7 @@ export type SlottedDescriptor<
 
 export type MappingDescriptorNode =
   | ImmediateDescriptor<any>
+  | JSXDescriptor<any>
   | IReactiveState<any>
   | IStateClosure<any>
   | string
@@ -116,23 +125,25 @@ export type MappingDescriptorNode =
 export type MappingDescriptorValue<D> =
   D extends ImmediateDescriptor<infer T>
     ? T
-    : D extends IReactiveState<infer T>
+    : D extends JSXDescriptor<infer T>
       ? T
-      : D extends IStateClosure<infer T>
+      : D extends IReactiveState<infer T>
         ? T
-        : D extends StateClosureClass<infer T, any[]>
+        : D extends IStateClosure<infer T>
           ? T
-          : D extends readonly [infer C, unknown, ...unknown[]]
-            ? C extends StateClosureClass<infer T, any[]>
-              ? T
-              : C extends AnyMappingFunction
-                ? ReturnType<C>
-                : { [K in keyof D]: MappingDescriptorValue<D[K]> }
-            : D extends readonly unknown[]
-              ? { [K in keyof D]: MappingDescriptorValue<D[K]> }
-              : D extends object
+          : D extends StateClosureClass<infer T, any[]>
+            ? T
+            : D extends readonly [infer C, unknown, ...unknown[]]
+              ? C extends StateClosureClass<infer T, any[]>
+                ? T
+                : C extends AnyMappingFunction
+                  ? ReturnType<C>
+                  : { [K in keyof D]: MappingDescriptorValue<D[K]> }
+              : D extends readonly unknown[]
                 ? { [K in keyof D]: MappingDescriptorValue<D[K]> }
-                : D;
+                : D extends object
+                  ? { [K in keyof D]: MappingDescriptorValue<D[K]> }
+                  : D;
 
 export type MappedSlottedDescriptor<M, D> = readonly [M, D];
 
@@ -147,4 +158,6 @@ export type BuiltStateClosure<D> =
           : C extends AnyMappingFunction
             ? IStateClosure<ReturnType<C>>
             : never
-        : never;
+        : D extends JSXDescriptor<infer T>
+          ? IStateClosure<T>
+          : never;
