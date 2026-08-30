@@ -18,6 +18,8 @@ import { createDescriptorScope, destroyDescriptorScope } from './utils/context';
 import { buildStateClosure } from './utils/resolve';
 
 export * from './type';
+export { memo } from './memo';
+export type { MemoizedStateMapper } from './memo';
 
 // oxlint-disable-next-line typescript/no-explicit-any
 type OneArgumentStateClosureClass = StateClosureClass<any, [any]>;

@@ -29,6 +29,7 @@ import {
   BaseStateClosure,
   buildDescriptor,
   type IReactiveState,
+  memo,
   MutableState,
   S,
 } from "@flowdown/reactive";
@@ -54,7 +55,20 @@ const textClosure = buildDescriptor(descriptor);
 const sameTextClosure = buildDescriptor<string>(<TextStateClosure source={source} />);
 ```
 
-JSX tags must be state closure classes callable with no arguments, or with an object first argument and only optional trailing arguments. Input properties are checked as recursive descriptor props; tuple descriptors and immediate values continue to use `S([...])` and `D(...)`.
+Pure mappings can also become reusable child state closures with `memo()`. Mapper props describe
+resolved values, while JSX accepts reactive states and nested descriptors for those props:
+
+```tsx
+const Uppercase = memo(({ text }: { text: string }) => text.toUpperCase());
+
+const uppercaseDescriptor = S<string>(<Uppercase text={source} />);
+```
+
+`memo()` uses shallow output equality by default. Pass a distinctor as its second argument when the
+output needs domain-specific equality. Wrap function-valued mapper props with `D()` so they remain
+immediate values.
+
+JSX tags must be state closure classes callable with no arguments, classes with an object first argument and only optional trailing arguments, or mappers created by `memo()`. Input properties are checked as recursive descriptor props; tuple descriptors and immediate values continue to use `S([...])` and `D(...)`.
 
 TypeScript assigns every JSX expression the shared `JSX.Element` type. Tag props remain strict, but the root and nested output value types are erased. The generic in `S<T>(element)` and `buildDescriptor<T>(element)` is therefore a trusted annotation, not a runtime check.
 
