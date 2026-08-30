@@ -1,5 +1,6 @@
 // oxlint-disable typescript/no-explicit-any
 import type { JSXDescriptor, StateClosureClass } from './modules/descriptor';
+import type { AnyMemoizedStateMapper } from './modules/descriptor/memo';
 
 import { Fragment, jsx } from './jsx-runtime';
 
@@ -14,14 +15,16 @@ type JSXSource = {
   readonly lineNumber?: number;
 };
 
+type JSXFactory = StateClosureClass<any, any[]> | AnyMemoizedStateMapper;
+
 const runtimeJSX = jsx as unknown as (
-  Factory: StateClosureClass<any, any[]> | typeof Fragment,
+  Factory: JSXFactory | typeof Fragment,
   props: Readonly<Record<string, unknown>>,
   key?: unknown,
 ) => JSXDescriptor<any>;
 
 export const jsxDEV = (
-  Factory: StateClosureClass<any, any[]> | typeof Fragment,
+  Factory: JSXFactory | typeof Fragment,
   props: Readonly<Record<string, unknown>>,
   key: unknown,
   _isStaticChildren: boolean,

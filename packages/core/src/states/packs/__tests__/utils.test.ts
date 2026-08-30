@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { IRenderPatchItem } from '../../../externals/base-renderer';
 
-import { type IPatchItem, isKeyablesEqual, splitPatches, toRawPatches, toRenderPatches } from '..';
+import { type IPatchItem, isKeyablesEqual, splitPatches } from '..';
 
 const renderPatch = () => 'rendered';
 
@@ -30,8 +30,6 @@ describe('patch utilities', () => {
       { key: 'named', render },
       { key: '0', render },
     ]);
-    expect(toRawPatches(patches)).toEqual(rawPatches);
-    expect(toRenderPatches(patches)).toEqual(renderPatches);
     expectTypeOf(rawPatches).toEqualTypeOf<IRawPatchItem[]>();
     expectTypeOf(renderPatches).toEqualTypeOf<IRenderPatchItem<string>[]>();
   });
@@ -73,18 +71,16 @@ describe('patch utilities', () => {
   test('compares keyed patch values as well as their ordered keys', () => {
     const patches: IPatchItem<string>[] = [{ key: 'stable', range: [1, 2], render: renderFirst }];
 
-    expect(isKeyablesEqual(toRawPatches(patches), toRawPatches([...patches]))).toBe(true);
-    expect(
-      isKeyablesEqual(
-        toRawPatches(patches),
-        toRawPatches([{ key: 'stable', range: [2, 3], render: renderFirst }]),
-      ),
-    ).toBe(false);
-    expect(
-      isKeyablesEqual(
-        toRenderPatches(patches),
-        toRenderPatches([{ key: 'stable', range: [1, 2], render: renderSecond }]),
-      ),
-    ).toBe(false);
+    const original = splitPatches(patches);
+
+    const copied = splitPatches([...patches]);
+
+    const moved = splitPatches([{ key: 'stable', range: [2, 3], render: renderFirst }]);
+
+    const rerendered = splitPatches([{ key: 'stable', range: [1, 2], render: renderSecond }]);
+
+    expect(isKeyablesEqual(original.rawPatches, copied.rawPatches)).toBe(true);
+    expect(isKeyablesEqual(original.rawPatches, moved.rawPatches)).toBe(false);
+    expect(isKeyablesEqual(original.renderPatches, rerendered.renderPatches)).toBe(false);
   });
 });
