@@ -1,4 +1,4 @@
-import { assert, compute, Destructible } from '@flowdown/utils';
+import { assert, Destructible } from '@flowdown/utils';
 import { BehaviorSubject } from 'rxjs';
 
 import type {
@@ -8,7 +8,7 @@ import type {
   StateValue,
   StateValues,
 } from '../reactive-state';
-import type { BaseStateClosureParams, BaseStateClosureSource, IStateClosure } from './type';
+import type { IStateClosure, StateClosureSource } from './type';
 
 import { BatchScheduler } from '../batch-scheduler';
 import {
@@ -19,25 +19,24 @@ import {
   type ReactiveState,
   toReactiveState,
 } from '../reactive-state';
-import { extractRawSource } from './utils';
+import { isResolvedClosureSource, isResolvedImmediateSource, resolveSource } from './utils';
 
 export * from './type';
 
-export class BaseStateClosure<T> extends Destructible implements IStateClosure<T> {
+export abstract class BaseStateClosure<T, TInputs = void>
+  extends Destructible
+  implements IStateClosure<T>
+{
   private subject: BehaviorSubject<T> | null = null;
 
   private _value: IReactiveState<T> | null = null;
 
-  private readonly closureSource: BaseStateClosureSource<T>;
+  readonly inputs: TInputs;
 
-  constructor({ source, lazy = true }: BaseStateClosureParams<T>) {
+  constructor(inputs: TInputs) {
     super();
 
-    this.closureSource = source;
-
-    if (!lazy) {
-      this.setup();
-    }
+    this.inputs = inputs;
   }
 
   private setup() {
@@ -47,31 +46,49 @@ export class BaseStateClosure<T> extends Destructible implements IStateClosure<T
 
     assert(!this.destroyed, 'Cannot set up a destroyed state closure.');
 
-    const rawSource = extractRawSource(this.closureSource);
+    const resolvedSource = resolveSource(this.render());
 
-    const initial = compute(() => {
-      if (isReactiveStateLike(rawSource)) {
-        return rawSource.value;
+    const ownedStateClosure =
+      isResolvedClosureSource(resolvedSource) && resolvedSource.owned
+        ? resolvedSource.source
+        : null;
+
+    try {
+      const directSource = isResolvedClosureSource(resolvedSource)
+        ? resolvedSource.source.value
+        : resolvedSource.source;
+
+      const reactiveSource =
+        !isResolvedImmediateSource(resolvedSource) && isReactiveStateLike<T>(directSource)
+          ? directSource
+          : null;
+
+      const initial = reactiveSource ? reactiveSource.value : (directSource as T);
+
+      this.subject = new BehaviorSubject(initial);
+
+      if (reactiveSource) {
+        this.clearable(reactiveSource.subscribe(this.subject));
       }
 
-      return rawSource;
-    });
+      this.clearable(this.subject);
 
-    this.subject = new BehaviorSubject(initial);
+      this._value = this.clearable(toReactiveState(this.subject));
 
-    if (isReactiveStateLike(rawSource)) {
-      this.clearable(rawSource.subscribe(this.subject));
+      if (reactiveSource) {
+        BatchScheduler.setPriority(this._value, BatchScheduler.getPriority(reactiveSource) + 1);
+      }
+
+      if (ownedStateClosure) {
+        this.clearable(ownedStateClosure);
+      }
+
+      return this._value;
+    } catch (error) {
+      ownedStateClosure?.destroy();
+
+      throw error;
     }
-
-    this.clearable(this.subject);
-
-    this._value = this.clearable(toReactiveState(this.subject));
-
-    if (isReactiveStateLike(rawSource)) {
-      BatchScheduler.setPriority(this._value, BatchScheduler.getPriority(rawSource) + 1);
-    }
-
-    return this._value;
   }
 
   get value(): IReactiveState<T> {
@@ -107,4 +124,6 @@ export class BaseStateClosure<T> extends Destructible implements IStateClosure<T
 
     this.subject.next(newValue);
   }
+
+  protected abstract render(): StateClosureSource<T>;
 }

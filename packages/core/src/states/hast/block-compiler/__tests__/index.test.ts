@@ -23,6 +23,18 @@ import {
   type IRawPatchItem,
 } from '..';
 
+type SourceStateClosureInputs<T> = {
+  source: IReactiveState<T>;
+};
+
+class SourceStateClosure<T> extends BaseStateClosure<T, SourceStateClosureInputs<T>> {
+  protected render() {
+    const { source } = this.inputs;
+
+    return source;
+  }
+}
+
 const DEFAULT_CONFIG: BlockCompilerConfig = {
   repair: false,
   repairEnding: false,
@@ -797,8 +809,11 @@ describe('BlockCompilerStateClosure', () => {
     const rehype = createRehypeAppender('|rehype').plugin;
     const remarkSource = MutableState.of<IRemarkPlugin[]>([remark]);
     const rehypeSource = MutableState.of<IRehypePlugin[]>([rehype]);
-    const remarkOwner = new BaseStateClosure({ source: remarkSource });
-    const rehypeOwner = new BaseStateClosure({ source: rehypeSource });
+
+    const remarkOwner = new SourceStateClosure({ source: remarkSource });
+
+    const rehypeOwner = new SourceStateClosure({ source: rehypeSource });
+
     const harness = setupCompiler({
       sections: [section('text')],
       getRemarks: () => remarkOwner,

@@ -44,7 +44,7 @@ type CreateBlockClosure = (params: {
 }) => BlockClosure;
 
 export class BlockCompilerStateClosure
-  extends BaseStateClosure<IBlockState<HastRoot>[]>
+  extends BaseStateClosure<IBlockState<HastRoot>[], BlockCompilerStateClosureParams>
   implements IBlockCompilerStateClosure
 {
   private closures: BlockClosure[] = [];
@@ -53,91 +53,89 @@ export class BlockCompilerStateClosure
 
   private prevKeyIndex: number | null = null;
 
-  constructor({ sections, config, getRemarks, getRehypes }: BlockCompilerStateClosureParams) {
-    super({
-      source: () => {
-        const createClosure: CreateBlockClosure = ({ charStart, count, index, section }) => {
-          const blockKey = this.createKey();
+  protected render() {
+    const { config, getRehypes, getRemarks, sections } = this.inputs;
 
-          const sectionState = new MutableState({ initial: section, distinctor: isEqual });
+    const createClosure: CreateBlockClosure = ({ charStart, count, index, section }) => {
+      const blockKey = this.createKey();
 
-          const metaState = new MutableState<MutableBlockMeta>({
-            initial: {
-              charStart,
-              charEnd: charStart + section.text.length,
-              currentIndex: index,
-              blockCount: count,
-            },
-            distinctor: isEqual,
-          });
+      const sectionState = new MutableState({ initial: section, distinctor: isEqual });
 
-          const remarksConfig = combineMapState(
-            [config, sectionState, metaState],
-            ([
-              { repairEnding, ...restConfig },
-              { patches },
-              { currentIndex, blockCount },
-            ]): BlockRemarksConfig => {
-              return {
-                ...restConfig,
-                repairEnding: repairEnding && currentIndex === blockCount - 1,
-                patches,
-              };
-            },
-            isEqual,
-          );
+      const metaState = new MutableState<MutableBlockMeta>({
+        initial: {
+          charStart,
+          charEnd: charStart + section.text.length,
+          currentIndex: index,
+          blockCount: count,
+        },
+        distinctor: isEqual,
+      });
 
-          const remarks = toState(getRemarks(remarksConfig));
-
-          const rehypes = (this.rehypes ??= toState(getRehypes()));
-
-          const source = combineMapState(
-            [sectionState, remarks, rehypes],
-            ([currentSection, currentRemarks, currentRehypes]) => {
-              return markdownToHast({
-                text: currentSection.text,
-                remarks: currentRemarks,
-                rehypes: currentRehypes,
-              });
-            },
-            isEqual,
-          );
-
-          const meta = combineMapState(
-            [metaState, sectionState],
-            ([currentMeta, currentSection]): IBlockMeta => ({
-              ...currentMeta,
-              key: blockKey,
-              sourceText: currentSection.text,
-            }),
-            isEqual,
-          );
-
-          const state = new BlockStateClosure({ source, meta });
-
+      const remarksConfig = combineMapState(
+        [config, sectionState, metaState],
+        ([
+          { repairEnding, ...restConfig },
+          { patches },
+          { currentIndex, blockCount },
+        ]): BlockRemarksConfig => {
           return {
-            meta: metaState,
-            section: sectionState,
-            state,
-            destroy: () => {
-              destroyAll([state, meta, source, remarksConfig, metaState, sectionState]);
-            },
+            ...restConfig,
+            repairEnding: repairEnding && currentIndex === blockCount - 1,
+            patches,
           };
-        };
+        },
+        isEqual,
+      );
 
-        const closures = this.getClosuresState(sections, createClosure);
+      const remarks = toState(getRemarks(remarksConfig));
 
-        const states = this.map(closures, (items) => items.map(({ state }) => state), shallowEqual);
+      const rehypes = (this.rehypes ??= toState(getRehypes()));
 
-        this.clearable(() => {
-          destroyAll(this.closures);
+      const source = combineMapState(
+        [sectionState, remarks, rehypes],
+        ([currentSection, currentRemarks, currentRehypes]) => {
+          return markdownToHast({
+            text: currentSection.text,
+            remarks: currentRemarks,
+            rehypes: currentRehypes,
+          });
+        },
+        isEqual,
+      );
 
-          this.closures = [];
-        });
+      const meta = combineMapState(
+        [metaState, sectionState],
+        ([currentMeta, currentSection]): IBlockMeta => ({
+          ...currentMeta,
+          key: blockKey,
+          sourceText: currentSection.text,
+        }),
+        isEqual,
+      );
 
-        return states;
-      },
+      const state = new BlockStateClosure({ source, meta });
+
+      return {
+        meta: metaState,
+        section: sectionState,
+        state,
+        destroy: () => {
+          destroyAll([state, meta, source, remarksConfig, metaState, sectionState]);
+        },
+      };
+    };
+
+    const closures = this.getClosuresState(sections, createClosure);
+
+    const states = this.map(closures, (items) => items.map(({ state }) => state), shallowEqual);
+
+    this.clearable(() => {
+      destroyAll(this.closures);
+
+      this.closures = [];
     });
+
+    return states;
   }
 
   private getClosuresState(

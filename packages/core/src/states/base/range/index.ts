@@ -1,11 +1,16 @@
 import { BaseStateClosure } from '@flowdown/reactive';
 import { compute } from '@flowdown/utils';
+import { isUndefined } from 'lodash-es';
 
 import type { IRangeState } from './type';
 
 export * from './type';
 
 export class RangeStateClosure extends BaseStateClosure<IRangeState | null> {
+  protected render() {
+    return null;
+  }
+
   setRange(range?: IRangeState) {
     if (this.destroyed) {
       return;
@@ -14,7 +19,7 @@ export class RangeStateClosure extends BaseStateClosure<IRangeState | null> {
     const newRange = compute<IRangeState | null>(() => {
       const { start, end } = range ?? {};
 
-      if (start === undefined && end === undefined) {
+      if (isUndefined(start) && isUndefined(end)) {
         return null;
       }
 

@@ -10,25 +10,26 @@ export * from './patches';
 export * from './type';
 export * from './utils';
 
-export class TextChunkerStateClosure extends BaseStateClosure<IBlockSection[]> {
-  constructor({ text, patches }: TextChunkerStateClosureParams) {
-    super({
-      source: () => {
-        const texts = this.map(text, chunkTextOfMarkdown);
+export class TextChunkerStateClosure extends BaseStateClosure<
+  IBlockSection[],
+  TextChunkerStateClosureParams
+> {
+  protected render() {
+    const { patches, text } = this.inputs;
 
-        return this.combineMap(
-          [texts, patches],
-          ([currentTexts, currentPatches]) => {
-            const patchGroups = chunkPatchesByTexts(currentPatches, currentTexts);
+    const texts = this.map(text, chunkTextOfMarkdown);
 
-            return currentTexts.map((currentText, index) => ({
-              text: currentText,
-              patches: patchGroups[index] ?? [],
-            }));
-          },
-          isEqual,
-        );
+    return this.combineMap(
+      [texts, patches],
+      ([currentTexts, currentPatches]) => {
+        const patchGroups = chunkPatchesByTexts(currentPatches, currentTexts);
+
+        return currentTexts.map((currentText, index) => ({
+          text: currentText,
+          patches: patchGroups[index] ?? [],
+        }));
       },
-    });
+      isEqual,
+    );
   }
 }

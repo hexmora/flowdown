@@ -19,39 +19,37 @@ type PluginEntry<T extends IPluginWithConfig> = {
 
 export class PluginBuilderStateClosure<
   T extends IPluginWithConfig & IDestructible,
-> extends BaseStateClosure<T[]> {
-  constructor({ plugins, sort = true }: PluginBuilderStateClosureParams<T>) {
-    super({
-      source: () => {
-        let entries: PluginEntry<T>[] = [];
+> extends BaseStateClosure<T[], PluginBuilderStateClosureParams<T>> {
+  protected render() {
+    const { plugins, sort = true } = this.inputs;
 
-        const state = this.map(plugins, (currentPluggables) => {
-          entries = cacheDiffMap({
-            prev: entries.map((entry) => [entry.pluggable, entry]),
-            current: currentPluggables,
-            mapper: (pluggable) => ({
-              instance: buildPluggables(pluggable),
-              pluggable,
-            }),
-            comparer: isPluggableEqual,
-            teardown: ({ instance }) => instance.destroy(),
-          });
+    let entries: PluginEntry<T>[] = [];
 
-          const instances = entries.map(({ instance }) => instance);
+    const state = this.map(plugins, (currentPluggables) => {
+      entries = cacheDiffMap({
+        prev: entries.map((entry) => [entry.pluggable, entry]),
+        current: currentPluggables,
+        mapper: (pluggable) => ({
+          instance: buildPluggables(pluggable),
+          pluggable,
+        }),
+        comparer: isPluggableEqual,
+        teardown: ({ instance }) => instance.destroy(),
+      });
 
-          return sort ? sortPluginInstances(instances) : instances;
-        });
+      const instances = entries.map(({ instance }) => instance);
 
-        this.clearable(() => {
-          for (const { instance } of entries) {
-            instance.destroy();
-          }
-
-          entries = [];
-        });
-
-        return state;
-      },
+      return sort ? sortPluginInstances(instances) : instances;
     });
+
+    this.clearable(() => {
+      for (const { instance } of entries) {
+        instance.destroy();
+      }
+
+      entries = [];
+    });
+
+    return state;
   }
 }

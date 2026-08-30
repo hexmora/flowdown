@@ -11,7 +11,20 @@ import {
   type IStateClosure,
   MutableState,
   S,
+  type StateClosureSource,
 } from '../..';
+
+type SourceStateClosureInputs<T> = {
+  source: StateClosureSource<T>;
+};
+
+class SourceStateClosure<T> extends BaseStateClosure<T, SourceStateClosureInputs<T>> {
+  protected render() {
+    const { source } = this.inputs;
+
+    return source;
+  }
+}
 
 type CheckoutPolicy = {
   currency: string;
@@ -24,11 +37,11 @@ type SubtotalStateClosureParams = {
   unitPrice: IReactiveState<number>;
 };
 
-class SubtotalStateClosure extends BaseStateClosure<number> {
-  constructor({ quantity, unitPrice }: SubtotalStateClosureParams) {
-    super({
-      source: () => combineMapState([quantity, unitPrice], ([count, price]) => count * price),
-    });
+class SubtotalStateClosure extends BaseStateClosure<number, SubtotalStateClosureParams> {
+  protected render() {
+    const { quantity, unitPrice } = this.inputs;
+
+    return combineMapState([quantity, unitPrice], ([count, price]) => count * price);
   }
 }
 
@@ -38,9 +51,13 @@ class TaxRateStateClosure extends BaseStateClosure<number> {
   static instances = 0;
 
   constructor() {
-    super({ source: () => TaxRateStateClosure.source });
+    super();
 
     TaxRateStateClosure.instances += 1;
+  }
+
+  protected render() {
+    return TaxRateStateClosure.source;
   }
 }
 
@@ -56,18 +73,15 @@ type CheckoutStateClosureParams = {
   taxRate: IReactiveState<number>;
 };
 
-class CheckoutStateClosure extends BaseStateClosure<Checkout> {
-  constructor(readonly params: CheckoutStateClosureParams) {
-    const { policy, subtotal, taxRate } = params;
+class CheckoutStateClosure extends BaseStateClosure<Checkout, CheckoutStateClosureParams> {
+  protected render() {
+    const { policy, subtotal, taxRate } = this.inputs;
 
-    super({
-      source: () =>
-        combineMapState([subtotal, taxRate], ([currentSubtotal, currentTaxRate]) => ({
-          currency: policy.currency,
-          subtotal: currentSubtotal,
-          total: policy.round(currentSubtotal * (1 + currentTaxRate) + policy.shipping),
-        })),
-    });
+    return combineMapState([subtotal, taxRate], ([currentSubtotal, currentTaxRate]) => ({
+      currency: policy.currency,
+      subtotal: currentSubtotal,
+      total: policy.round(currentSubtotal * (1 + currentTaxRate) + policy.shipping),
+    }));
   }
 }
 
@@ -90,20 +104,23 @@ type QuoteStateClosureParams = {
   unitPrice: IReactiveState<number>;
 };
 
-class QuoteStateClosure extends BaseStateClosure<Quote> {
+class QuoteStateClosure extends BaseStateClosure<Quote, QuoteStateClosureParams> {
   static instances = 0;
 
-  constructor({ discount, policy, quantity, unitPrice }: QuoteStateClosureParams) {
-    super({
-      source: () =>
-        combineMapState([unitPrice, quantity, discount], ([price, count, currentDiscount]) => ({
-          amount: policy.round(price * count * (1 - currentDiscount) + policy.fee),
-          channel: policy.channel,
-          quantity: count,
-        })),
-    });
+  constructor(inputs: QuoteStateClosureParams) {
+    super(inputs);
 
     QuoteStateClosure.instances += 1;
+  }
+
+  protected render() {
+    const { discount, policy, quantity, unitPrice } = this.inputs;
+
+    return combineMapState([unitPrice, quantity, discount], ([price, count, currentDiscount]) => ({
+      amount: policy.round(price * count * (1 - currentDiscount) + policy.fee),
+      channel: policy.channel,
+      quantity: count,
+    }));
   }
 }
 
@@ -114,9 +131,11 @@ type QuoteFactory = {
   }): IReactiveState<Quote>;
 };
 
-class QuoteFactoryStateClosure extends BaseStateClosure<QuoteFactory> {
-  constructor(params: QuoteFactory) {
-    super({ source: params });
+class QuoteFactoryStateClosure extends BaseStateClosure<QuoteFactory, QuoteFactory> {
+  protected render() {
+    const { inputs } = this;
+
+    return inputs;
   }
 }
 
@@ -124,9 +143,11 @@ type MappingFactory = {
   create(source: IReactiveState<number>): IReactiveState<number>;
 };
 
-class MappingFactoryStateClosure extends BaseStateClosure<MappingFactory> {
-  constructor(factory: MappingFactory) {
-    super({ source: factory });
+class MappingFactoryStateClosure extends BaseStateClosure<MappingFactory, MappingFactory> {
+  protected render() {
+    const { inputs } = this;
+
+    return inputs;
   }
 }
 
@@ -136,8 +157,11 @@ describe('reactive descriptors', () => {
   test('propagates source changes through instance, class, slotted, and immediate nodes', () => {
     const unitPriceSource = MutableState.of(10);
     const quantitySource = MutableState.of(2);
-    const unitPriceState = new BaseStateClosure({ source: unitPriceSource });
-    const quantityState = new BaseStateClosure({ source: quantitySource });
+
+    const unitPriceState = new SourceStateClosure({ source: unitPriceSource });
+
+    const quantityState = new SourceStateClosure({ source: quantitySource });
+
     const policy: CheckoutPolicy = {
       currency: 'USD',
       shipping: 5,
@@ -165,7 +189,9 @@ describe('reactive descriptors', () => {
     checkout.value.subscribe(next);
 
     expect(TaxRateStateClosure.instances).toBe(1);
-    expect(checkout.params.policy).toBe(policy);
+
+    expect(checkout.inputs.policy).toBe(policy);
+
     expect(next.mock.calls).toEqual([[{ currency: 'USD', subtotal: 20, total: 27 }]]);
 
     next.mockClear();
@@ -189,7 +215,9 @@ describe('reactive descriptors', () => {
 
   test('creates independent reactive graphs from a descriptor generator', () => {
     const unitPriceSource = MutableState.of(20);
-    const unitPriceState = new BaseStateClosure({ source: unitPriceSource });
+
+    const unitPriceState = new SourceStateClosure({ source: unitPriceSource });
+
     const policy: QuotePolicy = {
       channel: 'web',
       fee: 2,
