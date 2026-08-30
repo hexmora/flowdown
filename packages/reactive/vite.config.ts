@@ -11,10 +11,14 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'jsx-runtime': resolve(__dirname, 'src/jsx-runtime.ts'),
+        'jsx-dev-runtime': resolve(__dirname, 'src/jsx-dev-runtime.ts'),
+      },
       name: 'FlowdownReactive',
       formats: ['es', 'cjs'],
-      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
+      fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
       external: ['lodash-es', /^rxjs(?:\/.*)?$/, 'shallow-equal'],
