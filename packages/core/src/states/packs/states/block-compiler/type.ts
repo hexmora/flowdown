@@ -1,8 +1,8 @@
 import type { IReactiveState, IStateClosure, StateSource } from '@flowdown/reactive';
 import type { IRawPatchItem, IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
 
-import type { HastRoot } from '../../../typings';
-import type { IBlockSection, IBlockState } from '../../base';
+import type { HastRoot } from '../../../../typings';
+import type { IBlockSection, IBlockState } from '../../../base';
 
 export type { IBlockSection, IRawPatchItem };
 

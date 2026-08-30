@@ -17,7 +17,7 @@ import type { ElementContent, Parent } from 'hast';
 import type { IRenderPluggable } from '../../externals/base-render-plugin';
 import type { IRenderPatchRender, RendererClass } from '../../externals/base-renderer';
 import type { HastRoot } from '../../typings';
-import type { BlockCompilerConfig } from '../hast/block-compiler';
+import type { BlockCompilerConfig } from './states/block-compiler/type';
 
 type PluginConstructor = (abstract new (...args: never[]) => {
   config: IBasePluginConfig;

@@ -4,7 +4,7 @@ import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@flowdown/pres
 import { memo } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
 
-import type { BlockCompilerConfig } from '../../../hast/block-compiler';
+import type { BlockCompilerConfig } from '../block-compiler/type';
 
 import { mergePluginPluggables } from '../utils';
 

@@ -1,5 +1,7 @@
-import { HastRoot } from '../../../typings';
-import { BaseBlockStateClosure, BaseBlockStateClosureParams, IBlockState } from '../../base';
+import type { HastRoot } from '../../../../../../../../typings';
+import type { BaseBlockStateClosureParams, IBlockState } from '../../../../../../../base';
+
+import { BaseBlockStateClosure } from '../../../../../../../base';
 import { getLengthOfHast, sliceHast } from './utils';
 
 export * from './utils';

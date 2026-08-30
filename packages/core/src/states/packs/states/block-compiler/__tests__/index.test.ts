@@ -11,8 +11,8 @@ import {
 import { isEqual, last, times, uniq } from 'lodash-es';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { HastRoot } from '../../../../typings';
-import type { IBlockMeta } from '../../../base';
+import type { HastRoot } from '../../../../../typings';
+import type { IBlockMeta } from '../../../../base';
 
 import {
   type BlockCompilerConfig,

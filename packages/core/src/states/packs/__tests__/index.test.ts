@@ -32,7 +32,7 @@ import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
-import type { BlockCompilerConfig } from '../../hast/block-compiler';
+import type { BlockCompilerConfig } from '../states/block-compiler/type';
 
 import { CoreStateClosure, type IPatchItem } from '..';
 import {

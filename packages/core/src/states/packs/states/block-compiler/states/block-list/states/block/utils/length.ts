@@ -2,7 +2,7 @@ import type { RootContent } from 'hast';
 
 import { isNaN, max } from 'lodash-es';
 
-import type { HastRoot } from '../../../../typings';
+import type { HastRoot } from '../../../../../../../../../typings';
 
 import {
   getIgnoredTableWhitespaceIndexes,

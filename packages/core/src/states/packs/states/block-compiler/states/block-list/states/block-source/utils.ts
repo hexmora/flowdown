@@ -1,11 +1,11 @@
 import type { IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
-import type { IDestructible } from '@flowdown/utils';
+import type { Processor } from 'unified';
 
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
-import { Processor, unified } from 'unified';
+import { unified } from 'unified';
 
-import { HastRoot, MdastRoot } from '../../../typings';
+import type { HastRoot, MdastRoot } from '../../../../../../../../typings';
 
 type AstProcessor = Processor<MdastRoot, undefined, undefined, undefined, undefined>;
 
@@ -61,10 +61,4 @@ export const markdownToHast = ({ text, remarks, rehypes }: MarkdownToHastParams)
   const mdast = processor.parse(text);
 
   return processor.runSync(mdast, text);
-};
-
-export const destroyAll = (items: readonly IDestructible[]) => {
-  for (const item of items) {
-    item.destroy();
-  }
 };
