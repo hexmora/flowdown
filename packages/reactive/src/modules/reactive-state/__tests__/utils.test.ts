@@ -1,19 +1,49 @@
 import { assert } from '@flowdown/utils';
 import { BehaviorSubject, Observable, type Observer, Subscription } from 'rxjs';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+
+import type { IStateClosure } from '../../state-closure';
+import type { IReactiveState } from '../index';
 
 import { BatchScheduler } from '../../batch-scheduler';
-import { IReactiveState, ReactiveState } from '../index';
+import { MutableState } from '../../mutable-state';
+import { ReactiveState } from '../index';
 import {
   combineMapState,
   combineState,
   isReactiveStateLike,
   mapState,
+  type StateSource,
   toReactiveState,
   toState,
 } from '../utils';
 
 const assertType = <T>(_value: T) => undefined;
+
+describe('StateSource', () => {
+  test('accepts mutable states whose values are union types', () => {
+    type SourceValue = boolean | { enabled: boolean };
+
+    const source = MutableState.of<SourceValue>(false);
+
+    expectTypeOf(source).toMatchTypeOf<StateSource<SourceValue>>();
+
+    expectTypeOf<StateSource<SourceValue>>().toEqualTypeOf<
+      | SourceValue
+      | IReactiveState<SourceValue>
+      | BehaviorSubject<SourceValue>
+      | IStateClosure<SourceValue>
+    >();
+  });
+
+  test('preserves direct reactive state source types', () => {
+    expectTypeOf<StateSource<IReactiveState<number>>>().toEqualTypeOf<IReactiveState<number>>();
+
+    expectTypeOf<StateSource<BehaviorSubject<number>>>().toEqualTypeOf<BehaviorSubject<number>>();
+
+    expectTypeOf<StateSource<IStateClosure<number>>>().toEqualTypeOf<IStateClosure<number>>();
+  });
+});
 
 describe('isReactiveStateLike', () => {
   test('returns true for ReactiveState instances', () => {

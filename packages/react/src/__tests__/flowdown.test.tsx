@@ -1,5 +1,5 @@
 import { PluginPriority } from '@flowdown/types';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { type ComponentType, createRef, type ReactNode, StrictMode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
@@ -54,9 +54,22 @@ const IsolatedSlotB = ({ children }: ParagraphSlotProps) => (
 
 describe('Flowdown', () => {
   test('renders Markdown synchronously during server rendering', () => {
-    const markup = renderToStaticMarkup(<Flowdown text="# Server heading" />);
+    const setInterval = vi.fn();
 
-    expect(markup).toContain('<h1>Server heading</h1>');
+    vi.stubGlobal('document', undefined);
+    vi.stubGlobal('setInterval', setInterval);
+
+    try {
+      const markup = renderToStaticMarkup(<Flowdown text="# Server heading" />);
+
+      const smoothMarkup = renderToStaticMarkup(<Flowdown smooth text="# Smooth server heading" />);
+
+      expect(markup).toContain('<h1>Server heading</h1>');
+      expect(smoothMarkup).toContain('<h1>Smooth server heading</h1>');
+      expect(setInterval).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   test('renders common Markdown through semantic, unstyled preset slots', () => {
@@ -129,7 +142,7 @@ describe('Flowdown', () => {
       '',
       '$x + y$',
     ].join('\n');
-    const { container } = render(<Flowdown config={{ tex: true }} text={text} />);
+    const { container } = render(<Flowdown build={{ tex: true }} text={text} />);
     const image = screen.getByRole('img', { name: 'diagram' });
 
     expect(image).toHaveAttribute('src', 'https://example.com/diagram.png');
@@ -342,6 +355,160 @@ describe('Flowdown', () => {
     });
 
     expect(container.querySelector('p')).toBe(paragraph);
+  });
+
+  test('keeps smoothing disabled by default and when object enabled is omitted', async () => {
+    const requestFrame = vi.fn();
+
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+
+    try {
+      const view = render(<Flowdown text="" />);
+
+      view.rerender(<Flowdown text="default stream" />);
+
+      await waitFor(() => {
+        expect(view.container).toHaveTextContent('default stream');
+      });
+
+      view.rerender(
+        <Flowdown smooth={{ scheduler: 'spring', ticker: 'raf' }} text="object stream" />,
+      );
+
+      await waitFor(() => {
+        expect(view.container).toHaveTextContent('object stream');
+      });
+
+      expect(requestFrame).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('smooths appended text and flushes the pending suffix when smoothing is disabled', async () => {
+    type FrameCallback = (timestamp: number) => void;
+
+    let frameCallback: FrameCallback | undefined;
+
+    let frameId = 0;
+
+    const requestFrame = vi.fn((callback: FrameCallback) => {
+      frameCallback = callback;
+
+      frameId += 1;
+
+      return frameId;
+    });
+    const cancelFrame = vi.fn();
+
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+    vi.stubGlobal('cancelAnimationFrame', cancelFrame);
+
+    try {
+      const view = render(<Flowdown smooth text="" />);
+      const root = view.container.firstElementChild;
+
+      expect(requestFrame).toHaveBeenCalledOnce();
+
+      view.rerender(<Flowdown smooth text="abc" />);
+
+      expect(root).toBeEmptyDOMElement();
+      expect(requestFrame).toHaveBeenCalledOnce();
+
+      await act(async () => {
+        for (let timestamp = 16; timestamp <= 6_400; timestamp += 16) {
+          const currentFrame = frameCallback;
+
+          frameCallback = undefined;
+
+          currentFrame?.(timestamp);
+
+          if (root?.textContent === 'abc') {
+            break;
+          }
+        }
+      });
+
+      expect(root).toHaveTextContent('abc');
+
+      view.rerender(<Flowdown smooth text="abcdef" />);
+
+      expect(root).toHaveTextContent('abc');
+
+      view.rerender(<Flowdown smooth={false} text="abcdef" />);
+
+      await waitFor(() => {
+        expect(root).toHaveTextContent('abcdef');
+      });
+
+      expect(cancelFrame).toHaveBeenCalledOnce();
+
+      view.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('keeps completed Markdown blocks mounted across smooth ticks and cancels active RAF', async () => {
+    type FrameCallback = (timestamp: number) => void;
+
+    let frameCallback: FrameCallback | undefined;
+
+    let frameId = 0;
+
+    const requestFrame = vi.fn((callback: FrameCallback) => {
+      frameCallback = callback;
+
+      frameId += 1;
+
+      return frameId;
+    });
+    const cancelFrame = vi.fn();
+
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+    vi.stubGlobal('cancelAnimationFrame', cancelFrame);
+
+    const view = render(<Flowdown smooth text="first" />);
+
+    try {
+      const firstParagraph = view.container.querySelector('p');
+
+      view.rerender(<Flowdown smooth text={'first\n\nsecond'} />);
+
+      expect(view.container).toHaveTextContent('first');
+      expect(view.container).not.toHaveTextContent('second');
+
+      await act(async () => {
+        for (let timestamp = 16; timestamp <= 10_000; timestamp += 16) {
+          const currentFrame = frameCallback;
+
+          frameCallback = undefined;
+
+          currentFrame?.(timestamp);
+
+          if (view.container.textContent === 'firstsecond') {
+            break;
+          }
+        }
+      });
+
+      expect(screen.getByText('second')).toBeInTheDocument();
+      expect(view.container.querySelector('p')).toBe(firstParagraph);
+
+      view.rerender(<Flowdown smooth text={'first\n\nsecond plus'} />);
+
+      expect(view.container).not.toHaveTextContent('plus');
+
+      view.unmount();
+
+      await waitFor(() => {
+        expect(cancelFrame).toHaveBeenCalledOnce();
+      });
+    } finally {
+      view.unmount();
+
+      vi.unstubAllGlobals();
+    }
   });
 
   test('survives StrictMode effect replay, updates once, and destroys the committed closure once', async () => {

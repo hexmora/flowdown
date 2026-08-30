@@ -34,14 +34,16 @@ import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
 import type { BlockCompilerConfig } from '../../hast/block-compiler';
 
-import { CoreStateClosure, type IPatchItem } from '..';
+import { CoreStateClosure, type IPatchItem, type SmoothConfig } from '..';
 import {
   BaseRendererStateClosure,
   BaseRenderPlugin,
+  BaseSmoothScheduler,
   type IRenderPatchItem,
   type IRenderPluggable,
   type IRenderPlugin,
-} from '../../../externals';
+} from '../../../modules';
+import { FakeSmoothTicker } from '../../../modules/smooth-ticker/__tests__/utils';
 
 interface AppendRemarkPluginConfig {
   suffix?: string;
@@ -208,6 +210,70 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
   }
 }
 
+class CorePrimarySmoothTicker extends FakeSmoothTicker {
+  static instances: CorePrimarySmoothTicker[] = [];
+
+  constructor() {
+    super();
+
+    CorePrimarySmoothTicker.instances.push(this);
+  }
+}
+
+class CoreSecondarySmoothTicker extends FakeSmoothTicker {
+  static instances: CoreSecondarySmoothTicker[] = [];
+
+  constructor() {
+    super();
+
+    CoreSecondarySmoothTicker.instances.push(this);
+  }
+}
+
+class CoreStepSmoothScheduler extends BaseSmoothScheduler {
+  static instances: CoreStepSmoothScheduler[] = [];
+
+  protected readonly defaultTuple = [1];
+
+  private currentIndex = 0;
+
+  constructor() {
+    super();
+
+    CoreStepSmoothScheduler.instances.push(this);
+  }
+
+  override reset(index = 0) {
+    super.reset(index);
+
+    this.currentIndex = index;
+  }
+
+  start(_timestamp: number, index = 0) {
+    this.reset(index);
+  }
+
+  tick(_timestamp: number) {
+    const distance = Math.min(this.tuple[0]!, this.fullIndex - this.currentIndex);
+
+    this.currentIndex += distance;
+
+    return distance;
+  }
+}
+
+class CoreDoubleStepSmoothScheduler extends CoreStepSmoothScheduler {
+  static override instances: CoreDoubleStepSmoothScheduler[] = [];
+
+  protected override readonly defaultTuple = [2];
+
+  constructor() {
+    super();
+
+    CoreDoubleStepSmoothScheduler.instances.push(this);
+  }
+}
+
 const collectText = (node: HastRoot | RootContent): string => {
   if (node.type === 'text') {
     return node.value;
@@ -265,10 +331,14 @@ const getObserverCount = (state: IReactiveState<unknown>): number => {
   ).subject.observers.length;
 };
 
-const setupCoreStateClosure = (initialText = 'base') => {
+const setupCoreStateClosure = (
+  initialText = 'base',
+  initialSmooth: boolean | SmoothConfig = false,
+) => {
   const text = MutableState.of(initialText);
   const patches = MutableState.of<IPatchItem<RenderedBlock>[]>([]);
-  const config = MutableState.of(DEFAULT_CONFIG);
+  const build = MutableState.of(DEFAULT_CONFIG);
+  const smooth = MutableState.of<boolean | SmoothConfig>(initialSmooth);
   const remarks = MutableState.of<IPluggable<IRemarkPlugin, unknown>[]>([
     [AppendRemarkPlugin, { suffix: '|remark' }] as unknown as IPluggable<IRemarkPlugin, unknown>,
   ]);
@@ -281,20 +351,22 @@ const setupCoreStateClosure = (initialText = 'base') => {
     Renderer: TestRendererStateClosure,
     text,
     patches,
-    config,
+    build,
     renders,
     remarks,
     rehypes,
     repairs,
+    smooth,
   });
 
   return {
-    config,
+    build,
     patches,
     rehypes,
     remarks,
     renders,
     repairs,
+    smooth,
     state,
     text,
   };
@@ -306,6 +378,14 @@ beforeEach(() => {
   EndingMarkerRepairPlugin.destroyed.mockClear();
   TestRenderPlugin.constructed.mockClear();
   TestRenderPlugin.destroyed.mockClear();
+
+  CorePrimarySmoothTicker.instances = [];
+
+  CoreSecondarySmoothTicker.instances = [];
+
+  CoreStepSmoothScheduler.instances = [];
+
+  CoreDoubleStepSmoothScheduler.instances = [];
 });
 
 describe('CoreStateClosure', () => {
@@ -324,7 +404,7 @@ describe('CoreStateClosure', () => {
       Renderer: TestRendererStateClosure,
       text: 'base',
       patches: ReactiveState.of<IPatchItem<RenderedBlock>[]>([]),
-      config: DEFAULT_CONFIG,
+      build: DEFAULT_CONFIG,
       renders: ReactiveState.of<
         IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
       >([]),
@@ -335,6 +415,240 @@ describe('CoreStateClosure', () => {
     expect(state.value.closed).toBe(true);
 
     state.destroy();
+  });
+
+  test('keeps smoothing disabled when smooth is omitted', () => {
+    const requestFrame = vi.fn();
+
+    const text = MutableState.of('');
+
+    const state = new CoreStateClosure({
+      Renderer: TestRendererStateClosure,
+      text,
+      patches: ReactiveState.of<IPatchItem<RenderedBlock>[]>([]),
+      build: DEFAULT_CONFIG,
+      renders: ReactiveState.of<
+        IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
+      >([]),
+    });
+
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+
+    expect(state.value.value).toEqual([]);
+
+    text.next('plain stream');
+
+    expect(collectText(getFirstBlockTree(state))).toBe('plain stream');
+    expect(requestFrame).not.toHaveBeenCalled();
+
+    state.destroy();
+
+    vi.unstubAllGlobals();
+  });
+
+  test('keeps object smooth disabled when enabled is omitted', () => {
+    const harness = setupCoreStateClosure('', {
+      scheduler: CoreStepSmoothScheduler,
+      ticker: CorePrimarySmoothTicker,
+    });
+
+    harness.remarks.next([]);
+    harness.rehypes.next([]);
+    harness.repairs.next([]);
+
+    expect(harness.state.value.value).toEqual([]);
+
+    harness.text.next('plain stream');
+
+    expect(collectText(getFirstBlockTree(harness.state))).toBe('plain stream');
+    expect(CorePrimarySmoothTicker.instances).toHaveLength(0);
+    expect(CoreStepSmoothScheduler.instances).toHaveLength(0);
+
+    harness.state.destroy();
+  });
+
+  test('composes smoothing after block compilation and flushes when disabled', () => {
+    type FrameCallback = (timestamp: number) => void;
+
+    let frameCallback: FrameCallback | undefined;
+
+    let frameId = 0;
+
+    const requestFrame = vi.fn((callback: FrameCallback) => {
+      frameCallback = callback;
+
+      frameId += 1;
+
+      return frameId;
+    });
+    const cancelFrame = vi.fn();
+
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+    vi.stubGlobal('cancelAnimationFrame', cancelFrame);
+
+    const harness = setupCoreStateClosure('');
+
+    try {
+      harness.remarks.next([]);
+      harness.rehypes.next([]);
+      harness.repairs.next([]);
+
+      expect(harness.state.value.value).toEqual([]);
+
+      harness.smooth.next(true);
+      harness.text.next('smooth stream');
+
+      expect(harness.state.value.value).toHaveLength(1);
+      expect(collectText(getFirstBlockTree(harness.state))).toBe('');
+      expect(requestFrame).toHaveBeenCalledOnce();
+
+      const readRenderedText = () => {
+        return harness.state.value.value.map((block) => collectText(block.value.value)).join('');
+      };
+
+      for (let timestamp = 16; timestamp <= 6_400; timestamp += 16) {
+        const currentFrame = frameCallback;
+
+        frameCallback = undefined;
+
+        currentFrame?.(timestamp);
+
+        if (readRenderedText() === 'smooth stream') {
+          break;
+        }
+      }
+
+      expect(readRenderedText()).toBe('smooth stream');
+
+      harness.text.next('smooth stream plus');
+
+      expect(readRenderedText()).toBe('smooth stream');
+
+      harness.smooth.next(false);
+
+      expect(readRenderedText()).toBe('smooth stream plus');
+      expect(cancelFrame).toHaveBeenCalledOnce();
+    } finally {
+      harness.state.destroy();
+
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('smooths compiled HAST without exposing Markdown syntax markers', () => {
+    const harness = setupCoreStateClosure('', {
+      enabled: true,
+      scheduler: CoreStepSmoothScheduler,
+      ticker: CorePrimarySmoothTicker,
+    });
+
+    harness.remarks.next([]);
+    harness.rehypes.next([]);
+    harness.repairs.next([]);
+
+    expect(harness.state.value.value).toEqual([]);
+
+    harness.text.next('**abc**');
+
+    const ticker = last(CorePrimarySmoothTicker.instances);
+
+    expect(ticker).toBeDefined();
+    expect(collectText(getFirstBlockTree(harness.state))).toBe('');
+
+    ticker?.tick(16);
+
+    const tree = getFirstBlockTree(harness.state);
+
+    expect(collectText(tree)).toBe('a');
+    expect(
+      findElement(tree, (element) => {
+        return element.tagName === 'strong';
+      }),
+    ).toBeDefined();
+
+    harness.state.destroy();
+  });
+
+  test('resolves custom constructors and switches them while smoothing', () => {
+    const harness = setupCoreStateClosure('', {
+      enabled: true,
+      scheduler: CoreStepSmoothScheduler,
+      ticker: CorePrimarySmoothTicker,
+    });
+
+    harness.remarks.next([]);
+    harness.rehypes.next([]);
+    harness.repairs.next([]);
+
+    expect(harness.state.value.value).toEqual([]);
+
+    harness.text.next('abcde');
+
+    const primaryTicker = last(CorePrimarySmoothTicker.instances);
+
+    expect(primaryTicker).toBeDefined();
+
+    primaryTicker?.tick(16);
+
+    expect(collectText(getFirstBlockTree(harness.state))).toBe('a');
+
+    harness.smooth.next({
+      enabled: true,
+      scheduler: CoreDoubleStepSmoothScheduler,
+      ticker: CoreSecondarySmoothTicker,
+    });
+
+    const secondaryTicker = last(CoreSecondarySmoothTicker.instances);
+
+    expect(primaryTicker?.destroyCalls).toBe(1);
+    expect(secondaryTicker).toBeDefined();
+
+    secondaryTicker?.tick(16);
+
+    expect(collectText(getFirstBlockTree(harness.state))).toBe('abc');
+
+    secondaryTicker?.tick(32);
+
+    expect(collectText(getFirstBlockTree(harness.state))).toBe('abcde');
+
+    harness.state.destroy();
+  });
+
+  test('preserves block boundaries after a smoothed multi-block shrink and append', () => {
+    const harness = setupCoreStateClosure('first\n\nsecond', {
+      enabled: true,
+      scheduler: CoreStepSmoothScheduler,
+      ticker: CorePrimarySmoothTicker,
+    });
+
+    harness.remarks.next([]);
+    harness.rehypes.next([]);
+    harness.repairs.next([]);
+
+    const readBlocks = () => {
+      return harness.state.value.value.map((block) => collectText(block.value.value));
+    };
+
+    expect(readBlocks()).toEqual(['first', 'second']);
+
+    harness.text.next('first\n\ns');
+
+    expect(readBlocks()).toEqual(['first', 's']);
+
+    harness.text.next('first\n\nsecond');
+
+    const ticker = last(CorePrimarySmoothTicker.instances);
+
+    expect(ticker).toBeDefined();
+    expect(readBlocks()).toEqual(['first', 's']);
+
+    for (let timestamp = 16; timestamp <= 80; timestamp += 16) {
+      ticker?.tick(timestamp);
+    }
+
+    expect(readBlocks()).toEqual(['first', 'second']);
+
+    harness.state.destroy();
   });
 
   test('uses the injected renderer and reacts to render plugin changes', () => {
@@ -397,7 +711,7 @@ describe('CoreStateClosure', () => {
       }),
     ).toBeUndefined();
 
-    math.config.next({ ...DEFAULT_CONFIG, tex: true });
+    math.build.next({ ...DEFAULT_CONFIG, tex: true });
 
     expect(
       findElement(getFirstBlockTree(math.state), (element) => {
@@ -410,7 +724,7 @@ describe('CoreStateClosure', () => {
     footnote.remarks.next([]);
     footnote.rehypes.next([]);
     footnote.repairs.next([]);
-    footnote.config.next({
+    footnote.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -419,7 +733,7 @@ describe('CoreStateClosure', () => {
 
     const disabled = collectText(getFirstBlockTree(footnote.state));
 
-    footnote.config.next({ ...footnote.config.value, footnote: true });
+    footnote.build.next({ ...footnote.build.value, footnote: true });
 
     const enabled = collectText(getFirstBlockTree(footnote.state));
 
@@ -477,7 +791,7 @@ describe('CoreStateClosure', () => {
     ]);
     math.rehypes.next([]);
     math.repairs.next([]);
-    math.config.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
+    math.build.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
 
     expect(
       findElement(getFirstBlockTree(math.state), (element) => {
@@ -491,7 +805,7 @@ describe('CoreStateClosure', () => {
         unknown
       >,
     ]);
-    math.config.next({
+    math.build.next({
       ...DEFAULT_CONFIG,
       tex: true,
       repair: true,
@@ -513,7 +827,7 @@ describe('CoreStateClosure', () => {
       >,
     ]);
     ending.rehypes.next([]);
-    ending.config.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
+    ending.build.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
 
     const values = ending.state.value.value.map((block) => collectText(block.value.value));
 
@@ -528,7 +842,7 @@ describe('CoreStateClosure', () => {
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base');
 
-    harness.config.next({
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -563,7 +877,7 @@ describe('CoreStateClosure', () => {
         unknown
       >,
     ]);
-    harness.config.next({
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -595,11 +909,12 @@ describe('CoreStateClosure', () => {
     const inputs = [
       harness.text,
       harness.patches,
-      harness.config,
+      harness.build,
       harness.remarks,
       harness.rehypes,
       harness.renders,
       harness.repairs,
+      harness.smooth,
     ];
 
     expect(inputs.every((state) => getObserverCount(state) > 0)).toBe(true);
@@ -610,11 +925,12 @@ describe('CoreStateClosure', () => {
     expect(harness.state.value).toBeDefined();
     expect(harness.text.closed).toBe(false);
     expect(harness.patches.closed).toBe(false);
-    expect(harness.config.closed).toBe(false);
+    expect(harness.build.closed).toBe(false);
     expect(harness.remarks.closed).toBe(false);
     expect(harness.rehypes.closed).toBe(false);
     expect(harness.renders.closed).toBe(false);
     expect(harness.repairs.closed).toBe(false);
+    expect(harness.smooth.closed).toBe(false);
     expect(inputs.map(getObserverCount)).toEqual(inputs.map(() => 0));
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(3);
     expect(AppendRehypePlugin.destroyed).toHaveBeenCalledOnce();
@@ -652,7 +968,7 @@ describe('CoreStateClosure', () => {
 
     harness.remarks.next([]);
     harness.rehypes.next([]);
-    harness.config.next({
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,

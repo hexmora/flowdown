@@ -1,7 +1,9 @@
+import type { SmoothConfig } from '@flowdown/core';
 import type { ReactNode } from 'react';
 
 import { CoreStateClosure } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
+import { isEqual, isUndefined } from 'lodash-es';
 import { forwardRef, memo, useImperativeHandle } from 'react';
 import { shallowEqual } from 'shallow-equal';
 
@@ -20,17 +22,23 @@ export const Flowdown = /*#__PURE__*/ memo(
       className,
       style,
       text: _text,
-      config: _config = EO,
+      smooth: _smooth = false,
+      build: _build = EO,
       patches: _patches = EL,
       plugins: _plugins = EL,
     },
     ref,
   ) {
-    const config = useStateOf(defaultsBy(_config, DEFAULT_CONFIG), shallowEqual);
+    const build = useStateOf(defaultsBy(_build, DEFAULT_CONFIG), shallowEqual);
 
     const patches = useStateOf(_patches, isPatchesEqual);
 
     const text = useStateOf(_text);
+
+    const smooth = useStateOf<boolean | SmoothConfig>(
+      isUndefined(globalThis.document) ? false : _smooth,
+      isEqual,
+    );
 
     const _remarks = usePlugins(_plugins, 'remarks');
 
@@ -54,12 +62,13 @@ export const Flowdown = /*#__PURE__*/ memo(
       () =>
         new CoreStateClosure<ReactNode, ReactRenderExtraParams>({
           Renderer: ReactRenderer,
-          config,
+          build,
           patches,
           rehypes,
           remarks,
           renders,
           repairs,
+          smooth,
           text,
         }),
     );

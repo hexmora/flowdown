@@ -216,7 +216,7 @@ export const Playground = ({ actions, patches, ...props }: PlaygroundProps) => {
           <TrackedPreview
             actions={actions}
             ariaLabel={playbackMode ? 'Playback preview' : 'Preview'}
-            config={config}
+            build={config}
             patches={patches}
             text={previewText}
           />

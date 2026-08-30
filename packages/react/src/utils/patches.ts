@@ -4,6 +4,10 @@ import type { IRawPatchRange } from '@flowdown/types';
 import { isNumber } from 'lodash-es';
 
 const isPatchRangeEqual = (left: IRawPatchRange, right: IRawPatchRange): boolean => {
+  if (left === right) {
+    return true;
+  }
+
   const leftStart = isNumber(left) ? left : left[0];
 
   const leftEnd = isNumber(left) ? left : left[1];
@@ -23,17 +27,25 @@ export const isPatchesEqual = <R>(
     return true;
   }
 
-  return (
-    left.length === right.length &&
-    left.every((patch, index) => {
-      const other = right[index];
+  if (left.length !== right.length) {
+    return false;
+  }
 
-      return (
-        other !== undefined &&
-        patch.key === other.key &&
-        isPatchRangeEqual(patch.range, other.range) &&
-        patch.render === other.render
-      );
-    })
-  );
+  return left.every((patch, index) => {
+    const other = right[index];
+
+    if (other === undefined) {
+      return false;
+    }
+
+    const equalities = [
+      patch.key === other.key,
+
+      isPatchRangeEqual(patch.range, other.range),
+
+      patch.render === other.render,
+    ];
+
+    return equalities.every((item) => item);
+  });
 };

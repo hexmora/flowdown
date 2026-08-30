@@ -38,19 +38,33 @@ const isOptionalPluggablesEqual = <T extends IPluginWithConfig>(
   left: readonly IPluggable<T, unknown>[] | undefined,
   right: readonly IPluggable<T, unknown>[] | undefined,
 ): boolean => {
-  return left === right || isPluggablesEqual(left ?? [], right ?? []);
+  if (left === right) {
+    return true;
+  }
+
+  return isPluggablesEqual(left ?? [], right ?? []);
 };
 
 const isPluginItemEqual = (left: IPluginItem, right: IPluginItem): boolean => {
-  return (
-    left === right ||
-    (isEqual(left.config ?? {}, right.config ?? {}) &&
-      isOptionalPluggablesEqual(left.remarks, right.remarks) &&
-      isOptionalPluggablesEqual(left.rehypes, right.rehypes) &&
-      isOptionalPluggablesEqual(left.repairs, right.repairs) &&
-      isOptionalPluggablesEqual(left.renders, right.renders) &&
-      isOptionalPluggablesEqual(left.slots, right.slots))
-  );
+  if (left === right) {
+    return true;
+  }
+
+  const equalities = [
+    isEqual(left.config ?? {}, right.config ?? {}),
+
+    isOptionalPluggablesEqual(left.remarks, right.remarks),
+
+    isOptionalPluggablesEqual(left.rehypes, right.rehypes),
+
+    isOptionalPluggablesEqual(left.repairs, right.repairs),
+
+    isOptionalPluggablesEqual(left.renders, right.renders),
+
+    isOptionalPluggablesEqual(left.slots, right.slots),
+  ];
+
+  return equalities.every((item) => item);
 };
 
 const isPluginItemsEqual = (
@@ -80,13 +94,17 @@ const isPluginItemsEqual = (
   return true;
 };
 
-const isConfigEqual = (
+const isBuildEqual = (
   left: FlowdownConfig | undefined,
   right: FlowdownConfig | undefined,
 ): boolean => {
-  return (
-    left === right ||
-    shallowEqual(defaultsBy(left ?? EO, DEFAULT_CONFIG), defaultsBy(right ?? EO, DEFAULT_CONFIG))
+  if (left === right) {
+    return true;
+  }
+
+  return shallowEqual(
+    defaultsBy(left ?? EO, DEFAULT_CONFIG),
+    defaultsBy(right ?? EO, DEFAULT_CONFIG),
   );
 };
 
@@ -94,13 +112,25 @@ export const isPropsEqual = (
   left: Readonly<FlowdownProps>,
   right: Readonly<FlowdownProps>,
 ): boolean => {
-  return (
-    left === right ||
-    (left.text === right.text &&
-      left.className === right.className &&
-      shallowEqual(left.style ?? EO, right.style ?? EO) &&
-      isConfigEqual(left.config, right.config) &&
-      (left.patches === right.patches || isPatchesEqual(left.patches ?? [], right.patches ?? [])) &&
-      isPluginItemsEqual(left.plugins, right.plugins))
-  );
+  if (left === right) {
+    return true;
+  }
+
+  const equalities = [
+    left.text === right.text,
+
+    left.className === right.className,
+
+    shallowEqual(left.style ?? EO, right.style ?? EO),
+
+    isBuildEqual(left.build, right.build),
+
+    isEqual(left.smooth ?? false, right.smooth ?? false),
+
+    isPatchesEqual(left.patches ?? [], right.patches ?? []),
+
+    isPluginItemsEqual(left.plugins, right.plugins),
+  ];
+
+  return equalities.every((item) => item);
 };

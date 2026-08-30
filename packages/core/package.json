@@ -51,6 +51,7 @@
     "marked": "catalog:",
     "remark-parse": "catalog:",
     "remark-rehype": "catalog:",
+    "rxjs": "catalog:",
     "shallow-equal": "catalog:",
     "unified": "catalog:"
   },
@@ -60,7 +61,6 @@
     "mdast-util-gfm-table": "catalog:",
     "micromark-extension-gfm-table": "catalog:",
     "oxlint": "catalog:",
-    "rxjs": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",

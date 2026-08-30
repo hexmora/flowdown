@@ -8,7 +8,7 @@ export interface TrackedPreviewProps {
 
   ariaLabel: string;
 
-  config: FlowdownConfig;
+  build: FlowdownConfig;
 
   patches?: IPatchItem<ReactNode>[];
 

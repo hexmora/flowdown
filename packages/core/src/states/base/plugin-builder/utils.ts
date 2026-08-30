@@ -6,6 +6,10 @@ export const isPluggableEqual = <T extends IPluginWithConfig>(
   left: IPluggable<T, unknown>,
   right: IPluggable<T, unknown>,
 ): boolean => {
+  if (left === right) {
+    return true;
+  }
+
   const [leftClass, leftConfig] = isArray(left) ? left : [left, undefined];
 
   const [rightClass, rightConfig] = isArray(right) ? right : [right, undefined];

@@ -19,21 +19,99 @@ import {
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import { isArray, isEqual, isObjectLike } from 'lodash-es';
+import { isArray, isBoolean, isEqual, isFunction, isObjectLike, isString } from 'lodash-es';
 
-import type { IRenderPatchItem } from '../../externals/base-renderer';
+import type { IRenderPatchItem } from '../../modules';
 import type { BlockCompilerConfig, BlockRemarksConfig } from '../hast/block-compiler';
-import type { IPatchItem } from './type';
+import type {
+  BaseSmoothConfig,
+  IPatchItem,
+  SmoothConfig,
+  SmoothSchedulerClass,
+  SmoothTickerClass,
+} from './type';
+
+import { IntervalSmoothTicker, RafSmoothTicker, SpringSmoothScheduler } from '../../modules';
+import { ALL_SCHEDULERS, ALL_TICKERS } from './consts';
+
+const isEnableRAF = (): boolean => {
+  return (
+    isFunction(globalThis.requestAnimationFrame) && isFunction(globalThis.cancelAnimationFrame)
+  );
+};
+
+export const getTickerByType = (ticker: SmoothConfig['ticker']): SmoothTickerClass => {
+  if (!isString(ticker)) {
+    return ticker;
+  }
+
+  const Ticker = ALL_TICKERS.find((item) => item.name === ticker);
+
+  if (!Ticker) {
+    throw new Error(`Unknown ticker type: ${ticker}`);
+  }
+
+  return Ticker;
+};
+
+export const getSchedulerByType = (scheduler: SmoothConfig['scheduler']): SmoothSchedulerClass => {
+  if (!isString(scheduler)) {
+    return scheduler;
+  }
+
+  const Scheduler = ALL_SCHEDULERS.find((item) => item.name === scheduler);
+
+  if (!Scheduler) {
+    throw new Error(`Unknown scheduler type: ${scheduler}`);
+  }
+
+  return Scheduler;
+};
+
+export const toBaseSmoothConfig = (config: boolean | SmoothConfig): BaseSmoothConfig => {
+  if (isBoolean(config)) {
+    return {
+      enabled: config,
+      ticker: isEnableRAF() ? RafSmoothTicker : IntervalSmoothTicker,
+      scheduler: SpringSmoothScheduler,
+    };
+  }
+
+  return {
+    enabled: config.enabled ?? false,
+    ticker: getTickerByType(config.ticker),
+    scheduler: getSchedulerByType(config.scheduler),
+  };
+};
 
 export interface Keyable {
   key: string;
 }
 
 export const isKeyablesEqual = <T extends Keyable>(left: T[], right: T[]): boolean => {
-  return (
-    left.length === right.length &&
-    left.every((item, index) => item.key === right[index]?.key && isEqual(item, right[index]))
-  );
+  if (left === right) {
+    return true;
+  }
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((current, index) => {
+    const other = right[index];
+
+    if (other === undefined) {
+      return false;
+    }
+
+    const equalities = [
+      current.key === other.key,
+
+      isEqual(current, other),
+    ];
+
+    return equalities.every((item) => item);
+  });
 };
 
 export const splitPatches = <R>(patches: IPatchItem<R>[]) => {

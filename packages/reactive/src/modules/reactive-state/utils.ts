@@ -20,14 +20,13 @@ export type StateValue<T> =
         ? V
         : T;
 
-export type StateSource<T> =
-  T extends IReactiveState<unknown>
+export type StateSource<T> = [T] extends [IReactiveState<unknown>]
+  ? T
+  : [T] extends [BehaviorSubject<unknown>]
     ? T
-    : T extends BehaviorSubject<unknown>
+    : [T] extends [IStateClosure<unknown>]
       ? T
-      : T extends IStateClosure<unknown>
-        ? T
-        : T | IReactiveState<T> | BehaviorSubject<T> | IStateClosure<T>;
+      : T | IReactiveState<T> | BehaviorSubject<T> | IStateClosure<T>;
 
 export type StateValues<TSources extends readonly unknown[]> = {
   [K in keyof TSources]: StateValue<TSources[K]>;

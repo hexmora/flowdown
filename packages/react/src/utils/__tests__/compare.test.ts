@@ -54,7 +54,7 @@ describe('comparison utilities', () => {
     const remark = [TestPlugin, { nested: { enabled: true } }] as TestPluggable;
     const base: FlowdownProps = {
       className: 'markdown',
-      config: {},
+      build: {},
       patches: [{ key: 'inline', range: [0, 2], render: renderPatch }],
       plugins: [
         {
@@ -62,12 +62,13 @@ describe('comparison utilities', () => {
           remarks: [remark as NonNullable<IPluginItem['remarks']>[number]],
         },
       ],
+      smooth: false,
       style: { color: 'red' },
       text: 'content',
     };
     const equivalent: FlowdownProps = {
       className: 'markdown',
-      config: {
+      build: {
         footnote: false,
         repair: false,
         repairEnding: false,
@@ -93,7 +94,8 @@ describe('comparison utilities', () => {
     expect(isPropsEqual(base, { ...equivalent, text: 'changed' })).toBe(false);
     expect(isPropsEqual(base, { ...equivalent, className: 'changed' })).toBe(false);
     expect(isPropsEqual(base, { ...equivalent, style: { color: 'blue' } })).toBe(false);
-    expect(isPropsEqual(base, { ...equivalent, config: { tex: true } })).toBe(false);
+    expect(isPropsEqual(base, { ...equivalent, build: { tex: true } })).toBe(false);
+    expect(isPropsEqual(base, { ...equivalent, smooth: true })).toBe(false);
     expect(
       isPropsEqual(base, {
         ...equivalent,
@@ -111,5 +113,18 @@ describe('comparison utilities', () => {
         ],
       }),
     ).toBe(false);
+  });
+
+  test('short-circuits identical props before reading their values', () => {
+    const props = new Proxy<FlowdownProps>(
+      { text: 'content' },
+      {
+        get: () => {
+          throw new Error('Prop values must not be read.');
+        },
+      },
+    );
+
+    expect(isPropsEqual(props, props)).toBe(true);
   });
 });

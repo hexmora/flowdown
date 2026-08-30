@@ -1,4 +1,6 @@
-import { type IReactiveState, MutableState, ReactiveState } from '@flowdown/reactive';
+import type { IReactiveState } from '@flowdown/reactive';
+
+import { MutableState, ReactiveState } from '@flowdown/reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import type { IBlockMeta, IBlockState } from '../../../states/base/base-block';

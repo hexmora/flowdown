@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { PatchPlayground } from '../components/patch-playground';
 import { Playground } from '../components/playground';
+import { SmoothStreamingPlayground } from '../components/smooth-streaming-playground';
 import { STORY_MARKDOWN } from './consts';
 
 const meta = {
@@ -24,4 +25,8 @@ export const Default: Story = {
 
 export const Patch: Story = {
   render: () => <PatchPlayground />,
+};
+
+export const SmoothStreaming: Story = {
+  render: () => <SmoothStreamingPlayground text={STORY_MARKDOWN} />,
 };

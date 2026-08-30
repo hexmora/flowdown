@@ -100,6 +100,18 @@ describe('PluginBuilderStateClosure', () => {
     ).toBe(false);
   });
 
+  test('short-circuits identical pluggable references before reading tuple values', () => {
+    const Plugin = createPluginClass('same-reference', vi.fn());
+
+    const tuple = new Proxy<[PluginClass<TestPlugin, unknown>, unknown]>([Plugin, {}], {
+      get: () => {
+        throw new Error('Tuple values must not be read.');
+      },
+    });
+
+    expect(isPluggableEqual(tuple, tuple)).toBe(true);
+  });
+
   test('buildPluggables returns one instance or an array based on argument count', () => {
     const PluginA = createPluginClass('a', vi.fn());
     const PluginB = createPluginClass('b', vi.fn());

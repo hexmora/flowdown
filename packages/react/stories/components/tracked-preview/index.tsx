@@ -7,7 +7,7 @@ import { Flowdown } from '../../../src';
 export const TrackedPreview = ({
   actions,
   ariaLabel,
-  config,
+  build,
   patches,
   text,
 }: TrackedPreviewProps) => {
@@ -32,7 +32,7 @@ export const TrackedPreview = ({
       </div>
 
       <section aria-label={ariaLabel} className="playground-preview-content">
-        {text.length > 0 ? <Flowdown config={config} patches={patches} text={text} /> : null}
+        {text.length > 0 ? <Flowdown build={build} patches={patches} text={text} /> : null}
       </section>
     </div>
   );

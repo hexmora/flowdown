@@ -3,7 +3,7 @@ import type {
   PatchesRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import type { IReactiveState, StateSource } from '@flowdown/reactive';
+import type { IReactiveState, Newable, StateSource } from '@flowdown/reactive';
 import type {
   IBasePluginConfig,
   IPluggable,
@@ -14,8 +14,13 @@ import type {
 } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import type { IRenderPluggable } from '../../externals/base-render-plugin';
-import type { IRenderPatchRender, RendererClass } from '../../externals/base-renderer';
+import type {
+  IRenderPatchRender,
+  IRenderPluggable,
+  IScheduler,
+  ITicker,
+  RendererClass,
+} from '../../modules';
 import type { HastRoot } from '../../typings';
 import type { BlockCompilerConfig } from '../hast/block-compiler';
 
@@ -47,27 +52,106 @@ export type PluginConfigs<C extends PluginConstructor = never> = [C] extends [ne
       }>;
 
 export interface IPatchItem<R> {
+  /**
+   * Stable patch identifier.
+   */
   key?: string;
 
+  /**
+   * Source range replaced by the patch.
+   */
   range: IRawPatchRange;
 
+  /**
+   * Renders the text covered by the patch.
+   */
   render: IRenderPatchRender<R>;
 }
 
+export type SchedulerParams = [tuple?: number[]];
+
+export type SchedulerType = 'spring';
+
+export type TickerParams = [interval?: number];
+
+export type TickerType = 'raf' | 'interval';
+
+export type SmoothSchedulerClass = Newable<IScheduler, SchedulerParams>;
+
+export type SmoothTickerClass = Newable<ITicker, TickerParams>;
+
+export interface BaseSmoothConfig {
+  enabled: boolean;
+
+  ticker: SmoothTickerClass;
+
+  scheduler: SmoothSchedulerClass;
+}
+
+export interface SmoothConfig {
+  /**
+   * Enables smooth rendered-content streaming.
+   * @default false
+   */
+  enabled?: boolean;
+
+  /**
+   * Ticker used to drive smooth updates.
+   * @default 'raf' when request and cancel animation-frame APIs are available; otherwise 'interval'
+   */
+  ticker: TickerType | SmoothTickerClass;
+
+  /**
+   * Scheduler used to calculate visible content-unit distance.
+   * @default 'spring'
+   */
+  scheduler: SchedulerType | SmoothSchedulerClass;
+}
+
 export type CoreStateClosureParams<R, C = {}> = {
+  /**
+   * Renderer closure used to produce output values.
+   */
   Renderer: RendererClass<HastRoot, ElementContent, Parent, R, C>;
 
+  /**
+   * Markdown source text.
+   */
   text: StateSource<string>;
 
+  /**
+   * Smooth streaming configuration.
+   * @default false
+   */
+  smooth?: StateSource<boolean | SmoothConfig>;
+
+  /**
+   * Inline render patches.
+   */
   patches: IReactiveState<IPatchItem<R>[]>;
 
-  config: StateSource<BlockCompilerConfig>;
+  /**
+   * Markdown compiler feature configuration.
+   */
+  build: StateSource<BlockCompilerConfig>;
 
+  /**
+   * Render plugins.
+   */
   renders: IReactiveState<IRenderPluggable<ElementContent, Parent, R, C, unknown>[]>;
 
+  /**
+   * Additional remark plugins.
+   */
   remarks?: IReactiveState<IPluggable<IRemarkPlugin, unknown>[]>;
 
+  /**
+   * Additional rehype plugins.
+   */
   rehypes?: IReactiveState<IPluggable<IRehypePlugin, unknown>[]>;
 
+  /**
+   * Additional repair plugins.
+   */
   repairs?: IReactiveState<IPluggable<IRepairPlugin, unknown>[]>;
 };
