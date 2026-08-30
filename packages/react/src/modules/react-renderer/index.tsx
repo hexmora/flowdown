@@ -16,13 +16,10 @@ export class ReactRenderer extends BaseRendererStateClosure<
   ReactRenderExtraParams
 > {
   protected renderItem(item: IBlockState<Root>): ReactNode {
+    const { patches, plugins } = this.inputs;
+
     return (
-      <BlockReconciler
-        key={item.meta.value.key}
-        block={item}
-        patches={this.patches}
-        plugins={this.plugins}
-      />
+      <BlockReconciler key={item.meta.value.key} block={item} patches={patches} plugins={plugins} />
     );
   }
 }

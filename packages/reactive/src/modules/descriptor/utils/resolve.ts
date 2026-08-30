@@ -3,6 +3,7 @@ import { forOwn, isArray, isFunction, isObject, isPlainObject, mapValues } from 
 
 import type { IReactiveState } from '../../reactive-state';
 import type { IStateClosure } from '../../state-closure';
+import type { StateClosureDescriptor } from '../type';
 import type { DescriptorScope } from './context';
 import type {
   AnyMappingFunction,
@@ -24,11 +25,17 @@ import {
 } from './context';
 import { MappedStateClosure } from './mapped-state-closure';
 
-const isImmediateDescriptor = (value: unknown): value is RuntimeImmediateDescriptor<unknown> => {
+export const isImmediateDescriptor = <T = unknown>(
+  value: unknown,
+): value is RuntimeImmediateDescriptor<T> => {
   return isObject(value) && immediateDescriptor in value;
 };
 
-const isStateClosure = (value: unknown): value is IStateClosure<unknown> => {
+export const unwrapImmediateDescriptor = <T>(descriptor: RuntimeImmediateDescriptor<T>): T => {
+  return descriptor[immediateDescriptor];
+};
+
+export const isStateClosure = <T = unknown>(value: unknown): value is IStateClosure<T> => {
   return isObject(value) && 'value' in value && 'destroy' in value && isFunction(value.destroy);
 };
 
@@ -49,6 +56,12 @@ const isSlottedDescriptor = (value: unknown): value is RuntimeSlottedDescriptor 
 const isStateClosureClass = (
   value: AnyStateClosureClass | AnyMappingFunction,
 ): value is AnyStateClosureClass => isClass(value);
+
+export const isStateClosureDescriptor = <T = unknown>(
+  value: unknown,
+): value is StateClosureDescriptor<T> => {
+  return isStateClosure<T>(value) || isSlottedDescriptor(value) || isClass(value);
+};
 
 const toImmediateDescriptor = (value: unknown): RuntimeImmediateDescriptor<unknown> => {
   return { [immediateDescriptor]: value } as RuntimeImmediateDescriptor<unknown>;

@@ -1,3 +1,4 @@
+import { isFunction } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { beforeEach, describe, expect, expectTypeOf, test } from 'vitest';
 
@@ -14,8 +15,8 @@ import {
 } from '../..';
 
 class ConfigStateClosure extends BaseStateClosure<'config'> {
-  constructor() {
-    super({ source: 'config' });
+  protected render() {
+    return 'config' as const;
   }
 }
 
@@ -23,19 +24,23 @@ type SecondStateClosureParams = {
   config: IReactiveState<'config'>;
 };
 
-class SecondStateClosure extends BaseStateClosure<'first'> {
+class SecondStateClosure extends BaseStateClosure<'first', SecondStateClosureParams> {
   static readonly instances: SecondStateClosure[] = [];
 
-  constructor(readonly params: SecondStateClosureParams) {
-    super({ source: 'first' });
+  constructor(inputs: SecondStateClosureParams) {
+    super(inputs);
 
     SecondStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'first' as const;
   }
 }
 
 class SecondLeafStateClosure extends BaseStateClosure<'second'> {
-  constructor() {
-    super({ source: 'second' });
+  protected render() {
+    return 'second' as const;
   }
 }
 
@@ -43,9 +48,13 @@ class ThirdStateClosure extends BaseStateClosure<'third'> {
   static readonly instances: ThirdStateClosure[] = [];
 
   constructor() {
-    super({ source: 'third' });
+    super();
 
     ThirdStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'third' as const;
   }
 }
 
@@ -53,23 +62,31 @@ type ForthStateClosureParams = {
   test: IReactiveState<'forth-param'>;
 };
 
-class ForthStateClosure extends BaseStateClosure<'forth'> {
+class ForthStateClosure extends BaseStateClosure<'forth', ForthStateClosureParams> {
   static readonly instances: ForthStateClosure[] = [];
 
-  constructor(readonly params: ForthStateClosureParams) {
-    super({ source: 'forth' });
+  constructor(inputs: ForthStateClosureParams) {
+    super(inputs);
 
     ForthStateClosure.instances.push(this);
   }
+
+  protected render() {
+    return 'forth' as const;
+  }
 }
 
-class FifthSubStateClosure extends BaseStateClosure<'fifth-sub'> {
+class FifthSubStateClosure extends BaseStateClosure<'fifth-sub', IReactiveState<'fifth-param'>> {
   static readonly instances: FifthSubStateClosure[] = [];
 
-  constructor(readonly param: IReactiveState<'fifth-param'>) {
-    super({ source: 'fifth-sub' });
+  constructor(inputs: IReactiveState<'fifth-param'>) {
+    super(inputs);
 
     FifthSubStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'fifth-sub' as const;
   }
 }
 
@@ -77,13 +94,17 @@ type FifthStateClosureParams = {
   test: IReactiveState<'fifth-sub'>;
 };
 
-class FifthStateClosure extends BaseStateClosure<'fifth'> {
+class FifthStateClosure extends BaseStateClosure<'fifth', FifthStateClosureParams> {
   static readonly instances: FifthStateClosure[] = [];
 
-  constructor(readonly params: FifthStateClosureParams) {
-    super({ source: 'fifth' });
+  constructor(inputs: FifthStateClosureParams) {
+    super(inputs);
 
     FifthStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'fifth' as const;
   }
 }
 
@@ -92,13 +113,17 @@ type SixthStateClosureParams = {
   test2: IReactiveState<'sixth-param-2'>;
 };
 
-class SixthStateClosure extends BaseStateClosure<'sixth'> {
+class SixthStateClosure extends BaseStateClosure<'sixth', SixthStateClosureParams> {
   static readonly instances: SixthStateClosure[] = [];
 
-  constructor(readonly params: SixthStateClosureParams) {
-    super({ source: 'sixth' });
+  constructor(inputs: SixthStateClosureParams) {
+    super(inputs);
 
     SixthStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'sixth' as const;
   }
 }
 
@@ -106,13 +131,17 @@ type SeventhSubClosureParams = {
   test2: IReactiveState<'seventh-sub-param'>;
 };
 
-class SeventhSubClosure extends BaseStateClosure<'seventh-sub'> {
+class SeventhSubClosure extends BaseStateClosure<'seventh-sub', SeventhSubClosureParams> {
   static readonly instances: SeventhSubClosure[] = [];
 
-  constructor(readonly params: SeventhSubClosureParams) {
-    super({ source: 'seventh-sub' });
+  constructor(inputs: SeventhSubClosureParams) {
+    super(inputs);
 
     SeventhSubClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'seventh-sub' as const;
   }
 }
 
@@ -121,13 +150,17 @@ type SeventhStateClosureParams = {
   test2: (subParamState: IReactiveState<'seventh-sub-param'>) => IReactiveState<'seventh-sub'>;
 };
 
-class SeventhStateClosure extends BaseStateClosure<'seventh'> {
+class SeventhStateClosure extends BaseStateClosure<'seventh', SeventhStateClosureParams> {
   static readonly instances: SeventhStateClosure[] = [];
 
-  constructor(readonly params: SeventhStateClosureParams) {
-    super({ source: 'seventh' });
+  constructor(inputs: SeventhStateClosureParams) {
+    super(inputs);
 
     SeventhStateClosure.instances.push(this);
+  }
+
+  protected render() {
+    return 'seventh' as const;
   }
 }
 
@@ -145,9 +178,9 @@ type FirstStateClosureParams = {
   eighth: number[];
 };
 
-class FirstStateClosure extends BaseStateClosure<'root'> {
-  constructor(readonly params: FirstStateClosureParams) {
-    super({ source: 'root' });
+class FirstStateClosure extends BaseStateClosure<'root', FirstStateClosureParams> {
+  protected render() {
+    return 'root' as const;
   }
 }
 
@@ -167,9 +200,9 @@ type AdditionalStateClosureParams = {
   constantClass: typeof ConstantClass;
 };
 
-class AdditionalStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: AdditionalStateClosureParams) {
-    super({ source: null });
+class AdditionalStateClosure extends BaseStateClosure<null, AdditionalStateClosureParams> {
+  protected render() {
+    return null;
   }
 }
 
@@ -177,19 +210,27 @@ type LifecycleStateClosureParams = {
   name: string;
 };
 
-class LifecycleStateClosure extends BaseStateClosure<string> {
+class LifecycleStateClosure extends BaseStateClosure<string, LifecycleStateClosureParams> {
   static readonly destroyedNames: string[] = [];
 
   static readonly instances: LifecycleStateClosure[] = [];
 
-  constructor(readonly params: LifecycleStateClosureParams) {
-    super({ source: params.name });
+  constructor(inputs: LifecycleStateClosureParams) {
+    super(inputs);
 
     LifecycleStateClosure.instances.push(this);
   }
 
+  protected render() {
+    const { name } = this.inputs;
+
+    return name;
+  }
+
   override destroy() {
-    LifecycleStateClosure.destroyedNames.push(this.params.name);
+    const { name } = this.inputs;
+
+    LifecycleStateClosure.destroyedNames.push(name);
 
     super.destroy();
   }
@@ -201,9 +242,9 @@ type LifecycleRootStateClosureParams = {
   second: IReactiveState<string>;
 };
 
-class LifecycleRootStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: LifecycleRootStateClosureParams) {
-    super({ source: null });
+class LifecycleRootStateClosure extends BaseStateClosure<null, LifecycleRootStateClosureParams> {
+  protected render() {
+    return null;
   }
 }
 
@@ -211,9 +252,9 @@ type GeneratorRootStateClosureParams = {
   getChild(): IReactiveState<string>;
 };
 
-class GeneratorRootStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: GeneratorRootStateClosureParams) {
-    super({ source: null });
+class GeneratorRootStateClosure extends BaseStateClosure<null, GeneratorRootStateClosureParams> {
+  protected render() {
+    return null;
   }
 }
 
@@ -224,23 +265,32 @@ type PairGeneratorRootStateClosureParams = {
   }): IReactiveState<string>;
 };
 
-class PairGeneratorRootStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: PairGeneratorRootStateClosureParams) {
-    super({ source: null });
+class PairGeneratorRootStateClosure extends BaseStateClosure<
+  null,
+  PairGeneratorRootStateClosureParams
+> {
+  protected render() {
+    return null;
   }
 }
 
-class ThrowingRootStateClosure extends BaseStateClosure<null> {
-  constructor(_params: { child: IReactiveState<string> }) {
-    super({ source: null });
+class ThrowingRootStateClosure extends BaseStateClosure<null, { child: IReactiveState<string> }> {
+  constructor(inputs: { child: IReactiveState<string> }) {
+    super(inputs);
 
     throw new Error('Failed to construct the descriptor root.');
   }
+
+  protected render() {
+    return null;
+  }
 }
 
-class ImmediateValueStateClosure extends BaseStateClosure<unknown> {
-  constructor(readonly input: unknown) {
-    super({ source: input });
+class ImmediateValueStateClosure extends BaseStateClosure<unknown, unknown> {
+  protected render() {
+    const { inputs } = this;
+
+    return inputs;
   }
 }
 
@@ -248,9 +298,12 @@ type ValueGeneratorRootStateClosureParams = {
   create(value: unknown): IReactiveState<unknown>;
 };
 
-class ValueGeneratorRootStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: ValueGeneratorRootStateClosureParams) {
-    super({ source: null });
+class ValueGeneratorRootStateClosure extends BaseStateClosure<
+  null,
+  ValueGeneratorRootStateClosureParams
+> {
+  protected render() {
+    return null;
   }
 }
 
@@ -383,12 +436,18 @@ describe('descriptor', () => {
     const third = ThirdStateClosure.instances[0];
 
     expectTypeOf(closure).toEqualTypeOf<FirstStateClosure>();
+
     expect(closure).toBeInstanceOf(FirstStateClosure);
-    expect(first?.params.config).toBe(configState.value);
-    expect(closure.params.first).toBe(first?.value);
-    expect(closure.params.second).toBe(secondState.value);
-    expect(closure.params.third).toBe(third?.value);
-    expect(closure.params.eighth).toBe(immediate);
+
+    expect(first?.inputs.config).toBe(configState.value);
+
+    expect(closure.inputs.first).toBe(first?.value);
+
+    expect(closure.inputs.second).toBe(secondState.value);
+
+    expect(closure.inputs.third).toBe(third?.value);
+
+    expect(closure.inputs.eighth).toBe(immediate);
   });
 
   test('lazily builds recursive generator descriptors', () => {
@@ -400,74 +459,103 @@ describe('descriptor', () => {
     expect(SeventhStateClosure.instances).toHaveLength(0);
 
     const forthParam = ReactiveState.of<'forth-param'>('forth-param');
-    const forth = closure.params.forth(forthParam);
+
+    const forth = closure.inputs.forth(forthParam);
+
     const forthClosure = ForthStateClosure.instances[0];
 
-    expect(forthClosure?.params.test).toBe(forthParam);
+    expect(forthClosure?.inputs.test).toBe(forthParam);
+
     expect(forth).toBe(forthClosure?.value);
 
-    const nextForth = closure.params.forth(forthParam);
+    const nextForth = closure.inputs.forth(forthParam);
 
     expect(ForthStateClosure.instances).toHaveLength(2);
     expect(nextForth).not.toBe(forth);
 
     const fifthParam = ReactiveState.of<'fifth-param'>('fifth-param');
-    const fifth = closure.params.fifth(fifthParam);
+
+    const fifth = closure.inputs.fifth(fifthParam);
+
     const fifthSubClosure = FifthSubStateClosure.instances[0];
+
     const fifthClosure = FifthStateClosure.instances[0];
 
-    expect(fifthSubClosure?.param).toBe(fifthParam);
-    expect(fifthClosure?.params.test).toBe(fifthSubClosure?.value);
+    expect(fifthSubClosure?.inputs).toBe(fifthParam);
+
+    expect(fifthClosure?.inputs.test).toBe(fifthSubClosure?.value);
+
     expect(fifth).toBe(fifthClosure?.value);
 
     const sixthParam1 = ReactiveState.of<'sixth-param-1'>('sixth-param-1');
+
     const sixthParam2 = ReactiveState.of<'sixth-param-2'>('sixth-param-2');
-    const sixth = closure.params.sixth({
+
+    const sixth = closure.inputs.sixth({
       param1State: sixthParam1,
       param2State: sixthParam2,
     });
+
     const sixthClosure = SixthStateClosure.instances[0];
 
-    expect(sixthClosure?.params.test1).toBe(sixthParam1);
-    expect(sixthClosure?.params.test2).toBe(sixthParam2);
+    expect(sixthClosure?.inputs.test1).toBe(sixthParam1);
+
+    expect(sixthClosure?.inputs.test2).toBe(sixthParam2);
+
     expect(sixth).toBe(sixthClosure?.value);
 
     const seventhParam = ReactiveState.of<'seventh-param'>('seventh-param');
-    const seventh = closure.params.seventh(seventhParam);
+
+    const seventh = closure.inputs.seventh(seventhParam);
+
     const seventhClosure = SeventhStateClosure.instances[0];
 
-    expect(seventhClosure?.params.test1).toBe(seventhParam);
+    expect(seventhClosure?.inputs.test1).toBe(seventhParam);
+
     expect(seventh).toBe(seventhClosure?.value);
+
     expect(SeventhSubClosure.instances).toHaveLength(0);
 
     const seventhSubParam = ReactiveState.of<'seventh-sub-param'>('seventh-sub-param');
-    const seventhSub = seventhClosure?.params.test2(seventhSubParam);
+
+    const seventhSub = seventhClosure?.inputs.test2(seventhSubParam);
+
     const seventhSubClosure = SeventhSubClosure.instances[0];
 
-    expect(seventhSubClosure?.params.test2).toBe(seventhSubParam);
+    expect(seventhSubClosure?.inputs.test2).toBe(seventhSubParam);
+
     expect(seventhSub).toBe(seventhSubClosure?.value);
   });
 
   test('supports positional generators and immediate function values', () => {
     const closure = buildDescriptor(additionalDescriptor);
 
-    expect(closure.params.constantFunction).toBe(constantFunction);
-    expect(closure.params.constantClass).toBe(ConstantClass);
+    expect(closure.inputs.constantFunction).toBe(constantFunction);
+
+    expect(closure.inputs.constantClass).toBe(ConstantClass);
+
     expect(ThirdStateClosure.instances).toHaveLength(0);
+
     expect(SixthStateClosure.instances).toHaveLength(0);
 
-    const zero = closure.params.zero();
+    const zero = closure.inputs.zero();
+
     const zeroClosure = ThirdStateClosure.instances[0];
 
     expect(zero).toBe(zeroClosure?.value);
 
     const param1State = ReactiveState.of<'sixth-param-1'>('sixth-param-1');
+
     const param2State = ReactiveState.of<'sixth-param-2'>('sixth-param-2');
-    const pair = closure.params.pair(param1State, param2State);
+
+    const pair = closure.inputs.pair(param1State, param2State);
+
     const pairClosure = SixthStateClosure.instances[0];
 
-    expect(pairClosure?.params.test1).toBe(param1State);
-    expect(pairClosure?.params.test2).toBe(param2State);
+    expect(pairClosure?.inputs.test1).toBe(param1State);
+
+    expect(pairClosure?.inputs.test2).toBe(param2State);
+
     expect(pair).toBe(pairClosure?.value);
   });
 
@@ -482,8 +570,11 @@ describe('descriptor', () => {
         },
       ]),
     );
-    const first = root.params.getChild();
-    const second = root.params.getChild();
+
+    const first = root.inputs.getChild();
+
+    const second = root.inputs.getChild();
+
     const externalRoot = buildDescriptor(
       S([
         LifecycleRootStateClosure,
@@ -502,8 +593,10 @@ describe('descriptor', () => {
     externalRoot.destroy();
 
     expect(LifecycleStateClosure.destroyedNames).toEqual(['generated', 'generated']);
+
     expect(external.value.closed).toBe(false);
-    expect(() => root.params.getChild()).toThrow('destroyed descriptor graph');
+
+    expect(() => root.inputs.getChild()).toThrow('destroyed descriptor graph');
 
     external.destroy();
   });
@@ -556,8 +649,10 @@ describe('descriptor', () => {
       ]),
     );
     const first = MutableState.of('all-complete');
+
     const second = MutableState.of('second');
-    const completed = root.params.create({ first, second });
+
+    const completed = root.inputs.create({ first, second });
 
     first.complete();
 
@@ -570,8 +665,10 @@ describe('descriptor', () => {
     expect(LifecycleStateClosure.destroyedNames).toEqual(['all-complete']);
 
     const failing = MutableState.of('error');
+
     const stillOpen = MutableState.of('still-open');
-    const errored = root.params.create({ first: failing, second: stillOpen });
+
+    const errored = root.inputs.create({ first: failing, second: stillOpen });
 
     failing.error(new Error('Expected generator input failure.'));
 
@@ -597,12 +694,14 @@ describe('descriptor', () => {
         },
       ]),
     );
+
     const reason = new Error('Expected synchronous generator input failure.');
+
     const first: IReactiveState<string> = {
       value: 'sync-error',
       closed: false,
       subscribe: (subscriber) => {
-        if (typeof subscriber !== 'function') {
+        if (!isFunction(subscriber)) {
           subscriber.error?.(reason);
         }
 
@@ -613,7 +712,9 @@ describe('descriptor', () => {
         return subscription;
       },
     };
+
     let secondSubscriptions = 0;
+
     const second: IReactiveState<string> = {
       value: 'still-open',
       closed: false,
@@ -623,7 +724,8 @@ describe('descriptor', () => {
         return new Subscription();
       },
     };
-    const errored = root.params.create({ first, second });
+
+    const errored = root.inputs.create({ first, second });
 
     expect(errored.closed).toBe(true);
     expect(secondSubscriptions).toBe(0);
@@ -675,7 +777,7 @@ describe('descriptor', () => {
 
       const closure = buildDescriptor(S([ImmediateValueStateClosure, D(constant)]));
 
-      expect(closure.input).toBe(constant);
+      expect(closure.inputs).toBe(constant);
 
       closure.destroy();
     },
@@ -690,8 +792,10 @@ describe('descriptor', () => {
         },
       ]),
     );
+
     const date = new Date(0);
-    const value = root.params.create(date);
+
+    const value = root.inputs.create(date);
 
     expect(value.value).toBe(date);
 
@@ -718,7 +822,7 @@ describe('descriptor', () => {
 
     const source = ReactiveState.of(3);
 
-    const sourceClosure = new BaseStateClosure({ source: 4 });
+    const sourceClosure = new NumberStateClosure();
 
     const reactive = buildDescriptor(
       S([
@@ -731,19 +835,19 @@ describe('descriptor', () => {
       ]),
     );
 
-    expect(array.params).toEqual([1, 2, 3]);
+    expect(array.inputs).toEqual([1, 2, 3]);
 
     expect(mapped.value.value).toBe(4);
 
-    expect(direct.params.source).toBe(1);
+    expect(direct.inputs.source).toBe(1);
 
-    expect(direct.params.create()).toBe(2);
+    expect(direct.inputs.create()).toBe(2);
 
-    expect(direct.params.forward(sourceClosure)).toBe(sourceClosure.value);
+    expect(direct.inputs.forward(sourceClosure)).toBe(sourceClosure.value);
 
-    expect(reactive.params.source).toBe(source);
+    expect(reactive.inputs.source).toBe(source);
 
-    expect(reactive.params.create()).toBe(source);
+    expect(reactive.inputs.create()).toBe(source);
 
     array.destroy();
 
@@ -757,33 +861,36 @@ describe('descriptor', () => {
   });
 });
 
-class InvalidStateSlotClosure extends BaseStateClosure<null> {
-  constructor(_params: { state: IReactiveState<number> }) {
-    super({ source: null });
+class InvalidStateSlotClosure extends BaseStateClosure<null, { state: IReactiveState<number> }> {
+  protected render() {
+    return null;
   }
 }
 
-class InvalidGeneratorSlotClosure extends BaseStateClosure<null> {
-  constructor(_params: { create: (state: IReactiveState<'input'>) => IReactiveState<'output'> }) {
-    super({ source: null });
+class InvalidGeneratorSlotClosure extends BaseStateClosure<
+  null,
+  { create: (state: IReactiveState<'input'>) => IReactiveState<'output'> }
+> {
+  protected render() {
+    return null;
   }
 }
 
 class NumberStateClosure extends BaseStateClosure<number> {
-  constructor() {
-    super({ source: 1 });
+  protected render() {
+    return 1;
   }
 }
 
 class WrongOutputStateClosure extends BaseStateClosure<'wrong-output'> {
-  constructor() {
-    super({ source: 'wrong-output' });
+  protected render() {
+    return 'wrong-output' as const;
   }
 }
 
-class ImmediateArrayStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: number[]) {
-    super({ source: null });
+class ImmediateArrayStateClosure extends BaseStateClosure<null, number[]> {
+  protected render() {
+    return null;
   }
 }
 
@@ -793,9 +900,9 @@ type StateSourceStateClosureParams = {
   source: StateSource<number>;
 };
 
-class StateSourceStateClosure extends BaseStateClosure<null> {
-  constructor(readonly params: StateSourceStateClosureParams) {
-    super({ source: null });
+class StateSourceStateClosure extends BaseStateClosure<null, StateSourceStateClosureParams> {
+  protected render() {
+    return null;
   }
 }
 

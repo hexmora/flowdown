@@ -50,17 +50,19 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
   RenderedItem,
   TestRenderConfig
 > {
-  readonly render = vi.fn(
-    (item: IBlockState<string>): RenderedItem => ({
+  readonly renderItemSpy = vi.fn((item: IBlockState<string>): RenderedItem => {
+    const { patches, plugins } = this.inputs;
+
+    return {
       key: item.meta.value.key,
       content: item.value,
-      plugins: this.plugins.value,
-      patches: this.patches,
-    }),
-  );
+      plugins: plugins.value,
+      patches,
+    };
+  });
 
   protected renderItem(item: IBlockState<string>) {
-    return this.render(item);
+    return this.renderItemSpy(item);
   }
 }
 
@@ -127,12 +129,13 @@ describe('BaseRendererStateClosure', () => {
     const second = createBlock('second', 'second');
     const { renderer, source } = setupRenderer([first, second]);
 
-    expect(renderer.render).not.toHaveBeenCalled();
+    expect(renderer.renderItemSpy).not.toHaveBeenCalled();
 
     const initial = renderer.value.value;
 
     expect(initial.map((item) => item.key)).toEqual(['first', 'second']);
-    expect(renderer.render).toHaveBeenCalledTimes(2);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(2);
 
     const replacementFirst = createBlock('first', 'replacement');
     const third = createBlock('third', 'third');
@@ -142,12 +145,14 @@ describe('BaseRendererStateClosure', () => {
     const reordered = renderer.value.value;
 
     expect(reordered).toEqual([initial[1], initial[0], expect.objectContaining({ key: 'third' })]);
-    expect(renderer.render).toHaveBeenCalledTimes(3);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(3);
 
     source.next([replacementFirst, second]);
 
     expect(renderer.value.value).toEqual([initial[0], initial[1]]);
-    expect(renderer.render).toHaveBeenCalledTimes(3);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(3);
   });
 
   test('fully rerenders only when plugin instances or order change', () => {
@@ -159,7 +164,8 @@ describe('BaseRendererStateClosure', () => {
     plugins.next([initialPlugin]);
 
     expect(renderer.value.value).toBe(initial);
-    expect(renderer.render).toHaveBeenCalledTimes(2);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(2);
 
     const nextPlugin = new TestRenderPlugin();
 
@@ -173,7 +179,8 @@ describe('BaseRendererStateClosure', () => {
       [initialPlugin, nextPlugin],
       [initialPlugin, nextPlugin],
     ]);
-    expect(renderer.render).toHaveBeenCalledTimes(4);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(4);
 
     plugins.next([nextPlugin, initialPlugin]);
 
@@ -185,7 +192,8 @@ describe('BaseRendererStateClosure', () => {
       [nextPlugin, initialPlugin],
       [nextPlugin, initialPlugin],
     ]);
-    expect(renderer.render).toHaveBeenCalledTimes(6);
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(6);
   });
 
   test('leaves block content and patch updates to rendered results', () => {
@@ -207,7 +215,9 @@ describe('BaseRendererStateClosure', () => {
 
     expect(rendered?.content.value).toBe('updated');
     expect(rendered?.patches).toBe(patches);
-    expect(renderer.render).toHaveBeenCalledOnce();
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledOnce();
+
     expect(next).not.toHaveBeenCalled();
   });
 

@@ -75,7 +75,7 @@ export type DescriptorGenerator<P extends unknown[], R> = (
   ...params: DescriptorParameters<P>
 ) => Descriptor<R>;
 
-/** Describes a value that resolves to T inside a closure constructor. */
+/** Describes a value that resolves to T inside state closure inputs. */
 export type Descriptor<T> =
   | ImmediateDescriptor<T>
   | (T extends IReactiveState<infer V>

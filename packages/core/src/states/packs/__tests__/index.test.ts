@@ -192,6 +192,8 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
   RenderedBlock
 > {
   protected renderItem(item: IBlockState<HastRoot>): RenderedBlock {
+    const { patches, plugins } = this.inputs;
+
     return {
       baseLength: item.baseLength,
       destroy: () => item.destroy(),
@@ -199,8 +201,8 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
       length: item.length,
       meta: item.meta,
       range: item.range,
-      renderPatches: this.patches,
-      renderPlugins: this.plugins.value,
+      renderPatches: patches,
+      renderPlugins: plugins.value,
       value: item.value,
     };
   }
