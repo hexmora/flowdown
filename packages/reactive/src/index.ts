@@ -1,3 +1,3 @@
 export * from './modules';
 export * from './typings';
-export { createElement } from './jsx-runtime';
+export * from './jsx-runtime';

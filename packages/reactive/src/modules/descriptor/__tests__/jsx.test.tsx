@@ -1,5 +1,3 @@
-import { jsxDEV } from '@flowdown/reactive/jsx-dev-runtime';
-import { Fragment, jsx } from '@flowdown/reactive/jsx-runtime';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import {
@@ -13,7 +11,7 @@ import {
   MutableState,
   S,
 } from '../..';
-import { createElement } from '../../..';
+import { createElement, Fragment, jsx } from '../../..';
 
 type CountStateClosureInputs = {
   label?: string;
@@ -303,16 +301,6 @@ describe('descriptor JSX runtime', () => {
 
     expectTypeOf(descriptor[0]).toEqualTypeOf<typeof CountStateClosure>();
     expect(descriptor).toEqual([CountStateClosure, { source }]);
-
-    source.destroy();
-  });
-
-  test('keeps development runtime output aligned', () => {
-    const source = MutableState.of(1);
-
-    expect(jsxDEV(CountStateClosure, { source }, undefined, false)).toEqual(
-      jsx(CountStateClosure, { source }),
-    );
 
     source.destroy();
   });

@@ -14,7 +14,7 @@ import type {
 } from './type';
 
 import { isReactiveStateLike } from '../../reactive-state';
-import { getMemoizedStateMapperDistinctor } from '../memo';
+import { getMemoedDistinctor } from '../exports';
 import { immediateDescriptor } from './consts';
 import {
   assertDescriptorScope,
@@ -24,7 +24,7 @@ import {
   destroyDescriptorScope,
   ownStateClosure,
 } from './context';
-import { MappedStateClosure } from './mapped-state-closure';
+import { MappedStateClosure } from './mapped';
 
 export const isImmediateDescriptor = <T = unknown>(
   value: unknown,
@@ -265,7 +265,7 @@ const buildSlottedStateClosure = (
     closure = new MappedStateClosure(
       () => Factory(readMappingNode(node)),
       sources as [] | [IReactiveState<unknown>, ...IReactiveState<unknown>[]],
-      distinctor ?? getMemoizedStateMapperDistinctor(Factory),
+      distinctor ?? getMemoedDistinctor(Factory),
     );
   }
 

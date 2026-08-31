@@ -11,6 +11,11 @@ export default defineConfig({
       tsconfigPath: './tsconfig.build.json',
     }),
   ],
+  oxc: {
+    jsx: {
+      development: false,
+    },
+  },
   build: {
     cssCodeSplit: true,
     lib: {
