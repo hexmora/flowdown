@@ -10,7 +10,7 @@ import {
 import { memo } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
 
-import type { BlockRemarksConfig } from '../../../hast/block-compiler';
+import type { BlockRemarksConfig } from '../block-compiler/type';
 
 import { getPluggableClass, getPluggableConfig, mergePluginPluggables } from '../utils';
 

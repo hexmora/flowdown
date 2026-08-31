@@ -26,8 +26,8 @@ import {
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { IRenderPatchItem } from '../../../../externals/base-renderer';
-import type { BlockCompilerConfig, BlockRemarksConfig } from '../../../hast/block-compiler';
 import type { IPatchItem } from '../../type';
+import type { BlockCompilerConfig, BlockRemarksConfig } from '../block-compiler/type';
 
 import {
   RawPatchesMapper,

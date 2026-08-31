@@ -1,6 +1,6 @@
-import { IReactiveState, IStateClosure } from '@flowdown/reactive';
+import type { IReactiveState, IStateClosure } from '@flowdown/reactive';
 
-import { IRangeState } from '../range';
+import type { IRangeState } from './states';
 
 export type BaseBlockStateClosureParams<T> = {
   source: IReactiveState<T>;

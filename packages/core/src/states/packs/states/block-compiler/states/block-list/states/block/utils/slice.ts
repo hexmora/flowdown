@@ -2,7 +2,7 @@ import type { Element, ElementContent, RootContent } from 'hast';
 
 import { ceil, floor, isArray, isNaN, max } from 'lodash-es';
 
-import type { HastRoot } from '../../../../typings';
+import type { HastRoot } from '../../../../../../../../../typings';
 
 import {
   cloneTextFragment,

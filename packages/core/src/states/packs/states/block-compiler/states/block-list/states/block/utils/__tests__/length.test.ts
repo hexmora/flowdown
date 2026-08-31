@@ -8,7 +8,7 @@ import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { describe, expect, test, vi } from 'vitest';
 
-import { markdownToHast } from '../../../block-compiler/utils';
+import { markdownToHast } from '../../../block-source/utils';
 import { findVisibleIndex, getLengthOfHast } from '../length';
 
 const root = (children: RootContent[]): Root => ({

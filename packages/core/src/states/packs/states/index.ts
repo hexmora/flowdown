@@ -1,3 +1,4 @@
+export * from './block-compiler';
 export * from './raw-patches';
 export * from './rehype-pluggables';
 export * from './remark-pluggables';

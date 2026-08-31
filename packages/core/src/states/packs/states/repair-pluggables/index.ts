@@ -4,7 +4,7 @@ import { DanglingFootnoteRepairPlugin, PRESET_REPAIR_PLUGINS } from '@flowdown/p
 import { memo } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
 
-import type { BlockCompilerConfig } from '../../../hast/block-compiler';
+import type { BlockCompilerConfig } from '../block-compiler/type';
 
 import { mergePluginPluggables } from '../utils';
 

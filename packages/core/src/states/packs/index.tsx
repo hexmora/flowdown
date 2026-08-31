@@ -16,8 +16,8 @@ import type { IRenderPatchItem } from '../../externals/base-renderer';
 import type { CoreStateClosureParams } from './type';
 
 import { PluginBuilderStateClosure, TextChunkerStateClosure } from '../base';
-import { BlockCompilerStateClosure } from '../hast/block-compiler';
 import {
+  BlockCompilerStateClosure,
   RawPatchesMapper,
   RehypePluggablesMapper,
   RemarkPluggablesMapper,
