@@ -2,15 +2,13 @@
 import { isObjectLike } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
-import type { Distinctor } from '../reactive-state';
+import type { Distinctor } from '../../reactive-state';
 
 type ShallowComparable = Record<string, unknown> | unknown[];
 
 type StateMapper = (props: any) => any;
 
-const memoizedStateMapper: unique symbol = /*#__PURE__*/ Symbol.for(
-  '@flowdown/reactive/MemoizedStateMapper',
-) as any;
+const MemoedMapperKey: unique symbol = /*#__PURE__*/ Symbol('MemoedMapper');
 
 const isShallowEqual = <T>(left: T, right: T): boolean => {
   if (Object.is(left, right)) {
@@ -25,7 +23,7 @@ const isShallowEqual = <T>(left: T, right: T): boolean => {
 };
 
 export type MemoizedStateMapper<M extends StateMapper = StateMapper> = M & {
-  readonly [memoizedStateMapper]: unknown;
+  readonly [MemoedMapperKey]: unknown;
 };
 
 export type AnyMemoizedStateMapper = MemoizedStateMapper;
@@ -37,19 +35,17 @@ export const memo = <M extends StateMapper>(
 ): MemoizedStateMapper<M> => {
   const wrapped = ((props: Parameters<M>[0]) => mapper(props)) as MemoizedStateMapper<M>;
 
-  Object.defineProperty(wrapped, memoizedStateMapper, { value: distinctor });
+  Object.defineProperty(wrapped, MemoedMapperKey, { value: distinctor });
 
   return wrapped;
 };
 
-export const getMemoizedStateMapperDistinctor = (
-  mapper: unknown,
-): Distinctor<unknown> | undefined => {
-  if (typeof mapper !== 'function' || !(memoizedStateMapper in mapper)) {
+export const getMemoedDistinctor = (mapper: unknown): Distinctor<unknown> | undefined => {
+  if (typeof mapper !== 'function' || !(MemoedMapperKey in mapper)) {
     return undefined;
   }
 
   return (mapper as unknown as Record<PropertyKey, unknown>)[
-    memoizedStateMapper
+    MemoedMapperKey
   ] as Distinctor<unknown>;
 };

@@ -1,4 +1,3 @@
-import { jsxDEV } from '@flowdown/reactive/jsx-dev-runtime';
 import { jsx } from '@flowdown/reactive/jsx-runtime';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
@@ -135,12 +134,13 @@ describe('memo', () => {
     source.destroy();
   });
 
-  test('uses a stable runtime marker for memo metadata', () => {
+  test('marks memo metadata with a named symbol', () => {
     const Mapper = memo(({ value }: { value: number }) => value);
 
-    expect(Object.getOwnPropertySymbols(Mapper)).toContain(
-      Symbol.for('@flowdown/reactive/MemoizedStateMapper'),
-    );
+    const [key] = Object.getOwnPropertySymbols(Mapper);
+
+    expect(key?.description).toBe('MemoedMapper');
+    expect(key === undefined ? undefined : Symbol.keyFor(key)).toBeUndefined();
   });
 
   test('preserves D-wrapped mapper props', () => {
@@ -159,7 +159,7 @@ describe('memo', () => {
     closure.destroy();
   });
 
-  test('supports direct and development JSX runtime calls', () => {
+  test('supports direct JSX runtime calls', () => {
     const source = MutableState.of(2);
 
     const Doubled = memo(({ value }: { value: number }) => value * 2);
@@ -196,21 +196,13 @@ describe('memo', () => {
 
     const undefinedClosure = buildDescriptor(undefinedDescriptor);
 
-    const developmentClosure = buildDescriptor<number>(
-      jsxDEV(Doubled, { value: source }, undefined, false),
-    );
-
     expect(directClosure.value.value).toBe(4);
-
-    expect(developmentClosure.value.value).toBe(4);
 
     expect(nullClosure.value.value).toBeNull();
 
     expect(undefinedClosure.value.value).toBeUndefined();
 
     directClosure.destroy();
-
-    developmentClosure.destroy();
 
     nullClosure.destroy();
 

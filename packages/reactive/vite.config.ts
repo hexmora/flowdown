@@ -9,12 +9,16 @@ export default defineConfig({
       tsconfigPath: './tsconfig.build.json',
     }),
   ],
+  oxc: {
+    jsx: {
+      development: false,
+    },
+  },
   build: {
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
         'jsx-runtime': resolve(__dirname, 'src/jsx-runtime.ts'),
-        'jsx-dev-runtime': resolve(__dirname, 'src/jsx-dev-runtime.ts'),
       },
       name: 'FlowdownReactive',
       formats: ['es', 'cjs'],

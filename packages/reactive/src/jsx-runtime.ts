@@ -6,7 +6,7 @@ import type {
   StateClosureClass,
   StateClosureDescriptor,
 } from './modules/descriptor';
-import type { AnyMemoizedStateMapper } from './modules/descriptor/memo';
+import type { AnyMemoizedStateMapper } from './modules/descriptor/exports/memo';
 import type { IReactiveState } from './modules/reactive-state';
 import type { IStateClosure } from './modules/state-closure';
 
