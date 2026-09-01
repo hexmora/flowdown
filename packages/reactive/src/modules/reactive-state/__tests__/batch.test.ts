@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { BatchScheduler, combineMapState, combineState, mapState } from '../..';
+import { combineMapState, combineState, mapState } from '../../../helpers/operator';
+import { BatchScheduler } from '../../batch-scheduler';
 import { MutableState } from '../../mutable-state';
 
 describe('BatchScheduler', () => {

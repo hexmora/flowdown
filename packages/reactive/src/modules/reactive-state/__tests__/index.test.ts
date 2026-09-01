@@ -1,9 +1,10 @@
-import { assert } from '@flowdown/utils';
 import { BehaviorSubject, type Observer } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
-import { BatchScheduler, ReactiveState } from '../..';
-import { toReactiveState } from '../utils';
+import { ReactiveState } from '..';
+import { toReactiveState } from '../../../helpers/operator';
+import { assert } from '../../../utils';
+import { BatchScheduler } from '../../batch-scheduler';
 
 describe('ReactiveState', () => {
   test('defers emitter setup until value access by default', () => {
@@ -117,6 +118,43 @@ describe('ReactiveState', () => {
     expect(next).toHaveBeenCalledOnce();
     expect(next).toHaveBeenCalledWith({ count: 1 });
     expect(state.value).toEqual({ count: 1 });
+  });
+
+  test('uses Object.is as the default distinctor', () => {
+    const observerRef: {
+      current: Observer<number> | null;
+    } = {
+      current: null,
+    };
+
+    const state = new ReactiveState({
+      initial: 0,
+      emitter: (currentObserver) => {
+        observerRef.current = currentObserver;
+      },
+    });
+
+    const next = vi.fn();
+
+    state.subscribe(next);
+
+    next.mockClear();
+
+    const observer = observerRef.current;
+
+    assert(observer);
+
+    observer.next(-0);
+
+    expect(next).toHaveBeenCalledOnce();
+
+    expect(Object.is(state.value, -0)).toBe(true);
+
+    observer.next(-0);
+
+    expect(next).toHaveBeenCalledOnce();
+
+    state.destroy();
   });
 
   test('does not duplicate the current value after an rxjs source reconnects', () => {

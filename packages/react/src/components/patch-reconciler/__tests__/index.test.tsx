@@ -1,8 +1,8 @@
 import type { IRenderPatchItem } from '@flowdown/core';
 import type { ReactNode } from 'react';
 
-import { MutableState } from '@flowdown/reactive';
 import { act, render, screen } from '@testing-library/react';
+import { MutableState } from 'reactive';
 import { describe, expect, test } from 'vitest';
 
 import { PatchReconciler } from '..';

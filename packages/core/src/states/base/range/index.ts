@@ -1,6 +1,6 @@
-import { BaseStateClosure } from '@flowdown/reactive';
 import { compute } from '@flowdown/utils';
 import { isUndefined } from 'lodash-es';
+import { BaseStateClosure } from 'reactive';
 
 import type { IRangeState } from './type';
 

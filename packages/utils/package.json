@@ -41,8 +41,7 @@
   "dependencies": {
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
-    "lodash-es": "catalog:",
-    "rxjs": "catalog:"
+    "lodash-es": "catalog:"
   },
   "devDependencies": {
     "@types/lodash-es": "catalog:",

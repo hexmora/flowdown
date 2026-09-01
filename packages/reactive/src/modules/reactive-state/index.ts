@@ -1,5 +1,3 @@
-import { Destructible } from '@flowdown/utils';
-import { eq } from 'lodash-es';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 import type {
@@ -11,11 +9,10 @@ import type {
 } from './type';
 
 import { BatchScheduler } from '../batch-scheduler';
-import { isFinalPendingType } from './pending';
+import { Destructible } from '../destructible';
+import { isFinalPendingType } from './utils';
 
 export * from './type';
-
-export * from './utils';
 
 type PendingType = 'next' | 'complete' | 'error';
 
@@ -42,7 +39,7 @@ export class ReactiveState<T> extends Destructible implements IReactiveState<T> 
     });
   }
 
-  constructor({ initial, emitter, distinctor = eq, lazy = true }: ReactiveStateParams<T>) {
+  constructor({ initial, emitter, distinctor = Object.is, lazy = true }: ReactiveStateParams<T>) {
     super();
 
     this.distinctor = distinctor;

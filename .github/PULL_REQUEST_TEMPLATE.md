@@ -33,7 +33,7 @@ If an AI agent is preparing a lettered PR sequence at the maintainer's request:
 ## Package Boundary Checklist
 
 - [ ] `@flowdown/core` remains headless and free of React/rendering dependencies.
-- [ ] `@flowdown/reactive` remains headless and framework-free.
+- [ ] `reactive` remains headless and framework-free.
 - [ ] React, Storybook, DOM, hooks, and UI rendering concerns live in `flowdown`.
 - [ ] Type/env declarations are under `src/typings/`.
 - [ ] Generated artifacts are not committed.

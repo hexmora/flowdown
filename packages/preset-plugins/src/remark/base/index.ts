@@ -3,7 +3,7 @@ import type { IBasePluginConfig, IRemarkPlugin } from '@flowdown/types';
 import type { Plugin } from 'unified';
 import type { Node } from 'unist';
 
-import { Destructible } from '@flowdown/utils';
+import { Destructible } from 'reactive';
 
 import type { MdastRoot } from '../../typings';
 

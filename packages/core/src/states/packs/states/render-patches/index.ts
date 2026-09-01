@@ -1,21 +1,14 @@
-import { memo, type MemoizedStateMapper } from '@flowdown/reactive';
+import { memo } from 'reactive';
 
-import type { IRenderPatchItem } from '../../../../externals/base-renderer';
-import type { IPatchItem } from '../../type';
+import type { IRenderPatchItem } from '../../../../externals';
+import type { RenderPatchesMapperInputs } from './type';
 
 import { isKeyablesEqual, splitPatches } from '../../utils';
 
-type RenderPatchesMapperProps<R> = {
-  patches: IPatchItem<R>[];
-};
+export * from './type';
 
-type RenderPatchesMapperComponent = MemoizedStateMapper<
-  <R>(props: RenderPatchesMapperProps<R>) => IRenderPatchItem<R>[]
->;
-
-export const RenderPatchesMapper: RenderPatchesMapperComponent = /*#__PURE__*/ memo(
-  function RenderPatchesMapper<R>({ patches }: RenderPatchesMapperProps<R>): IRenderPatchItem<R>[] {
-    return splitPatches(patches).renderPatches;
-  },
-  isKeyablesEqual,
-);
+export const RenderPatchesMapper = /*#__PURE__*/ memo(function RenderPatchesMapper<R>({
+  patches,
+}: RenderPatchesMapperInputs<R>): IRenderPatchItem<R>[] {
+  return splitPatches(patches).renderPatches;
+}, isKeyablesEqual);

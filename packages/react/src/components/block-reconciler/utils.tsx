@@ -1,7 +1,7 @@
 import type { IRenderPatchItem } from '@flowdown/core';
-import type { IReactiveState } from '@flowdown/reactive';
 import type { Element, ElementContent, Parent, RootContent } from 'hast';
 import type { ReactNode } from 'react';
+import type { IReactiveState } from 'reactive';
 
 import { isString } from 'lodash-es';
 import { Fragment } from 'react';

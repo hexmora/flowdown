@@ -4,6 +4,7 @@ import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 import { PluginBuilderStateClosure } from '@flowdown/core';
 import { get, has, set } from 'lodash-es';
 import { useMemo } from 'react';
+import { render, S } from 'reactive';
 
 import type { AnySlotPluggable, AnySlotPlugin, IPluginItem, Slots } from '../types';
 
@@ -56,12 +57,16 @@ export function usePlugins(
 export const useSlots = (pluggables: readonly AnySlotPluggable[]): Partial<Slots> => {
   const plugins = useStateOf<AnySlotPluggable[]>([...pluggables], isPluggablesEqual);
 
-  const builder = useStatic(
-    () =>
-      new PluginBuilderStateClosure<AnySlotPlugin>({
-        plugins,
-        sort: false,
-      }),
+  const builder = useStatic(() =>
+    render(
+      S([
+        PluginBuilderStateClosure<AnySlotPlugin>,
+        {
+          plugins,
+          sort: false,
+        },
+      ]),
+    ),
   );
 
   const instances = useStateValue(builder.value);

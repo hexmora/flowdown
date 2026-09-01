@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type { OmitWithType } from '@flowdown/utils';
-
 export interface Newable<T, A extends Array<any> = any[]> {
   new (...args: A): T;
 }

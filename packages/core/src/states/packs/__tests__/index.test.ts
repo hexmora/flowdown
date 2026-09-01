@@ -16,7 +16,6 @@ import {
   PRESET_REPAIR_PLUGINS,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import { type IReactiveState, MutableState, ReactiveState } from '@flowdown/reactive';
 import {
   type IBasePluginConfig,
   type IPluggable,
@@ -28,11 +27,20 @@ import {
   type RepairPluginSystemConfig,
 } from '@flowdown/types';
 import { first, last, nth } from 'lodash-es';
+import {
+  D,
+  type IReactiveState,
+  type IStateClosure,
+  MutableState,
+  ReactiveState,
+  render,
+  S,
+} from 'reactive';
 import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
-import type { BlockCompilerConfig } from '../../hast/block-compiler';
+import type { BlockCompilerConfig } from '../../hast';
 
 import { CoreStateClosure, type IPatchItem } from '..';
 import {
@@ -185,6 +193,24 @@ class TestRenderPlugin extends BaseRenderPlugin<ElementContent, Parent, Rendered
   }
 }
 
+const renderTestItem = (
+  item: IBlockState<HastRoot>,
+  patches: IReactiveState<IRenderPatchItem<RenderedBlock>[]>,
+  plugins: IReactiveState<IRenderPlugin<ElementContent, Parent, RenderedBlock>[]>,
+): RenderedBlock => {
+  return {
+    baseLength: item.baseLength,
+    destroy: () => item.destroy(),
+    fork: (params) => item.fork(params),
+    length: item.length,
+    meta: item.meta,
+    range: item.range,
+    renderPatches: patches,
+    renderPlugins: plugins.value,
+    value: item.value,
+  };
+};
+
 class TestRendererStateClosure extends BaseRendererStateClosure<
   HastRoot,
   ElementContent,
@@ -192,19 +218,7 @@ class TestRendererStateClosure extends BaseRendererStateClosure<
   RenderedBlock
 > {
   protected renderItem(item: IBlockState<HastRoot>): RenderedBlock {
-    const { patches, plugins } = this.inputs;
-
-    return {
-      baseLength: item.baseLength,
-      destroy: () => item.destroy(),
-      fork: (params) => item.fork(params),
-      length: item.length,
-      meta: item.meta,
-      range: item.range,
-      renderPatches: patches,
-      renderPlugins: plugins.value,
-      value: item.value,
-    };
+    return renderTestItem(item, this.inputs.patches, this.inputs.plugins);
   }
 }
 
@@ -277,16 +291,21 @@ const setupCoreStateClosure = (initialText = 'base') => {
   const renders = MutableState.of<
     IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
   >([]);
-  const state = new CoreStateClosure({
-    Renderer: TestRendererStateClosure,
-    text,
-    patches,
-    config,
-    renders,
-    remarks,
-    rehypes,
-    repairs,
-  });
+  const state = render(
+    S([
+      CoreStateClosure<RenderedBlock>,
+      {
+        Renderer: D(TestRendererStateClosure),
+        text: D(text),
+        patches: D(patches),
+        config: D(config),
+        renders: D(renders),
+        remarks: D(remarks),
+        rehypes: D(rehypes),
+        repairs: D(repairs),
+      },
+    ]),
+  );
 
   return {
     config,
@@ -310,25 +329,51 @@ beforeEach(() => {
 
 describe('CoreStateClosure', () => {
   test('exposes a reactive rendered value and preset plugin classes', () => {
-    expectTypeOf<CoreStateClosure<RenderedBlock>['value']>().toEqualTypeOf<
-      IReactiveState<RenderedBlock[]>
-    >();
+    const harness = setupCoreStateClosure();
+
+    const { state } = harness;
+
+    // @ts-expect-error Core runtime inputs must preserve reactive sources with D().
+    S([
+      CoreStateClosure<RenderedBlock>,
+      {
+        Renderer: D(TestRendererStateClosure),
+        config: D(harness.config),
+        patches: D(harness.patches),
+        rehypes: D(harness.rehypes),
+        remarks: D(harness.remarks),
+        renders: D(harness.renders),
+        repairs: D(harness.repairs),
+        text: harness.text,
+      },
+    ]);
+
+    expectTypeOf(state).toEqualTypeOf<IStateClosure<RenderedBlock[]>>();
 
     expect(PRESET_REMARK_PLUGINS).toContain(SyntaxMathRemarkPlugin);
     expect(PRESET_REHYPE_PLUGINS).toContain(HoistFootnoteRehypePlugin);
     expect(PRESET_REPAIR_PLUGINS).toContain(DanglingFootnoteRepairPlugin);
+
+    state.destroy();
   });
 
   test('builds from direct inputs with default plugin sources', () => {
-    const state = new CoreStateClosure({
-      Renderer: TestRendererStateClosure,
-      text: 'base',
-      patches: ReactiveState.of<IPatchItem<RenderedBlock>[]>([]),
-      config: DEFAULT_CONFIG,
-      renders: ReactiveState.of<
-        IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
-      >([]),
-    });
+    const state = render(
+      S([
+        CoreStateClosure<RenderedBlock>,
+        {
+          Renderer: D(TestRendererStateClosure),
+          text: D('base'),
+          patches: D(ReactiveState.of<IPatchItem<RenderedBlock>[]>([])),
+          config: D(DEFAULT_CONFIG),
+          renders: D(
+            ReactiveState.of<
+              IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
+            >([]),
+          ),
+        },
+      ]),
+    );
 
     expect(collectText(getFirstBlockTree(state))).toBe('base');
 

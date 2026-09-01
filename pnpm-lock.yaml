@@ -202,9 +202,6 @@ importers:
       '@flowdown/preset-plugins':
         specifier: workspace:*
         version: link:../preset-plugins
-      '@flowdown/reactive':
-        specifier: workspace:*
-        version: link:../reactive
       '@flowdown/types':
         specifier: workspace:*
         version: link:../types
@@ -223,6 +220,9 @@ importers:
       marked:
         specifier: 'catalog:'
         version: 18.0.5
+      reactive:
+        specifier: workspace:*
+        version: link:../reactive
       remark-parse:
         specifier: 'catalog:'
         version: 11.0.0
@@ -338,6 +338,9 @@ importers:
       micromark-util-types:
         specifier: 'catalog:'
         version: 2.0.2
+      reactive:
+        specifier: workspace:*
+        version: link:../reactive
       rehype-raw:
         specifier: 'catalog:'
         version: 7.0.0
@@ -384,9 +387,6 @@ importers:
       '@flowdown/core':
         specifier: workspace:*
         version: link:../core
-      '@flowdown/reactive':
-        specifier: workspace:*
-        version: link:../reactive
       '@flowdown/types':
         specifier: workspace:*
         version: link:../types
@@ -402,6 +402,9 @@ importers:
       react-error-boundary:
         specifier: 'catalog:'
         version: 6.1.2(react@18.3.1)
+      reactive:
+        specifier: workspace:*
+        version: link:../reactive
       shallow-equal:
         specifier: 'catalog:'
         version: 3.1.0
@@ -472,9 +475,6 @@ importers:
 
   packages/reactive:
     dependencies:
-      '@flowdown/utils':
-        specifier: workspace:*
-        version: link:../utils
       lodash-es:
         specifier: 'catalog:'
         version: 4.18.1
@@ -521,6 +521,9 @@ importers:
       '@types/unist':
         specifier: 'catalog:'
         version: 3.0.3
+      reactive:
+        specifier: workspace:*
+        version: link:../reactive
       unified:
         specifier: 'catalog:'
         version: 11.0.5
@@ -552,9 +555,6 @@ importers:
       lodash-es:
         specifier: 'catalog:'
         version: 4.18.1
-      rxjs:
-        specifier: 'catalog:'
-        version: 7.8.2
     devDependencies:
       '@types/lodash-es':
         specifier: 'catalog:'

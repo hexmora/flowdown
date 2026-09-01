@@ -1,6 +1,6 @@
 import type { IBasePluginConfig } from '@flowdown/types';
 
-import { Destructible } from '@flowdown/utils';
+import { Destructible } from 'reactive';
 
 import { IRenderPlugin, IRenderPluginMatchParams, IRenderPluginRenderParams } from './type';
 

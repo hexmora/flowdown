@@ -1,7 +1,7 @@
-import { MutableState } from '@flowdown/reactive';
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { type ReactNode, StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
+import { MutableState } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import { useStateOf, useStateValue } from '..';

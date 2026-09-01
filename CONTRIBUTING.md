@@ -19,7 +19,7 @@ pnpm build:storybook
 
 - `@flowdown/core` is headless pure computation. It should not depend on React,
   Storybook, DOM rendering, hooks, or UI-only packages.
-- `@flowdown/reactive` is headless reactive infrastructure. It should stay
+- `reactive` is headless reactive infrastructure. It should stay
   framework-free and avoid React, Storybook, DOM rendering, or UI-only packages.
 - `flowdown` owns React rendering, Storybook, tests, hooks, and
   rendering-layer dependencies.

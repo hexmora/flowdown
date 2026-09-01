@@ -1,5 +1,5 @@
-import type { IDestructible } from '@flowdown/utils';
 import type { Root as MdastRoot } from 'mdast';
+import type { IDestructible } from 'reactive';
 import type { Plugin } from 'unified';
 import type { Node } from 'unist';
 

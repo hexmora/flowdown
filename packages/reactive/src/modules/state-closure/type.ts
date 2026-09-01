@@ -1,7 +1,7 @@
-import type { IDestructible } from '@flowdown/utils';
 import type { BehaviorSubject } from 'rxjs';
 
-import type { ImmediateDescriptor, StateClosureDescriptor } from '../descriptor/type';
+import type { ImmediateDescriptor, StateClosureDescriptor } from '../../helpers/render';
+import type { IDestructible } from '../destructible';
 import type { IReactiveState } from '../reactive-state';
 
 export type StateClosureDirectSource<T> = T | BehaviorSubject<T> | IReactiveState<T>;

@@ -1,24 +1,19 @@
-import { assert, Destructible } from '@flowdown/utils';
 import { BehaviorSubject } from 'rxjs';
 
-import type {
-  Distinctor,
-  IReactiveState,
-  StateMapper,
-  StateValue,
-  StateValues,
-} from '../reactive-state';
+import type { StateMapper, StateValue, StateValues } from '../../helpers/operator';
+import type { Distinctor, IReactiveState, ReactiveState } from '../reactive-state';
 import type { IStateClosure, StateClosureSource } from './type';
 
-import { BatchScheduler } from '../batch-scheduler';
 import {
   combineMapState,
   combineState,
   isReactiveStateLike,
   mapState,
-  type ReactiveState,
   toReactiveState,
-} from '../reactive-state';
+} from '../../helpers/operator';
+import { assert } from '../../utils';
+import { BatchScheduler } from '../batch-scheduler';
+import { Destructible } from '../destructible';
 import { isResolvedClosureSource, isResolvedImmediateSource, resolveSource } from './utils';
 
 export * from './type';

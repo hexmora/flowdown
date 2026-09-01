@@ -1,7 +1,7 @@
 import type { IBlockState, IRenderPatchItem } from '@flowdown/core';
-import type { IReactiveState } from '@flowdown/reactive';
 import type { ElementContent, Parent, Root } from 'hast';
 import type { ReactNode } from 'react';
+import type { IReactiveState } from 'reactive';
 
 import type { IReactRenderPlugin } from '../../types';
 

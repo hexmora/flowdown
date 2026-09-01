@@ -39,6 +39,7 @@ export default defineConfig({
         'micromark-extension-math',
         'micromark-util-character',
         'micromark-util-types',
+        'reactive',
         'rehype-raw',
         'rehype-sanitize',
         'remark-breaks',

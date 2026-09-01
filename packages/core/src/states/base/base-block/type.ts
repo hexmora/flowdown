@@ -1,8 +1,8 @@
-import { IReactiveState, IStateClosure } from '@flowdown/reactive';
+import { IReactiveState, IStateClosure, Newable } from 'reactive';
 
 import { IRangeState } from '../range';
 
-export type BaseBlockStateClosureParams<T> = {
+export type BaseBlockStateClosureInputs<T> = {
   source: IReactiveState<T>;
 
   meta: IReactiveState<IBlockMeta>;
@@ -11,6 +11,8 @@ export type BaseBlockStateClosureParams<T> = {
 
   mapper?: IBlockStateMapper<T>;
 };
+
+export type BlockStateClosureClass<T> = Newable<IBlockState<T>, [BaseBlockStateClosureInputs<T>]>;
 
 export interface IBlockMeta {
   /** Unique block identifier */

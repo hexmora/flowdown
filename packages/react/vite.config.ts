@@ -27,7 +27,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@flowdown/core',
-        '@flowdown/reactive',
+        /^reactive(?:\/.*)?$/,
         '@flowdown/types',
         '@flowdown/utils',
         'lodash-es',
@@ -40,7 +40,7 @@ export default defineConfig({
       output: {
         globals: {
           '@flowdown/core': 'FlowdownCore',
-          '@flowdown/reactive': 'FlowdownReactive',
+          reactive: 'FlowdownReactive',
           '@flowdown/types': 'FlowdownTypes',
           '@flowdown/utils': 'FlowdownUtils',
           'lodash-es': 'lodashEs',

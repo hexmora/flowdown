@@ -1,55 +1,48 @@
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
-import type { IDestructible } from '@flowdown/utils';
+import type { IPluginWithConfig } from '@flowdown/types';
+import type { IDestructible } from 'reactive';
 
-import { BaseStateClosure } from '@flowdown/reactive';
 import { cacheDiffMap } from '@flowdown/utils';
+import { useClearable, useMap, useRef, useStableFn } from 'reactive';
 
-import type { PluginBuilderStateClosureParams } from './type';
+import type { PluginBuilderStateClosureInputs, PluginEntry } from './type';
 
 import { buildPluggables, isPluggableEqual, sortPluginInstances } from './utils';
 
 export * from './type';
-export * from './utils';
+export { isPluggableEqual } from './utils';
 
-type PluginEntry<T extends IPluginWithConfig> = {
-  instance: T;
+export function PluginBuilderStateClosure<T extends IPluginWithConfig & IDestructible>({
+  plugins,
+  sort = true,
+}: PluginBuilderStateClosureInputs<T>) {
+  const entries = useRef<PluginEntry<T>[]>([]);
 
-  pluggable: IPluggable<T, unknown>;
-};
+  const cleanup = useStableFn(() => {
+    for (const { instance } of entries.current) {
+      instance.destroy();
+    }
 
-export class PluginBuilderStateClosure<
-  T extends IPluginWithConfig & IDestructible,
-> extends BaseStateClosure<T[], PluginBuilderStateClosureParams<T>> {
-  protected render() {
-    const { plugins, sort = true } = this.inputs;
+    entries.current = [];
+  });
 
-    let entries: PluginEntry<T>[] = [];
-
-    const state = this.map(plugins, (currentPluggables) => {
-      entries = cacheDiffMap({
-        prev: entries.map((entry) => [entry.pluggable, entry]),
-        current: currentPluggables,
-        mapper: (pluggable) => ({
-          instance: buildPluggables(pluggable),
-          pluggable,
-        }),
-        comparer: isPluggableEqual,
-        teardown: ({ instance }) => instance.destroy(),
-      });
-
-      const instances = entries.map(({ instance }) => instance);
-
-      return sort ? sortPluginInstances(instances) : instances;
+  const state = useMap(plugins, (currentPluggables) => {
+    entries.current = cacheDiffMap({
+      prev: entries.current.map((entry) => [entry.pluggable, entry]),
+      current: currentPluggables,
+      mapper: (pluggable) => ({
+        instance: buildPluggables(pluggable),
+        pluggable,
+      }),
+      comparer: isPluggableEqual,
+      teardown: ({ instance }) => instance.destroy(),
     });
 
-    this.clearable(() => {
-      for (const { instance } of entries) {
-        instance.destroy();
-      }
+    const instances = entries.current.map(({ instance }) => instance);
 
-      entries = [];
-    });
+    return sort ? sortPluginInstances(instances) : instances;
+  });
 
-    return state;
-  }
+  useClearable(cleanup);
+
+  return state;
 }

@@ -1,22 +1,15 @@
 import type { IRawPatchItem } from '@flowdown/types';
 
-import { memo, type MemoizedStateMapper } from '@flowdown/reactive';
+import { memo } from 'reactive';
 
-import type { IPatchItem } from '../../type';
+import type { RawPatchesMapperInputs } from './type';
 
 import { isKeyablesEqual, splitPatches } from '../../utils';
 
-type RawPatchesMapperProps<R> = {
-  patches: IPatchItem<R>[];
-};
+export * from './type';
 
-type RawPatchesMapperComponent = MemoizedStateMapper<
-  <R>(props: RawPatchesMapperProps<R>) => IRawPatchItem[]
->;
-
-export const RawPatchesMapper: RawPatchesMapperComponent = /*#__PURE__*/ memo(
-  function RawPatchesMapper<R>({ patches }: RawPatchesMapperProps<R>): IRawPatchItem[] {
-    return splitPatches(patches).rawPatches;
-  },
-  isKeyablesEqual,
-);
+export const RawPatchesMapper = /*#__PURE__*/ memo(function RawPatchesMapper<R>({
+  patches,
+}: RawPatchesMapperInputs<R>): IRawPatchItem[] {
+  return splitPatches(patches).rawPatches;
+}, isKeyablesEqual);

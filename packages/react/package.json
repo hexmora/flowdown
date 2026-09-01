@@ -45,12 +45,12 @@
   },
   "dependencies": {
     "@flowdown/core": "workspace:*",
-    "@flowdown/reactive": "workspace:*",
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "lodash-es": "catalog:",
     "react-error-boundary": "catalog:",
+    "reactive": "workspace:*",
     "shallow-equal": "catalog:"
   },
   "devDependencies": {

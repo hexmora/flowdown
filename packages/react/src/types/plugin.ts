@@ -1,8 +1,8 @@
 import type { IRenderPatchItem, IRenderPlugin, IRenderPluginRenderParams } from '@flowdown/core';
-import type { IReactiveState } from '@flowdown/reactive';
 import type { IPluggable } from '@flowdown/types';
 import type { Element, ElementContent, Parent } from 'hast';
 import type { ReactNode } from 'react';
+import type { IReactiveState } from 'reactive';
 
 export interface ReactRenderExtraParams {
   getProps: (node?: Element) => Record<string, unknown>;

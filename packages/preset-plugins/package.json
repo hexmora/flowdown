@@ -64,6 +64,7 @@
     "micromark-extension-math": "catalog:",
     "micromark-util-character": "catalog:",
     "micromark-util-types": "catalog:",
+    "reactive": "workspace:*",
     "rehype-raw": "catalog:",
     "rehype-sanitize": "catalog:",
     "remark-breaks": "catalog:",

@@ -2,7 +2,7 @@
 import type { IBasePluginConfig, IRehypePlugin } from '@flowdown/types';
 import type { Plugin } from 'unified';
 
-import { Destructible } from '@flowdown/utils';
+import { Destructible } from 'reactive';
 
 import type { HastRoot } from '../../typings';
 

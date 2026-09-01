@@ -22,6 +22,9 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
+    rollupOptions: {
+      external: [/^reactive(?:\/.*)?$/],
+    },
   },
   test: {
     environment: 'node',
