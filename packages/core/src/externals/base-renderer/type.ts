@@ -1,8 +1,8 @@
-import type { IReactiveState, Newable } from '@flowdown/reactive';
+import type { IReactiveState, Newable } from 'reactive';
 
-import type { IBlockState } from '../../states/base/base-block';
+import type { BaseRendererStateClosure } from '.';
+import type { IBlockState } from '../../states/base';
 import type { IRenderPlugin } from '../base-render-plugin';
-import type { BaseRendererStateClosure } from './index';
 
 export type IRenderPatchRender<R> = (text?: string) => R;
 
@@ -12,7 +12,7 @@ export interface IRenderPatchItem<R> {
   render: IRenderPatchRender<R>;
 }
 
-export interface BaseRendererStateClosureParams<T, E, P, R, C = {}> {
+export interface BaseRendererStateClosureInputs<T, E, P, R, C = {}> {
   source: IReactiveState<IBlockState<T>[]>;
 
   patches: IReactiveState<IRenderPatchItem<R>[]>;
@@ -22,5 +22,5 @@ export interface BaseRendererStateClosureParams<T, E, P, R, C = {}> {
 
 export type RendererClass<T, E, P, R, C> = Newable<
   BaseRendererStateClosure<T, E, P, R, C>,
-  [BaseRendererStateClosureParams<T, E, P, R, C>]
+  [BaseRendererStateClosureInputs<T, E, P, R, C>]
 >;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { CoreStateClosure } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
 import { forwardRef, memo, useImperativeHandle } from 'react';
+import { D, render, S } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { FlowdownProps, FlowdownRef, ReactRenderExtraParams } from './types';
@@ -50,18 +51,22 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     const renders = useStateOf(_renders, isPluggablesEqual);
 
-    const core = useStatic(
-      () =>
-        new CoreStateClosure<ReactNode, ReactRenderExtraParams>({
-          Renderer: ReactRenderer,
-          config,
-          patches,
-          rehypes,
-          remarks,
-          renders,
-          repairs,
-          text,
-        }),
+    const core = useStatic(() =>
+      render(
+        S([
+          CoreStateClosure<ReactNode, ReactRenderExtraParams>,
+          {
+            Renderer: D(ReactRenderer),
+            config: D(config),
+            patches: D(patches),
+            rehypes: D(rehypes),
+            remarks: D(remarks),
+            renders: D(renders),
+            repairs: D(repairs),
+            text: D(text),
+          },
+        ]),
+      ),
     );
 
     useImperativeHandle(ref, () => core, [core]);

@@ -1,6 +1,6 @@
-import { MutableState } from '@flowdown/reactive';
 import { act, render, screen } from '@testing-library/react';
 import { type ReactNode } from 'react';
+import { MutableState } from 'reactive';
 import { describe, expect, test } from 'vitest';
 
 import { RootReconciler } from '../components/root-reconciler';

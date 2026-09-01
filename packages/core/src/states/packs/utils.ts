@@ -2,7 +2,7 @@ import type { IRawPatchItem } from '@flowdown/types';
 
 import { isEqual } from 'lodash-es';
 
-import type { IRenderPatchItem } from '../../externals/base-renderer';
+import type { IRenderPatchItem } from '../../externals';
 import type { IPatchItem } from './type';
 
 export interface Keyable {

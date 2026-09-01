@@ -1,13 +1,9 @@
-import type {
-  BlockCompilerConfig,
-  CoreStateClosure,
-  IPatchItem,
-  PluginConfigs,
-} from '@flowdown/core';
+import type { BlockCompilerConfig, IPatchItem, PluginConfigs } from '@flowdown/core';
 import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { CSSProperties, ReactNode } from 'react';
+import type { IStateClosure } from 'reactive';
 
-import type { IReactRenderPluggable, ReactRenderExtraParams } from './plugin';
+import type { IReactRenderPluggable } from './plugin';
 import type { AnySlotPluggable } from './slots';
 
 export interface IPluginItem {
@@ -46,4 +42,4 @@ export interface FlowdownProps {
   plugins?: IPluginItem[];
 }
 
-export type FlowdownRef = CoreStateClosure<ReactNode, ReactRenderExtraParams>;
+export type FlowdownRef = IStateClosure<ReactNode[]>;

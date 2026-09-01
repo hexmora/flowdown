@@ -1,11 +1,11 @@
-import { type IReactiveState, MutableState, ReactiveState } from '@flowdown/reactive';
+import { type IReactiveState, MutableState, ReactiveState } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { IBlockMeta, IBlockState } from '../../../states/base/base-block';
+import type { IBlockMeta, IBlockState } from '../../../states/base';
 
 import {
   BaseRendererStateClosure,
-  type BaseRendererStateClosureParams,
+  type BaseRendererStateClosureInputs,
   type IRenderPatchItem,
 } from '..';
 import {
@@ -99,7 +99,7 @@ const setupRenderer = (blocks: IBlockState<string>[]) => {
   const plugins = MutableState.of<
     BaseRenderPlugin<string, string, RenderedItem, TestRenderConfig>[]
   >([initialPlugin]);
-  const params: BaseRendererStateClosureParams<
+  const inputs: BaseRendererStateClosureInputs<
     string,
     string,
     string,
@@ -110,7 +110,7 @@ const setupRenderer = (blocks: IBlockState<string>[]) => {
     patches,
     plugins,
   };
-  const renderer = new TestRendererStateClosure(params);
+  const renderer = new TestRendererStateClosure(inputs);
 
   return { initialPlugin, patches, plugins, renderer, source };
 };

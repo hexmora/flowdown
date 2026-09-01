@@ -3,7 +3,6 @@ import type {
   PatchesRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import type { IReactiveState, StateSource } from '@flowdown/reactive';
 import type {
   IBasePluginConfig,
   IPluggable,
@@ -13,11 +12,11 @@ import type {
   IRepairPlugin,
 } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
+import type { IReactiveState, StateSource } from 'reactive';
 
-import type { IRenderPluggable } from '../../externals/base-render-plugin';
-import type { IRenderPatchRender, RendererClass } from '../../externals/base-renderer';
+import type { IRenderPatchRender, IRenderPluggable, RendererClass } from '../../externals';
 import type { HastRoot } from '../../typings';
-import type { BlockCompilerConfig } from '../hast/block-compiler';
+import type { BlockCompilerConfig } from '../hast';
 
 type PluginConstructor = (abstract new (...args: never[]) => {
   config: IBasePluginConfig;
@@ -54,7 +53,7 @@ export interface IPatchItem<R> {
   render: IRenderPatchRender<R>;
 }
 
-export type CoreStateClosureParams<R, C = {}> = {
+export type CoreStateClosureInputs<R, C = {}> = {
   Renderer: RendererClass<HastRoot, ElementContent, Parent, R, C>;
 
   text: StateSource<string>;

@@ -2,17 +2,13 @@ import { isFunction } from 'lodash-es';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
+import type { IReactiveState, StateSubscriber } from '../../reactive-state';
+
 import { BaseStateClosure, type IStateClosure, type StateClosureSource } from '..';
+import { combineMapState, mapState, toReactiveState } from '../../../helpers/operator';
+import { D, S } from '../../../helpers/render';
 import { BatchScheduler } from '../../batch-scheduler';
-import { D, S } from '../../descriptor';
 import { MutableState } from '../../mutable-state';
-import {
-  combineMapState,
-  type IReactiveState,
-  mapState,
-  type StateSubscriber,
-  toReactiveState,
-} from '../../reactive-state';
 
 type SourceStateClosureInputs<T> = {
   source: StateClosureSource<T>;

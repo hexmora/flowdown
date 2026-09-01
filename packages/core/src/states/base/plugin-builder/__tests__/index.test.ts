@@ -5,13 +5,13 @@ import type {
   PluginClass,
 } from '@flowdown/types';
 
-import { type IReactiveState, toReactiveState } from '@flowdown/reactive';
 import { isArray } from 'lodash-es';
+import { type IReactiveState, render, S, toReactiveState } from 'reactive';
 import { BehaviorSubject } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
-import { PluginBuilderStateClosure } from '..';
-import { buildPluggables, isPluggableEqual } from '../utils';
+import { isPluggableEqual, PluginBuilderStateClosure } from '..';
+import { buildPluggables } from '../utils';
 
 interface TestPluginConfig extends IBasePluginConfig {
   label?: string;
@@ -25,8 +25,6 @@ interface TestPlugin extends IPluginWithConfig {
   config: TestPluginConfig;
   destroy: () => void;
 }
-
-class TestPluginBuilderStateClosure extends PluginBuilderStateClosure<TestPlugin> {}
 
 const assertType = <T>(_value: T) => undefined;
 
@@ -56,7 +54,7 @@ const createPluginClass = (
 const setupBuilder = (initialPlugins: IPluggable<TestPlugin, unknown>[], sort = true) => {
   const pluginsSubject = new BehaviorSubject(initialPlugins);
   const plugins = toReactiveState(pluginsSubject);
-  const closure = new TestPluginBuilderStateClosure({ plugins, sort });
+  const closure = render(S([PluginBuilderStateClosure<TestPlugin>, { plugins, sort }]));
 
   return { closure, plugins, pluginsSubject };
 };
@@ -156,6 +154,22 @@ describe('PluginBuilderStateClosure', () => {
     expect(closure.value.value).toEqual([initialB, initialA]);
     expect(constructA).toHaveBeenCalledOnce();
     expect(constructB).toHaveBeenCalledOnce();
+  });
+
+  test('publishes reused instances for equivalent source emissions', () => {
+    const Plugin = createPluginClass('plugin', vi.fn());
+    const { closure, pluginsSubject } = setupBuilder([[Plugin, { nested: { enabled: true } }]]);
+    const [instance] = closure.value.value;
+    const next = vi.fn();
+
+    closure.value.subscribe(next);
+
+    next.mockClear();
+
+    pluginsSubject.next([[Plugin, { nested: { enabled: true } }]]);
+
+    expect(closure.value.value).toEqual([instance]);
+    expect(next).toHaveBeenCalledOnce();
   });
 
   test('keeps source pluggables paired across sorting and replaces only changed options', () => {

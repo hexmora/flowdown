@@ -1,4 +1,4 @@
-/** @jsxImportSource @flowdown/reactive */
+/** @jsxImportSource reactive */
 
 import type {
   IPluggable,
@@ -16,17 +16,17 @@ import {
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
 import {
-  buildDescriptor,
   type IReactiveState,
   type IStateClosure,
   type JSXDescriptor,
   MutableState,
+  render,
   S,
-} from '@flowdown/reactive';
+} from 'reactive';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import type { IRenderPatchItem } from '../../../../externals/base-renderer';
-import type { BlockCompilerConfig, BlockRemarksConfig } from '../../../hast/block-compiler';
+import type { IRenderPatchItem } from '../../../../externals';
+import type { BlockCompilerConfig, BlockRemarksConfig } from '../../../hast';
 import type { IPatchItem } from '../../type';
 
 import {
@@ -58,11 +58,11 @@ describe('pack state mappers', () => {
       { key: 'stable', range: [1, 2], render: renderFirst },
     ]);
 
-    const rawPatches = buildDescriptor<IRawPatchItem[]>(
+    const rawPatches = render<IRawPatchItem[]>(
       S<IRawPatchItem[]>(<RawPatchesMapper<string> patches={patches} />),
     );
 
-    const renderPatches = buildDescriptor<IRenderPatchItem<string>[]>(
+    const renderPatches = render<IRenderPatchItem<string>[]>(
       S<IRenderPatchItem<string>[]>(<RenderPatchesMapper<string> patches={patches} />),
     );
 
@@ -107,19 +107,19 @@ describe('pack state mappers', () => {
 
     const repairs = MutableState.of<IRepairPlugin[]>([]);
 
-    const rehypes = buildDescriptor<IPluggable<IRehypePlugin, unknown>[]>(
+    const rehypes = render<IPluggable<IRehypePlugin, unknown>[]>(
       S<IPluggable<IRehypePlugin, unknown>[]>(
         <RehypePluggablesMapper config={config} extras={rehypeExtras} />,
       ),
     );
 
-    const remarks = buildDescriptor<IPluggable<IRemarkPlugin, unknown>[]>(
+    const remarks = render<IPluggable<IRemarkPlugin, unknown>[]>(
       S<IPluggable<IRemarkPlugin, unknown>[]>(
         <RemarkPluggablesMapper config={remarksConfig} extras={remarkExtras} repairs={repairs} />,
       ),
     );
 
-    const repairPluggables = buildDescriptor<IPluggable<IRepairPlugin, unknown>[]>(
+    const repairPluggables = render<IPluggable<IRepairPlugin, unknown>[]>(
       S<IPluggable<IRepairPlugin, unknown>[]>(
         <RepairPluggablesMapper config={config} extras={repairExtras} />,
       ),
@@ -196,7 +196,7 @@ const typecheckPackStateMappers = <R,>(patches: IReactiveState<IPatchItem<R>[]>)
 
   expectTypeOf(renderPatches).toEqualTypeOf<JSXDescriptor<IRenderPatchItem<R>[]>>();
 
-  expectTypeOf(buildDescriptor(rawPatches)).toEqualTypeOf<IStateClosure<IRawPatchItem[]>>();
+  expectTypeOf(render(rawPatches)).toEqualTypeOf<IStateClosure<IRawPatchItem[]>>();
 
   // @ts-expect-error Explicit mapper generics remain part of the patches contract.
   <RawPatchesMapper<string> patches={MutableState.of<IPatchItem<number>[]>([])} />;

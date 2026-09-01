@@ -1,5 +1,5 @@
 {
-  "name": "@flowdown/reactive",
+  "name": "reactive",
   "version": "0.1.0",
   "description": "Headless reactive primitives for Flowdown streaming state.",
   "keywords": [
@@ -57,7 +57,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@flowdown/utils": "workspace:*",
     "lodash-es": "catalog:",
     "rxjs": "catalog:",
     "shallow-equal": "catalog:"

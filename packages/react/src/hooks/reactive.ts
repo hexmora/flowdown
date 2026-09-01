@@ -1,6 +1,5 @@
-import type { Distinctor, IReactiveState } from '@flowdown/reactive';
+import type { Distinctor, IReactiveState } from 'reactive';
 
-import { MutableState } from '@flowdown/reactive';
 import { assert } from '@flowdown/utils';
 import { isUndefined } from 'lodash-es';
 import {
@@ -12,6 +11,7 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react';
+import { MutableState } from 'reactive';
 
 import { useDeferredUnmount, useStatic } from './base';
 

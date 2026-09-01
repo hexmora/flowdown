@@ -1,10 +1,9 @@
-import { BatchScheduler, type IReactiveState, MutableState } from '@flowdown/reactive';
 import { cloneDeep } from 'lodash-es';
+import { BatchScheduler, D, type IReactiveState, MutableState, render, S } from 'reactive';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { type IBlockSection, type IRawPatchItem, TextChunkerStateClosure } from '..';
-import { type ChunkedPatch, chunkPatchesByTexts } from '../patches';
-import { chunkTextOfMarkdown } from '../utils';
+import { type ChunkedPatch, chunkPatchesByTexts, chunkTextOfMarkdown } from '../utils';
 
 type ChunkCase = {
   name: string;
@@ -512,7 +511,7 @@ describe('TextChunkerStateClosure', () => {
   test('exposes reactive sections and follows text and patch changes', () => {
     const text = MutableState.of('# Initial\nparagraph\n');
     const patches = MutableState.of<IRawPatchItem[]>([{ key: 'paragraph', range: 10 }]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const next = vi.fn();
 
     expectTypeOf(closure.value).toEqualTypeOf<IReactiveState<IBlockSection[]>>();
@@ -558,7 +557,7 @@ describe('TextChunkerStateClosure', () => {
     const patches = MutableState.of<IRawPatchItem[]>([]);
     const textSubscribe = vi.spyOn(text, 'subscribe');
     const patchSubscribe = vi.spyOn(patches, 'subscribe');
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
 
     expect(textSubscribe).not.toHaveBeenCalled();
     expect(patchSubscribe).not.toHaveBeenCalled();
@@ -574,7 +573,7 @@ describe('TextChunkerStateClosure', () => {
   test('publishes only the final chunks from a batch', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const next = vi.fn();
 
     closure.value.subscribe(next);
@@ -601,7 +600,7 @@ describe('TextChunkerStateClosure', () => {
   test('closes its output and subscriptions without destroying inputs', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const outputSubscription = closure.value.subscribe(() => undefined);
 
     expect(getObserverCount(text)).toBeGreaterThan(0);
@@ -622,7 +621,7 @@ describe('TextChunkerStateClosure', () => {
     const patches = MutableState.of<IRawPatchItem[]>([]);
     const textSubscribe = vi.spyOn(text, 'subscribe');
     const patchSubscribe = vi.spyOn(patches, 'subscribe');
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
 
     closure.destroy();
 
@@ -634,7 +633,7 @@ describe('TextChunkerStateClosure', () => {
   test('completes after both inputs complete', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const subscription = closure.value.subscribe(() => undefined);
 
     text.complete();
@@ -655,7 +654,7 @@ describe('TextChunkerStateClosure', () => {
     text.complete();
     patches.complete();
 
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
 
     expect(closure.value.value).toEqual([
       { text: 'complete\n', patches: [{ key: 'end', range: [9, 9] }] },
@@ -666,7 +665,7 @@ describe('TextChunkerStateClosure', () => {
   test('forwards errors from text', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const error = vi.fn();
     const subscription = closure.value.subscribe({ error });
     const reason = new Error('failed');
@@ -684,7 +683,7 @@ describe('TextChunkerStateClosure', () => {
   test('forwards errors from patches', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const closure = new TextChunkerStateClosure({ text, patches });
+    const closure = render(S([TextChunkerStateClosure, { text: D(text), patches: D(patches) }]));
     const error = vi.fn();
     const subscription = closure.value.subscribe({ error });
     const reason = new Error('failed');

@@ -2,9 +2,10 @@ import type { IRawPatchItem } from '@flowdown/types';
 
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import type { IRenderPatchItem } from '../../../externals/base-renderer';
+import type { IPatchItem } from '..';
+import type { IRenderPatchItem } from '../../../externals';
 
-import { type IPatchItem, isKeyablesEqual, splitPatches } from '..';
+import { isKeyablesEqual, splitPatches } from '../utils';
 
 const renderPatch = () => 'rendered';
 

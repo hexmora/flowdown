@@ -1,8 +1,7 @@
-import { HastRoot } from '../../../typings';
-import { BaseBlockStateClosure, BaseBlockStateClosureParams, IBlockState } from '../../base';
-import { getLengthOfHast, sliceHast } from './utils';
+import type { HastRoot } from '../../../typings';
 
-export * from './utils';
+import { BaseBlockStateClosure } from '../../base';
+import { getLengthOfHast, sliceHast } from './utils';
 
 export class BlockStateClosure extends BaseBlockStateClosure<HastRoot> {
   protected slice(value: HastRoot, start: number, end: number): HastRoot {
@@ -20,9 +19,5 @@ export class BlockStateClosure extends BaseBlockStateClosure<HastRoot> {
 
   protected lengthOf(value: HastRoot) {
     return getLengthOfHast(value);
-  }
-
-  protected create(params: BaseBlockStateClosureParams<HastRoot>): IBlockState<HastRoot> {
-    return new BlockStateClosure(params);
   }
 }

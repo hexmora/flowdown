@@ -1,6 +1,5 @@
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
-
-import { IDestructible } from '@flowdown/utils';
+import type { IDestructible } from 'reactive';
 
 export interface IRenderPluginBaseParams<E, P> {
   node: E;

@@ -22,7 +22,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @flowdown/utils build && pnpm --filter @flowdown/types build && pnpm --filter @flowdown/reactive build && pnpm --filter @flowdown/preset-plugins build && pnpm --filter @flowdown/core build && pnpm --filter flowdown build",
+    "build": "pnpm --filter @flowdown/utils build && pnpm --filter reactive build && pnpm --filter @flowdown/types build && pnpm --filter @flowdown/preset-plugins build && pnpm --filter @flowdown/core build && pnpm --filter flowdown build",
     "build:storybook": "pnpm --filter flowdown build:storybook",
     "commitlint": "commitlint --from=HEAD~1 --to=HEAD --verbose",
     "commitlint:edit": "commitlint --edit",

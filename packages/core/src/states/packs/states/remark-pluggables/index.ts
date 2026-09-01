@@ -1,4 +1,4 @@
-import type { IPluggable, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
 
 import {
   ApplyRepairsRemarkPlugin,
@@ -7,26 +7,20 @@ import {
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import { memo } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
+import { memo } from 'reactive';
 
-import type { BlockRemarksConfig } from '../../../hast/block-compiler';
+import type { RemarkPluggablesMapperInputs } from './type';
 
 import { getPluggableClass, getPluggableConfig, mergePluginPluggables } from '../utils';
 
-type RemarkPluggablesMapperProps = {
-  config: BlockRemarksConfig;
-
-  extras: readonly IPluggable<IRemarkPlugin, unknown>[];
-
-  repairs: IRepairPlugin[];
-};
+export * from './type';
 
 export const RemarkPluggablesMapper = /*#__PURE__*/ memo(function RemarkPluggablesMapper({
   config,
   extras,
   repairs,
-}: RemarkPluggablesMapperProps): IPluggable<IRemarkPlugin, unknown>[] {
+}: RemarkPluggablesMapperInputs): IPluggable<IRemarkPlugin, unknown>[] {
   const presets = PRESET_REMARK_PLUGINS.filter((Plugin) => {
     if (Plugin === SyntaxFootnoteRemarkPlugin) {
       return config.footnote;

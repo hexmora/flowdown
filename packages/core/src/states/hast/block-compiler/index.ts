@@ -1,50 +1,29 @@
-import type { IReactiveState } from '@flowdown/reactive';
 import type { IRehypePlugin } from '@flowdown/types';
-import type { OmitWithType } from '@flowdown/utils';
+import type { IReactiveState, StateSource } from 'reactive';
 
-import {
-  BaseStateClosure,
-  BatchScheduler,
-  combineMapState,
-  MutableState,
-  toState,
-} from '@flowdown/reactive';
 import { assert } from '@flowdown/utils';
 import { isEqual, isNil, zip } from 'lodash-es';
+import { BaseStateClosure, BatchScheduler, combineMapState, MutableState, toState } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { HastRoot } from '../../../typings';
 import type { IBlockMeta, IBlockSection, IBlockState } from '../../base';
 import type {
-  BlockCompilerStateClosureParams,
+  BlockClosure,
+  BlockCompilerStateClosureInputs,
   BlockRemarksConfig,
+  CreateBlockClosure,
   IBlockCompilerStateClosure,
+  MutableBlockMeta,
 } from './type';
 
 import { BlockStateClosure } from '../block';
 import { destroyAll, markdownToHast } from './utils';
 
 export * from './type';
-export * from './utils';
-
-type MutableBlockMeta = OmitWithType<IBlockMeta, 'sourceText' | 'key'>;
-
-type BlockClosure = {
-  destroy(): void;
-  meta: MutableState<MutableBlockMeta>;
-  section: MutableState<IBlockSection>;
-  state: BlockStateClosure;
-};
-
-type CreateBlockClosure = (params: {
-  charStart: number;
-  count: number;
-  index: number;
-  section: IBlockSection;
-}) => BlockClosure;
 
 export class BlockCompilerStateClosure
-  extends BaseStateClosure<IBlockState<HastRoot>[], BlockCompilerStateClosureParams>
+  extends BaseStateClosure<IBlockState<HastRoot>[], BlockCompilerStateClosureInputs>
   implements IBlockCompilerStateClosure
 {
   private closures: BlockClosure[] = [];
@@ -139,7 +118,7 @@ export class BlockCompilerStateClosure
   }
 
   private getClosuresState(
-    sections: BlockCompilerStateClosureParams['sections'],
+    sections: StateSource<IBlockSection[]>,
     createClosure: CreateBlockClosure,
   ) {
     return this.map(sections, (currentSections, prev): BlockClosure[] => {

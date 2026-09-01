@@ -1,20 +1,25 @@
 // oxlint-disable typescript/no-explicit-any
+import type { AnyImmediateStateMapper } from './helpers/immediate';
 import type {
   Descriptor,
+  FunctionalStateMapperValue,
   ImmediateDescriptor,
   JSXDescriptor,
   StateClosureClass,
   StateClosureDescriptor,
-} from './modules/descriptor';
-import type { AnyMemoizedStateMapper } from './modules/descriptor/exports/memo';
+} from './helpers/render';
 import type { IReactiveState } from './modules/reactive-state';
 import type { IStateClosure } from './modules/state-closure';
+
+import { markStateClosureDescriptor } from './helpers/render';
 
 type AnyStateClosureClass = StateClosureClass<any, any[]>;
 
 type JSXStateClosureClass = StateClosureClass<any> | StateClosureClass<any, [any]>;
 
-type JSXElementType = JSXStateClosureClass | AnyMemoizedStateMapper;
+type AnyStateMapper = (inputs: any) => any;
+
+type JSXElementType = JSXStateClosureClass | AnyStateMapper;
 
 type RuntimeProps = Readonly<Record<string, unknown>>;
 
@@ -55,14 +60,18 @@ type JSXStateClosureDescriptorAttributes<C, P> =
       : never
     : JSXDescriptorObjectProps<P>;
 
-// The state branch stays unconditional so generic constructor tags keep their props type.
-type JSXDescriptorAttributes<C, P> =
-  | JSXStateClosureDescriptorAttributes<C, P>
-  | (C extends AnyMemoizedStateMapper
-      ? Parameters<C> extends []
-        ? EmptyJSXDescriptorProps
-        : JSXMappingDescriptorProps<P>
-      : never);
+type JSXStateMapperAttributes<C, P> = C extends AnyStateMapper
+  ? Parameters<C> extends []
+    ? EmptyJSXDescriptorProps
+    : C extends AnyImmediateStateMapper
+      ? JSXImmediateDescriptorInputs<P>
+      : JSXMappingDescriptorProps<P>
+  : never;
+
+type JSXDescriptorAttributes<C, P> = {
+  closure: JSXStateClosureDescriptorAttributes<C, P>;
+  mapper: JSXStateMapperAttributes<C, P>;
+}[C extends AnyStateMapper ? 'mapper' : 'closure'];
 
 type JSXDescriptorProps<C extends AnyStateClosureClass> = JSXDescriptorPropsFromParameters<
   ConstructorParameters<C>
@@ -76,7 +85,7 @@ type JSXMappingDescriptor<T> =
   | IReactiveState<T>
   | StateClosureDescriptor<T>
   | (T extends (...params: any[]) => unknown
-      ? never
+      ? Descriptor<T>
       : T extends readonly unknown[]
         ? { [K in keyof T]: JSXMappingDescriptor<T[K]> }
         : T extends object
@@ -89,14 +98,19 @@ type JSXMappingDescriptorProps<P> = P extends object
     : { [K in keyof P]: JSXMappingDescriptor<P[K]> }
   : never;
 
-type MemoizedStateMapperInput<M extends AnyMemoizedStateMapper> =
-  Parameters<M> extends [] ? {} : Parameters<M>[0];
+type JSXImmediateDescriptorInputs<P> = P extends object
+  ? keyof P extends never
+    ? EmptyJSXDescriptorProps
+    : { [K in keyof P]: ImmediateDescriptor<P[K]> }
+  : never;
 
-type MemoizedStateMapperProps<M extends AnyMemoizedStateMapper> = JSXMappingDescriptorProps<
-  MemoizedStateMapperInput<M>
->;
+type StateMapperInput<M extends AnyStateMapper> = Parameters<M> extends [] ? {} : Parameters<M>[0];
 
-type MemoizedStateMapperValue<M extends AnyMemoizedStateMapper> = ReturnType<M>;
+type StateMapperInputs<M extends AnyStateMapper> = M extends AnyImmediateStateMapper
+  ? JSXImmediateDescriptorInputs<StateMapperInput<M>>
+  : JSXMappingDescriptorProps<StateMapperInput<M>>;
+
+type StateMapperValue<M extends AnyStateMapper> = FunctionalStateMapperValue<ReturnType<M>>;
 
 export const Fragment = Symbol('FlowdownDescriptorFragment');
 
@@ -105,7 +119,7 @@ type FragmentProps = {
 };
 
 const createDescriptorElement = (
-  Factory: AnyStateClosureClass | AnyMemoizedStateMapper | typeof Fragment,
+  Factory: AnyStateClosureClass | AnyStateMapper | typeof Fragment,
   props: RuntimeProps | FragmentProps,
   key?: unknown,
 ): unknown => {
@@ -118,7 +132,7 @@ const createDescriptorElement = (
       ? props
       : { ...props, key };
 
-  return [Factory, descriptorProps];
+  return markStateClosureDescriptor([Factory, descriptorProps]);
 };
 
 /**
@@ -126,7 +140,7 @@ const createDescriptorElement = (
  * classic emission, such as when `key` appears after a spread attribute.
  */
 export const createElement = (
-  Factory: AnyStateClosureClass | AnyMemoizedStateMapper | typeof Fragment,
+  Factory: AnyStateClosureClass | AnyStateMapper | typeof Fragment,
   props: RuntimeProps | null,
   ...children: unknown[]
 ): JSXDescriptor<any> => {
@@ -148,14 +162,14 @@ export function jsx<const C extends AnyStateClosureClass>(
   props: JSXDescriptorProps<C>,
   key?: unknown,
 ): JSXDescriptor<StateClosureClassValue<C>> & readonly [C, JSXDescriptorProps<C>];
-export function jsx<const M extends AnyMemoizedStateMapper>(
+export function jsx<const M extends AnyStateMapper>(
   Factory: M,
-  props: MemoizedStateMapperProps<M>,
+  props: StateMapperInputs<M>,
   key?: unknown,
-): JSXDescriptor<MemoizedStateMapperValue<M>>;
+): JSXDescriptor<StateMapperValue<M>>;
 export function jsx(Factory: typeof Fragment, props: FragmentProps, key?: unknown): never;
 export function jsx(
-  Factory: AnyStateClosureClass | AnyMemoizedStateMapper | typeof Fragment,
+  Factory: AnyStateClosureClass | AnyStateMapper | typeof Fragment,
   props: RuntimeProps | FragmentProps,
   key?: unknown,
 ): JSXDescriptor<any> {

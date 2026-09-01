@@ -13,7 +13,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "@flowdown/reactive",
+    "jsxImportSource": "reactive",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,

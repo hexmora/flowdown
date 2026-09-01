@@ -3,9 +3,8 @@ import type { Element, ElementContent, Root, RootContent, Text } from 'hast';
 import { clamp, create, floor, last, min, toArray, values } from 'lodash-es';
 import { describe, expect, test, vi } from 'vitest';
 
-import { BlockStateClosure } from '../../index';
-import { getLengthOfHast } from '../length';
-import { sliceHast } from '../slice';
+import { getLengthOfHast, sliceHast } from '..';
+import { BlockStateClosure } from '../..';
 
 const root = (children: RootContent[]): Root => ({
   type: 'root',

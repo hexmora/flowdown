@@ -42,6 +42,7 @@
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
     "@types/unist": "catalog:",
+    "reactive": "workspace:*",
     "unified": "catalog:"
   },
   "devDependencies": {

@@ -1,14 +1,18 @@
 import type { IRawPatchRange, IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
 import type { RootContent } from 'hast';
 
+import { isEqual, last, times, uniq } from 'lodash-es';
 import {
   BaseStateClosure,
+  D,
   type IReactiveState,
   mapState,
   MutableState,
   ReactiveState,
-} from '@flowdown/reactive';
-import { isEqual, last, times, uniq } from 'lodash-es';
+  render,
+  S,
+  type StateSource,
+} from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../../typings';
@@ -17,7 +21,6 @@ import type { IBlockMeta } from '../../../base';
 import {
   type BlockCompilerConfig,
   BlockCompilerStateClosure,
-  type BlockCompilerStateClosureParams,
   type BlockRemarksConfig,
   type IBlockSection,
   type IRawPatchItem,
@@ -105,9 +108,9 @@ type SetupCompilerParams = {
 
   config?: Partial<BlockCompilerConfig>;
 
-  getRemarks?: BlockCompilerStateClosureParams['getRemarks'];
+  getRemarks?: (config: IReactiveState<BlockRemarksConfig>) => StateSource<IRemarkPlugin[]>;
 
-  getRehypes?: BlockCompilerStateClosureParams['getRehypes'];
+  getRehypes?: () => StateSource<IRehypePlugin[]>;
 };
 
 const setupCompiler = ({
@@ -145,12 +148,17 @@ const setupCompiler = ({
 
     return plugins;
   });
-  const closure = new BlockCompilerStateClosure({
-    sections,
-    config,
-    getRemarks,
-    getRehypes,
-  });
+  const closure = render(
+    S([
+      BlockCompilerStateClosure,
+      D({
+        sections,
+        config,
+        getRemarks,
+        getRehypes,
+      }),
+    ]),
+  );
 
   return {
     closure,

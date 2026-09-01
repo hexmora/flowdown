@@ -1,8 +1,10 @@
-import type { IReactiveState, IStateClosure, StateSource } from '@flowdown/reactive';
 import type { IRawPatchItem, IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
+import type { OmitWithType } from '@flowdown/utils';
+import type { IReactiveState, IStateClosure, MutableState, StateSource } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockSection, IBlockState } from '../../base';
+import type { IBlockMeta, IBlockSection, IBlockState } from '../../base';
+import type { BlockStateClosure } from '../block';
 
 export type { IBlockSection, IRawPatchItem };
 
@@ -24,7 +26,7 @@ export type BlockRemarksConfig = BlockCompilerConfig & {
   patches: IRawPatchItem[];
 };
 
-export type BlockCompilerStateClosureParams = {
+export type BlockCompilerStateClosureInputs = {
   sections: StateSource<IBlockSection[]>;
 
   config: StateSource<BlockCompilerConfig>;
@@ -33,3 +35,25 @@ export type BlockCompilerStateClosureParams = {
 
   getRehypes: () => StateSource<IRehypePlugin[]>;
 };
+
+export type MutableBlockMeta = OmitWithType<IBlockMeta, 'sourceText' | 'key'>;
+
+export type BlockClosure = {
+  destroy(): void;
+
+  meta: MutableState<MutableBlockMeta>;
+
+  section: MutableState<IBlockSection>;
+
+  state: BlockStateClosure;
+};
+
+export type CreateBlockClosure = (inputs: {
+  charStart: number;
+
+  count: number;
+
+  index: number;
+
+  section: IBlockSection;
+}) => BlockClosure;

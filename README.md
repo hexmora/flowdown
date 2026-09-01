@@ -7,7 +7,7 @@ It separates Markdown stream computation from framework rendering so application
 ## Packages
 
 - `@flowdown/core`: headless computation for streaming Markdown.
-- `@flowdown/reactive`: headless reactive primitives for streaming state.
+- `reactive`: headless reactive primitives for streaming state.
 - `flowdown`: React rendering bindings built on top of core.
 
 ## License

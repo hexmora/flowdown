@@ -1,23 +1,19 @@
 import type { IPluggable, IRepairPlugin } from '@flowdown/types';
 
 import { DanglingFootnoteRepairPlugin, PRESET_REPAIR_PLUGINS } from '@flowdown/preset-plugins';
-import { memo } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
+import { memo } from 'reactive';
 
-import type { BlockCompilerConfig } from '../../../hast/block-compiler';
+import type { RepairPluggablesMapperInputs } from './type';
 
 import { mergePluginPluggables } from '../utils';
 
-type RepairPluggablesMapperProps = {
-  config: BlockCompilerConfig;
-
-  extras: readonly IPluggable<IRepairPlugin, unknown>[];
-};
+export * from './type';
 
 export const RepairPluggablesMapper = /*#__PURE__*/ memo(function RepairPluggablesMapper({
   config,
   extras,
-}: RepairPluggablesMapperProps): IPluggable<IRepairPlugin, unknown>[] {
+}: RepairPluggablesMapperInputs): IPluggable<IRepairPlugin, unknown>[] {
   if (!config.repair) {
     return [];
   }

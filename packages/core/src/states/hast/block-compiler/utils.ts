@@ -1,5 +1,5 @@
 import type { IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
-import type { IDestructible } from '@flowdown/utils';
+import type { IDestructible } from 'reactive';
 
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';

@@ -1,7 +1,7 @@
 import type { IRepairPlugin, RepairPluginHookType, RepairPluginRunner } from '@flowdown/types';
 
-import { Destructible } from '@flowdown/utils';
 import { noop } from 'lodash-es';
+import { Destructible } from 'reactive';
 
 export abstract class BaseRepairPlugin extends Destructible implements IRepairPlugin {
   readonly config: IRepairPlugin['config'] = {};

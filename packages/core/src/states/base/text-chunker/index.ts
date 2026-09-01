@@ -1,35 +1,21 @@
-import { BaseStateClosure } from '@flowdown/reactive';
 import { isEqual } from 'lodash-es';
+import { immediate, useCombineMap, useCompose, useMap } from 'reactive';
 
-import type { IBlockSection, TextChunkerStateClosureParams } from './type';
+import type { TextChunkerStateClosureInputs } from './type';
 
-import { chunkPatchesByTexts } from './patches';
-import { chunkTextOfMarkdown } from './utils';
+import { buildBlockSections, chunkTextOfMarkdown } from './utils';
 
-export * from './patches';
 export * from './type';
-export * from './utils';
 
-export class TextChunkerStateClosure extends BaseStateClosure<
-  IBlockSection[],
-  TextChunkerStateClosureParams
-> {
-  protected render() {
-    const { patches, text } = this.inputs;
+export const TextChunkerStateClosure = /*#__PURE__*/ immediate(function TextChunkerStateClosure({
+  patches,
+  text,
+}: TextChunkerStateClosureInputs) {
+  const textState = useCompose(text);
 
-    const texts = this.map(text, chunkTextOfMarkdown);
+  const patchesState = useCompose(patches);
 
-    return this.combineMap(
-      [texts, patches],
-      ([currentTexts, currentPatches]) => {
-        const patchGroups = chunkPatchesByTexts(currentPatches, currentTexts);
+  const texts = useMap(textState, chunkTextOfMarkdown);
 
-        return currentTexts.map((currentText, index) => ({
-          text: currentText,
-          patches: patchGroups[index] ?? [],
-        }));
-      },
-      isEqual,
-    );
-  }
-}
+  return useCombineMap([texts, patchesState], buildBlockSections, isEqual);
+});

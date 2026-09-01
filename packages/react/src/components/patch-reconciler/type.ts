@@ -1,6 +1,6 @@
 import type { IRenderPatchItem } from '@flowdown/core';
-import type { IReactiveState } from '@flowdown/reactive';
 import type { ReactNode } from 'react';
+import type { IReactiveState } from 'reactive';
 
 export interface PatchReconcilerProps {
   patchKey: string;
