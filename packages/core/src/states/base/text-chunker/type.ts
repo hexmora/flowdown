@@ -1,5 +1,5 @@
 import type { IRawPatchItem } from '@flowdown/types';
-import type { StateClosureSource } from 'reactive';
+import type { IReadableClosure } from 'reactive';
 
 export type { IRawPatchItem } from '@flowdown/types';
 
@@ -9,8 +9,8 @@ export interface IBlockSection {
   patches: IRawPatchItem[];
 }
 
-export type TextChunkerStateClosureInputs = {
-  text: StateClosureSource<string>;
+export type TextChunkerInputs = {
+  text: IReadableClosure<string>;
 
-  patches: StateClosureSource<IRawPatchItem[]>;
+  patches: IReadableClosure<IRawPatchItem[]>;
 };

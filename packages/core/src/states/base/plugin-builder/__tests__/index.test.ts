@@ -6,11 +6,11 @@ import type {
 } from '@flowdown/types';
 
 import { isArray } from 'lodash-es';
-import { type IReactiveState, render, S, toReactiveState } from 'reactive';
+import { D, type IReactiveState, render, S, toReactiveState } from 'reactive';
 import { BehaviorSubject } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
-import { isPluggableEqual, PluginBuilderStateClosure } from '..';
+import { isPluggableEqual, PluginBuilder } from '..';
 import { buildPluggables } from '../utils';
 
 interface TestPluginConfig extends IBasePluginConfig {
@@ -54,7 +54,7 @@ const createPluginClass = (
 const setupBuilder = (initialPlugins: IPluggable<TestPlugin, unknown>[], sort = true) => {
   const pluginsSubject = new BehaviorSubject(initialPlugins);
   const plugins = toReactiveState(pluginsSubject);
-  const closure = render(S([PluginBuilderStateClosure<TestPlugin>, { plugins, sort }]));
+  const closure = render(S([PluginBuilder<TestPlugin>, { plugins, sort: D(sort) }]));
 
   return { closure, plugins, pluginsSubject };
 };
@@ -71,7 +71,7 @@ const getObserverCount = (state: IReactiveState<unknown>) => {
   ).subject.observers.length;
 };
 
-describe('PluginBuilderStateClosure', () => {
+describe('PluginBuilder', () => {
   test('compares plugin classes by reference and tuple options deeply', () => {
     const PluginA = createPluginClass('same-key', vi.fn());
     const ReplacementPluginA = createPluginClass('same-key', vi.fn());
@@ -96,6 +96,30 @@ describe('PluginBuilderStateClosure', () => {
         [ReplacementPluginA, { nested: { enabled: true } }],
       ),
     ).toBe(false);
+  });
+
+  test('compares lifecycle inputs by identity without reading their lazy values', () => {
+    const Plugin = createPluginClass('plugin', vi.fn());
+    const destroy = vi.fn();
+    const read = vi.fn();
+    const source = {
+      destroy,
+      get value() {
+        read();
+
+        throw new Error('The comparer must not read closure values.');
+      },
+    };
+    const other = {
+      destroy,
+      get value() {
+        return source.value;
+      },
+    };
+
+    expect(isPluggableEqual([Plugin, { source }], [Plugin, { source }])).toBe(true);
+    expect(isPluggableEqual([Plugin, { source }], [Plugin, { source: other }])).toBe(false);
+    expect(read).not.toHaveBeenCalled();
   });
 
   test('buildPluggables returns one instance or an array based on argument count', () => {
@@ -133,6 +157,29 @@ describe('PluginBuilderStateClosure', () => {
     expect(constructB).toHaveBeenCalledOnce();
     expect(pluginA?.config).toBe(optionsA);
     expect(pluginB?.config).toEqual({});
+  });
+
+  test('destroys already constructed plugins when a later constructor fails', () => {
+    const destroy = vi.fn();
+    const failure = new Error('Failed to construct the next plugin.');
+    const PluginA = createPluginClass('a', vi.fn(), destroy);
+    const PluginB = createPluginClass('b', () => {
+      throw failure;
+    });
+    const { closure, plugins, pluginsSubject } = setupBuilder([PluginA, PluginB]);
+
+    expect(() => closure.value).toThrow(failure);
+    expect(destroy).toHaveBeenCalledOnce();
+    expect(getObserverCount(plugins)).toBe(0);
+    expect(plugins.closed).toBe(false);
+    expect(pluginsSubject.isStopped).toBe(false);
+
+    closure.destroy();
+
+    expect(destroy).toHaveBeenCalledOnce();
+
+    plugins.destroy();
+    pluginsSubject.complete();
   });
 
   test('reuses instances when reordered tuples have deeply equal options', () => {

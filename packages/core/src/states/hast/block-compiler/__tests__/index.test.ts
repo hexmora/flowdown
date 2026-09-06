@@ -4,14 +4,15 @@ import type { RootContent } from 'hast';
 import { isEqual, last, times, uniq } from 'lodash-es';
 import {
   BaseStateClosure,
-  D,
   type IReactiveState,
+  type IReadableClosure,
   mapState,
   MutableState,
   ReactiveState,
+  type ReadableClosureSource,
   render,
   S,
-  type StateSource,
+  toClosure,
 } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -19,18 +20,18 @@ import type { HastRoot } from '../../../../typings';
 import type { IBlockMeta } from '../../../base';
 
 import {
+  BlockCompiler,
   type BlockCompilerConfig,
-  BlockCompilerStateClosure,
   type BlockRemarksConfig,
   type IBlockSection,
   type IRawPatchItem,
 } from '..';
 
-type SourceStateClosureInputs<T> = {
-  source: IReactiveState<T>;
+type SourceInputs<T> = {
+  source: IReadableClosure<T>;
 };
 
-class SourceStateClosure<T> extends BaseStateClosure<T, SourceStateClosureInputs<T>> {
+class Source<T> extends BaseStateClosure<T, SourceInputs<T>> {
   protected render() {
     const { source } = this.inputs;
 
@@ -103,14 +104,38 @@ const createRehypeAppender = (value: string, run = vi.fn()) => {
   return { plugin, run };
 };
 
+const createPluginDescriptor = <T>(getSource: () => T) => {
+  const destroy = vi.fn();
+
+  class Plugin extends BaseStateClosure<T> {
+    protected render() {
+      return ReactiveState.of(getSource());
+    }
+
+    override destroy() {
+      if (this.destroyed) {
+        return;
+      }
+
+      destroy();
+
+      super.destroy();
+    }
+  }
+
+  return { descriptor: Plugin, destroy };
+};
+
 type SetupCompilerParams = {
   sections?: IBlockSection[];
 
   config?: Partial<BlockCompilerConfig>;
 
-  getRemarks?: (config: IReactiveState<BlockRemarksConfig>) => StateSource<IRemarkPlugin[]>;
+  getRemarks?: (
+    config: IReactiveState<BlockRemarksConfig>,
+  ) => ReadableClosureSource<IRemarkPlugin[]>;
 
-  getRehypes?: () => StateSource<IRehypePlugin[]>;
+  getRehypes?: () => ReadableClosureSource<IRehypePlugin[]>;
 };
 
 const setupCompiler = ({
@@ -124,19 +149,23 @@ const setupCompiler = ({
   const remarkConfigs: IReactiveState<BlockRemarksConfig>[] = [];
   const remarks: MutableState<IRemarkPlugin[]>[] = [];
   const rehypes: MutableState<IRehypePlugin[]>[] = [];
-  const getRemarks = vi.fn((currentConfig: IReactiveState<BlockRemarksConfig>) => {
-    remarkConfigs.push(currentConfig);
+  const getRemarks = vi.fn(
+    ({ config: configClosure }: { config: IReadableClosure<BlockRemarksConfig> }) => {
+      const currentConfig = configClosure.value;
 
-    if (createRemarks) {
-      return createRemarks(currentConfig);
-    }
+      remarkConfigs.push(currentConfig);
 
-    const plugins = MutableState.of<IRemarkPlugin[]>([]);
+      if (createRemarks) {
+        return createRemarks(currentConfig);
+      }
 
-    remarks.push(plugins);
+      const plugins = MutableState.of<IRemarkPlugin[]>([]);
 
-    return plugins;
-  });
+      remarks.push(plugins);
+
+      return plugins;
+    },
+  );
   const getRehypes = vi.fn(() => {
     if (createRehypes) {
       return createRehypes();
@@ -150,13 +179,13 @@ const setupCompiler = ({
   });
   const closure = render(
     S([
-      BlockCompilerStateClosure,
-      D({
+      BlockCompiler,
+      {
         sections,
         config,
         getRemarks,
         getRehypes,
-      }),
+      },
     ]),
   );
 
@@ -180,7 +209,7 @@ const getObserverCount = (state: IReactiveState<unknown>) => {
   ).subject.observers.length;
 };
 
-describe('BlockCompilerStateClosure', () => {
+describe('BlockCompiler', () => {
   test('lazily builds blocks from the latest sections and config', () => {
     const harness = setupCompiler({ sections: [section('stale')] });
 
@@ -194,7 +223,7 @@ describe('BlockCompilerStateClosure', () => {
 
     expect(blocks.map((block) => collectText(block.value.value))).toEqual(['alpha', 'beta']);
     expect(harness.getRemarks).toHaveBeenCalledTimes(2);
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRehypes).toHaveBeenCalledTimes(2);
     expect(harness.remarkConfigs.map((state) => state.value.footnote)).toEqual([true, true]);
   });
 
@@ -522,10 +551,45 @@ describe('BlockCompilerStateClosure', () => {
       blockCount: 2,
     });
     expect(harness.getRemarks).toHaveBeenCalledTimes(2);
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRehypes).toHaveBeenCalledTimes(2);
   });
 
-  test('isolates per-block remarks and shares the block-independent rehype state', () => {
+  test('does not recompile blocks when only their offsets or list metadata change', () => {
+    const compile = vi.fn();
+    const plugin: IRehypePlugin = {
+      config: {},
+      destroy: vi.fn(),
+      plugin: () => (tree) => {
+        compile(collectText(tree));
+      },
+    };
+    const harness = setupCompiler({
+      sections: [section('first'), section('second')],
+      getRehypes: () => [plugin],
+    });
+
+    expect(harness.closure.value.value).toHaveLength(2);
+    compile.mockClear();
+
+    harness.sections.next([section('longer first'), section('second')]);
+
+    expect(compile).toHaveBeenCalledOnce();
+    expect(compile).toHaveBeenCalledWith('longer first');
+    compile.mockClear();
+
+    harness.sections.next([section('longer first'), section('second'), section('third')]);
+
+    expect(uniq(compile.mock.calls.map(([text]) => text))).toEqual(['third']);
+    compile.mockClear();
+
+    harness.sections.next([section('longer first'), section('second')]);
+
+    expect(compile).not.toHaveBeenCalled();
+
+    harness.closure.destroy();
+  });
+
+  test('isolates per-block remarks and rehypes', () => {
     const harness = setupCompiler({ sections: [section('a'), section('b')] });
     const [first, second] = harness.closure.value.value;
 
@@ -534,11 +598,14 @@ describe('BlockCompilerStateClosure', () => {
 
     const firstNext = vi.fn();
     const secondNext = vi.fn();
+    const outerNext = vi.fn();
 
     first?.value.subscribe(firstNext);
     second?.value.subscribe(secondNext);
+    harness.closure.value.subscribe(outerNext);
     firstNext.mockClear();
     secondNext.mockClear();
+    outerNext.mockClear();
 
     harness.remarks[0]?.next([createRemarkAppender('|remark').plugin]);
 
@@ -546,22 +613,26 @@ describe('BlockCompilerStateClosure', () => {
     expect(first?.length.value).toBe(8);
     expect(firstNext).toHaveBeenCalledOnce();
     expect(secondNext).not.toHaveBeenCalled();
+    expect(outerNext).not.toHaveBeenCalled();
 
     firstNext.mockClear();
     harness.rehypes[0]?.next([createRehypeAppender('|rehype').plugin]);
 
     expect(collectText(first?.value.value as HastRoot)).toBe('a|remark|rehype');
-    expect(collectText(second?.value.value as HastRoot)).toBe('b|rehype');
+    expect(collectText(second?.value.value as HastRoot)).toBe('b');
     expect(first?.length.value).toBe(15);
-    expect(second?.length.value).toBe(8);
+    expect(second?.length.value).toBe(1);
     expect(firstNext).toHaveBeenCalledOnce();
-    expect(secondNext).toHaveBeenCalledOnce();
+    expect(secondNext).not.toHaveBeenCalled();
+    expect(outerNext).not.toHaveBeenCalled();
   });
 
   test('appends, truncates, clears, and regrows with monotonic keys and child teardown', () => {
     const harness = setupCompiler({ sections: [section('a'), section('b')] });
     const initialBlocks = harness.closure.value.value;
     const [first, second] = initialBlocks;
+
+    expect(collectText(first?.value.value as HastRoot)).toBe('a');
 
     const outerNext = vi.fn();
     const secondComplete = vi.fn();
@@ -579,7 +650,7 @@ describe('BlockCompilerStateClosure', () => {
     expect(appendedBlocks[1]).toBe(second);
     expect(appendedBlocks.map((block) => block.meta.value.key)).toEqual(['1', '2', '3']);
     expect(harness.getRemarks).toHaveBeenCalledTimes(3);
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRehypes).toHaveBeenCalledTimes(3);
 
     const thirdComplete = vi.fn();
 
@@ -607,7 +678,7 @@ describe('BlockCompilerStateClosure', () => {
     expect(collectText(regrown?.value.value as HastRoot)).toBe('new');
     expect(outerNext).toHaveBeenCalledTimes(4);
     expect(harness.getRemarks).toHaveBeenCalledTimes(4);
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRehypes).toHaveBeenCalledTimes(4);
   });
 
   test('destroy is idempotent while producer completion closes the derived graph', () => {
@@ -812,15 +883,148 @@ describe('BlockCompilerStateClosure', () => {
     expect(collectText(block?.value.value as HastRoot)).toBe('text|remark|rehype');
   });
 
-  test('does not destroy state closures returned by plugin factories', () => {
+  test('destroys plugin descriptors whose value cannot be read', () => {
+    let remarksConfig: IReactiveState<BlockRemarksConfig> | undefined;
+    const remarks = createPluginDescriptor<IRemarkPlugin[]>(() => {
+      void remarksConfig?.value;
+
+      throw new Error('Failed to read remarks.');
+    });
+    const harness = setupCompiler({
+      sections: [section('text')],
+      getRemarks: (config) => {
+        remarksConfig = config;
+
+        return remarks.descriptor;
+      },
+    });
+
+    expect(() => harness.closure.value).toThrowError('Failed to read remarks.');
+    expect(remarks.destroy).toHaveBeenCalledOnce();
+    expect(remarksConfig?.closed).toBe(true);
+    expect(getObserverCount(harness.config)).toBe(0);
+
+    harness.closure.destroy();
+
+    expect(remarks.destroy).toHaveBeenCalledOnce();
+  });
+
+  test('destroys owned plugin descriptors when block setup fails', () => {
+    const failure = new Error('Failed to compile remarks.');
+    const throwingRemark: IRemarkPlugin = {
+      config: {},
+      destroy: vi.fn(),
+      plugin: () => {
+        throw failure;
+      },
+    };
+    const remarks = createPluginDescriptor<IRemarkPlugin[]>(() => [throwingRemark]);
+    const rehypes = createPluginDescriptor<IRehypePlugin[]>(() => []);
+    const harness = setupCompiler({
+      sections: [section('text')],
+      getRemarks: () => remarks.descriptor,
+      getRehypes: () => rehypes.descriptor,
+    });
+
+    expect(() => harness.closure.value).toThrow(failure);
+    expect(remarks.destroy).toHaveBeenCalledOnce();
+    expect(rehypes.destroy).toHaveBeenCalledOnce();
+    expect(harness.remarkConfigs[0]?.closed).toBe(true);
+
+    harness.closure.destroy();
+
+    expect(remarks.destroy).toHaveBeenCalledOnce();
+    expect(rehypes.destroy).toHaveBeenCalledOnce();
+  });
+
+  test('destroys plugin descriptors from earlier blocks when the same render pass fails', () => {
+    const firstRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => []);
+    const failedRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => {
+      throw new Error('Failed to read the next remarks.');
+    });
+    const rehypes = createPluginDescriptor<IRehypePlugin[]>(() => []);
+    let remarkIndex = 0;
+    const harness = setupCompiler({
+      sections: [section('first'), section('second')],
+      getRemarks: () => {
+        return remarkIndex++ === 0 ? firstRemarks.descriptor : failedRemarks.descriptor;
+      },
+      getRehypes: () => rehypes.descriptor,
+    });
+
+    expect(() => harness.closure.value).toThrowError('Failed to read the next remarks.');
+    expect(firstRemarks.destroy).toHaveBeenCalledOnce();
+    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(rehypes.destroy).toHaveBeenCalledTimes(2);
+    expect(harness.remarkConfigs.every(({ closed }) => closed)).toBe(true);
+
+    harness.closure.destroy();
+
+    expect(firstRemarks.destroy).toHaveBeenCalledOnce();
+    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(rehypes.destroy).toHaveBeenCalledTimes(2);
+  });
+
+  test('releases failed append graphs while retaining existing blocks until destroy', () => {
+    const source = MutableState.of<IRemarkPlugin[]>([]);
+    const existingRemarks = new Source({ source: toClosure(source) });
+    const existingDestroy = vi.spyOn(existingRemarks, 'destroy');
+    const appendedRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => []);
+    const failure = new Error('Failed to read appended remarks.');
+    const failedRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => {
+      throw failure;
+    });
+    const rehypes = createPluginDescriptor<IRehypePlugin[]>(() => []);
+    const harness = setupCompiler({
+      sections: [section('existing')],
+      getRemarks: vi
+        .fn<() => ReadableClosureSource<IRemarkPlugin[]>>()
+        .mockReturnValueOnce(existingRemarks)
+        .mockReturnValueOnce(appendedRemarks.descriptor)
+        .mockReturnValue(failedRemarks.descriptor),
+      getRehypes: () => rehypes.descriptor,
+    });
+    const output = harness.closure.value;
+    const [block] = output.value;
+    const error = vi.fn();
+
+    output.subscribe({ error });
+    harness.sections.next([section('existing'), section('appended'), section('failed')]);
+
+    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledWith(failure);
+    expect(appendedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(harness.remarkConfigs.slice(1).every(({ closed }) => closed)).toBe(true);
+    expect(existingDestroy).not.toHaveBeenCalled();
+    expect(rehypes.destroy).toHaveBeenCalledTimes(2);
+    expect(block?.value.closed).toBe(false);
+
+    source.next([createRemarkAppender('|updated').plugin]);
+
+    expect(collectText(block?.value.value as HastRoot)).toBe('existing|updated');
+
+    harness.closure.destroy();
+
+    expect(existingDestroy).toHaveBeenCalledOnce();
+    expect(rehypes.destroy).toHaveBeenCalledTimes(3);
+    expect(appendedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(block?.value.closed).toBe(true);
+    expect(harness.remarkConfigs.every(({ closed }) => closed)).toBe(true);
+    expect(getObserverCount(source)).toBe(0);
+    expect(source.closed).toBe(false);
+  });
+
+  test('owns readable closures returned by plugin factories and detaches their sources', () => {
     const remark = createRemarkAppender('|remark').plugin;
     const rehype = createRehypeAppender('|rehype').plugin;
     const remarkSource = MutableState.of<IRemarkPlugin[]>([remark]);
     const rehypeSource = MutableState.of<IRehypePlugin[]>([rehype]);
 
-    const remarkOwner = new SourceStateClosure({ source: remarkSource });
+    const remarkOwner = new Source({ source: toClosure(remarkSource) });
 
-    const rehypeOwner = new SourceStateClosure({ source: rehypeSource });
+    const rehypeOwner = new Source({ source: toClosure(rehypeSource) });
 
     const harness = setupCompiler({
       sections: [section('text')],
@@ -836,12 +1040,12 @@ describe('BlockCompilerStateClosure', () => {
 
     harness.closure.destroy();
 
-    expect(remarkOwner.value.closed).toBe(false);
-    expect(rehypeOwner.value.closed).toBe(false);
+    expect(remarkOwner.value.closed).toBe(true);
+    expect(rehypeOwner.value.closed).toBe(true);
     expect(getObserverCount(remarkOwner.value)).toBe(0);
     expect(getObserverCount(rehypeOwner.value)).toBe(0);
-    expect(getObserverCount(remarkSource)).toBe(1);
-    expect(getObserverCount(rehypeSource)).toBe(1);
+    expect(getObserverCount(remarkSource)).toBe(0);
+    expect(getObserverCount(rehypeSource)).toBe(0);
 
     remarkOwner.destroy();
     rehypeOwner.destroy();
@@ -887,5 +1091,70 @@ describe('BlockCompilerStateClosure', () => {
     expect(harness.config.closed).toBe(false);
     expect(sharedRemarks.closed).toBe(false);
     expect(sharedRehypes.closed).toBe(false);
+  });
+
+  test('retains a forked block graph after its section and compiler are removed', () => {
+    const remarks = MutableState.of<IRemarkPlugin[]>([]);
+    const rehypes = MutableState.of<IRehypePlugin[]>([]);
+    const harness = setupCompiler({
+      sections: [section('text')],
+      getRemarks: () => remarks,
+      getRehypes: () => rehypes,
+    });
+    const [block] = harness.closure.value.value;
+    const fork = block?.fork();
+
+    expect(collectText(block?.value.value as HastRoot)).toBe('text');
+    expect(collectText(fork?.value.value as HastRoot)).toBe('text');
+
+    harness.sections.next([]);
+    harness.closure.destroy();
+
+    expect(block?.value.closed).toBe(true);
+    expect(fork?.value.closed).toBe(false);
+
+    remarks.next([createRemarkAppender('|remark').plugin]);
+    rehypes.next([createRehypeAppender('|rehype').plugin]);
+
+    expect(collectText(fork?.value.value as HastRoot)).toBe('text|remark|rehype');
+
+    fork?.destroy();
+
+    expect(harness.remarkConfigs[0]?.closed).toBe(true);
+    expect(getObserverCount(harness.config)).toBe(0);
+    expect(getObserverCount(remarks)).toBe(0);
+    expect(getObserverCount(rehypes)).toBe(0);
+    expect(harness.config.closed).toBe(false);
+    expect(remarks.closed).toBe(false);
+    expect(rehypes.closed).toBe(false);
+  });
+
+  test('retains a shared generated closure until its last block releases it', () => {
+    const source = MutableState.of<IRemarkPlugin[]>([]);
+    const remarks = new Source({ source: toClosure(source) });
+    const harness = setupCompiler({
+      sections: [section('first'), section('second')],
+      getRemarks: () => remarks,
+    });
+
+    expect(harness.closure.value.value).toHaveLength(2);
+
+    harness.sections.next([section('first')]);
+
+    expect(remarks.value.closed).toBe(false);
+
+    source.next([createRemarkAppender('|updated').plugin]);
+
+    expect(collectText(harness.closure.value.value[0]?.value.value as HastRoot)).toBe(
+      'first|updated',
+    );
+
+    harness.sections.next([]);
+
+    expect(remarks.value.closed).toBe(true);
+    expect(getObserverCount(source)).toBe(0);
+    expect(source.closed).toBe(false);
+
+    harness.closure.destroy();
   });
 });

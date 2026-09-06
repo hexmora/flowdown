@@ -1,13 +1,15 @@
-import { type IReactiveState, MutableState, ReactiveState } from 'reactive';
+import {
+  type IReactiveState,
+  MutableState,
+  ReactiveState,
+  render as renderState,
+  S,
+} from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import type { IBlockMeta, IBlockState } from '../../../states/base';
 
-import {
-  BaseRendererStateClosure,
-  type BaseRendererStateClosureInputs,
-  type IRenderPatchItem,
-} from '..';
+import { BaseRenderer, type IRenderPatchItem } from '..';
 import {
   BaseRenderPlugin,
   type IRenderPlugin,
@@ -43,21 +45,15 @@ class TestRenderPlugin extends BaseRenderPlugin<string, string, RenderedItem, Te
   }
 }
 
-class TestRendererStateClosure extends BaseRendererStateClosure<
-  string,
-  string,
-  string,
-  RenderedItem,
-  TestRenderConfig
-> {
+class TestRenderer extends BaseRenderer<string, string, string, RenderedItem, TestRenderConfig> {
   readonly renderItemSpy = vi.fn((item: IBlockState<string>): RenderedItem => {
     const { patches, plugins } = this.inputs;
 
     return {
       key: item.meta.value.key,
       content: item.value,
-      plugins: plugins.value,
-      patches,
+      plugins: plugins.value.value,
+      patches: patches.value,
     };
   });
 
@@ -99,18 +95,16 @@ const setupRenderer = (blocks: IBlockState<string>[]) => {
   const plugins = MutableState.of<
     BaseRenderPlugin<string, string, RenderedItem, TestRenderConfig>[]
   >([initialPlugin]);
-  const inputs: BaseRendererStateClosureInputs<
-    string,
-    string,
-    string,
-    RenderedItem,
-    TestRenderConfig
-  > = {
-    source,
-    patches,
-    plugins,
-  };
-  const renderer = new TestRendererStateClosure(inputs);
+  const renderer = renderState(
+    S([
+      TestRenderer,
+      {
+        source,
+        patches,
+        plugins,
+      },
+    ]),
+  );
 
   return { initialPlugin, patches, plugins, renderer, source };
 };
@@ -123,7 +117,7 @@ const getObserverCount = (state: IReactiveState<unknown>) => {
   ).subject.observers.length;
 };
 
-describe('BaseRendererStateClosure', () => {
+describe('BaseRenderer', () => {
   test('lazily renders new block keys and reuses cached results in source order', () => {
     const first = createBlock('first', 'first');
     const second = createBlock('second', 'second');
@@ -214,7 +208,7 @@ describe('BaseRendererStateClosure', () => {
     ]);
 
     expect(rendered?.content.value).toBe('updated');
-    expect(rendered?.patches).toBe(patches);
+    expect(rendered?.patches.value).toBe(patches.value);
 
     expect(renderer.renderItemSpy).toHaveBeenCalledOnce();
 

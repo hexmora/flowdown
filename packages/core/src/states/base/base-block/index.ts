@@ -1,11 +1,11 @@
-import type { IReactiveState } from 'reactive';
+import type { IReactiveState, IReadableClosure } from 'reactive';
 
-import { BaseStateClosure, ReactiveState } from 'reactive';
+import { BaseStateClosure, toClosure } from 'reactive';
 
 import type { IRangeState } from '../range';
 import type {
-  BaseBlockStateClosureInputs,
-  BlockStateClosureClass,
+  BaseBlockItemInputs,
+  BlockItemClass,
   IBlockMeta,
   IBlockState,
   IBlockStateCloneParams,
@@ -13,30 +13,42 @@ import type {
 
 export * from './type';
 
-export abstract class BaseBlockStateClosure<T>
-  extends BaseStateClosure<T, BaseBlockStateClosureInputs<T>>
+export abstract class BaseBlockItem<T>
+  extends BaseStateClosure<T, BaseBlockItemInputs<T>>
   implements IBlockState<T>
 {
-  readonly meta: IReactiveState<IBlockMeta>;
+  private readonly rangeSource: IReadableClosure<IRangeState | null>;
 
-  readonly range: IReactiveState<IRangeState | null>;
+  private readonly baseLengthSource: IReadableClosure<number>;
 
-  readonly length: ReactiveState<number>;
+  private lengthSource: IReadableClosure<number> | null = null;
 
-  readonly baseLength: ReactiveState<number>;
-
-  constructor(inputs: BaseBlockStateClosureInputs<T>) {
+  constructor(inputs: BaseBlockItemInputs<T>) {
     super(inputs);
 
-    const { meta, range } = this.inputs;
+    const { range } = this.inputs;
 
-    this.meta = meta;
+    this.rangeSource = this.defaults(range, null);
 
-    this.range = range ?? this.clearable(ReactiveState.of(null));
+    this.baseLengthSource = this.getBaseLengthState();
+  }
 
-    this.baseLength = this.getBaseLengthState();
+  get meta(): IReactiveState<IBlockMeta> {
+    const { meta } = this.inputs;
 
-    this.length = this.getLengthState();
+    return meta.value;
+  }
+
+  get range(): IReactiveState<IRangeState | null> {
+    return this.rangeSource.value;
+  }
+
+  get length(): IReactiveState<number> {
+    return (this.lengthSource ??= this.getLengthState()).value;
+  }
+
+  get baseLength(): IReactiveState<number> {
+    return this.baseLengthSource.value;
   }
 
   protected abstract slice(value: T, start: number, end: number): T;
@@ -46,7 +58,7 @@ export abstract class BaseBlockStateClosure<T>
   protected render() {
     const { mapper, source } = this.inputs;
 
-    const rawValue = this.combineMap([source, this.range], ([currentValue, currentRange]) => {
+    const rawValue = this.combineMap([source, this.rangeSource], ([currentValue, currentRange]) => {
       if (!currentRange) {
         return currentValue;
       }
@@ -57,7 +69,7 @@ export abstract class BaseBlockStateClosure<T>
     });
 
     if (mapper) {
-      return mapper(rawValue, this);
+      return mapper(rawValue.value, this);
     }
 
     return rawValue;
@@ -78,14 +90,14 @@ export abstract class BaseBlockStateClosure<T>
   }
 
   fork({ meta, mapper, range }: IBlockStateCloneParams<T> = {}): IBlockState<T> {
-    const { mapper: inputMapper, source } = this.inputs;
+    const { mapper: inputMapper, source, meta: inputMeta } = this.inputs;
 
-    const StateClosure = this.constructor as BlockStateClosureClass<T>;
+    const Block = this.constructor as BlockItemClass<T>;
 
-    return new StateClosure({
+    return new Block({
       source,
-      meta: meta ?? this.meta,
-      range: range ?? this.range,
+      meta: toClosure(meta ?? inputMeta),
+      range: toClosure(range ?? this.rangeSource),
       mapper: mapper ?? inputMapper,
     });
   }

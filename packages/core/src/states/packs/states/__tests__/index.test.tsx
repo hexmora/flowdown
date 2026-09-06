@@ -17,7 +17,7 @@ import {
 } from '@flowdown/preset-plugins';
 import {
   type IReactiveState,
-  type IStateClosure,
+  type IReadableClosure,
   type JSXDescriptor,
   MutableState,
   render,
@@ -36,6 +36,8 @@ import {
   RenderPatchesMapper,
   RepairPluggablesMapper,
 } from '..';
+import { isInputsEqual as isRehypeEqual } from '../rehype-pluggables/utils';
+import { isInputsEqual as isRepairEqual } from '../repair-pluggables/utils';
 
 const DEFAULT_CONFIG: BlockCompilerConfig = {
   repair: false,
@@ -49,6 +51,24 @@ const getPluggableClass = <T extends IPluginWithConfig>(pluggable: IPluggable<T,
 };
 
 describe('pack state mappers', () => {
+  test.each([
+    { mapper: 'rehype', isInputsEqual: isRehypeEqual },
+    { mapper: 'repair', isInputsEqual: isRepairEqual },
+  ])('compares the full $mapper configuration', ({ isInputsEqual }) => {
+    const inputs = { config: DEFAULT_CONFIG, extras: [] };
+
+    expect(isInputsEqual(inputs, { config: { ...DEFAULT_CONFIG }, extras: [] })).toBe(true);
+
+    for (const key of ['repair', 'repairEnding', 'footnote', 'tex']) {
+      expect(
+        isInputsEqual(inputs, {
+          ...inputs,
+          config: { ...DEFAULT_CONFIG, [key]: true },
+        }),
+      ).toBe(false);
+    }
+  });
+
   test('maps raw and render patches independently', () => {
     const renderFirst = vi.fn(() => 'first');
 
@@ -196,7 +216,7 @@ const typecheckPackStateMappers = <R,>(patches: IReactiveState<IPatchItem<R>[]>)
 
   expectTypeOf(renderPatches).toEqualTypeOf<JSXDescriptor<IRenderPatchItem<R>[]>>();
 
-  expectTypeOf(render(rawPatches)).toEqualTypeOf<IStateClosure<IRawPatchItem[]>>();
+  expectTypeOf(render(rawPatches)).toEqualTypeOf<IReadableClosure<IRawPatchItem[]>>();
 
   // @ts-expect-error Explicit mapper generics remain part of the patches contract.
   <RawPatchesMapper<string> patches={MutableState.of<IPatchItem<number>[]>([])} />;

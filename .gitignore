@@ -3,6 +3,7 @@ dist
 storybook-static
 coverage
 .agent/logs
+.reports
 .DS_Store
 *.log
 AGENTS.md

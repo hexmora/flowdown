@@ -30,7 +30,7 @@ import { first, last, nth } from 'lodash-es';
 import {
   D,
   type IReactiveState,
-  type IStateClosure,
+  type IReadableClosure,
   MutableState,
   ReactiveState,
   render,
@@ -42,9 +42,9 @@ import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
 import type { BlockCompilerConfig } from '../../hast';
 
-import { CoreStateClosure, type IPatchItem } from '..';
+import { Core, type IPatchItem } from '..';
 import {
-  BaseRendererStateClosure,
+  BaseRenderer,
   BaseRenderPlugin,
   type IRenderPatchItem,
   type IRenderPluggable,
@@ -211,14 +211,11 @@ const renderTestItem = (
   };
 };
 
-class TestRendererStateClosure extends BaseRendererStateClosure<
-  HastRoot,
-  ElementContent,
-  Parent,
-  RenderedBlock
-> {
+class TestRenderer extends BaseRenderer<HastRoot, ElementContent, Parent, RenderedBlock> {
   protected renderItem(item: IBlockState<HastRoot>): RenderedBlock {
-    return renderTestItem(item, this.inputs.patches, this.inputs.plugins);
+    const { patches, plugins } = this.inputs;
+
+    return renderTestItem(item, patches.value, plugins.value);
   }
 }
 
@@ -279,7 +276,7 @@ const getObserverCount = (state: IReactiveState<unknown>): number => {
   ).subject.observers.length;
 };
 
-const setupCoreStateClosure = (initialText = 'base') => {
+const setupCore = (initialText = 'base') => {
   const text = MutableState.of(initialText);
   const patches = MutableState.of<IPatchItem<RenderedBlock>[]>([]);
   const config = MutableState.of(DEFAULT_CONFIG);
@@ -293,16 +290,16 @@ const setupCoreStateClosure = (initialText = 'base') => {
   >([]);
   const state = render(
     S([
-      CoreStateClosure<RenderedBlock>,
+      Core<RenderedBlock>,
       {
-        Renderer: D(TestRendererStateClosure),
-        text: D(text),
-        patches: D(patches),
-        config: D(config),
-        renders: D(renders),
-        remarks: D(remarks),
-        rehypes: D(rehypes),
-        repairs: D(repairs),
+        Renderer: D(TestRenderer),
+        text,
+        patches,
+        config,
+        renders,
+        remarks,
+        rehypes,
+        repairs,
       },
     ]),
   );
@@ -327,28 +324,13 @@ beforeEach(() => {
   TestRenderPlugin.destroyed.mockClear();
 });
 
-describe('CoreStateClosure', () => {
+describe('Core', () => {
   test('exposes a reactive rendered value and preset plugin classes', () => {
-    const harness = setupCoreStateClosure();
+    const harness = setupCore();
 
     const { state } = harness;
 
-    // @ts-expect-error Core runtime inputs must preserve reactive sources with D().
-    S([
-      CoreStateClosure<RenderedBlock>,
-      {
-        Renderer: D(TestRendererStateClosure),
-        config: D(harness.config),
-        patches: D(harness.patches),
-        rehypes: D(harness.rehypes),
-        remarks: D(harness.remarks),
-        renders: D(harness.renders),
-        repairs: D(harness.repairs),
-        text: harness.text,
-      },
-    ]);
-
-    expectTypeOf(state).toEqualTypeOf<IStateClosure<RenderedBlock[]>>();
+    expectTypeOf(state).toEqualTypeOf<IReadableClosure<RenderedBlock[]>>();
 
     expect(PRESET_REMARK_PLUGINS).toContain(SyntaxMathRemarkPlugin);
     expect(PRESET_REHYPE_PLUGINS).toContain(HoistFootnoteRehypePlugin);
@@ -360,17 +342,13 @@ describe('CoreStateClosure', () => {
   test('builds from direct inputs with default plugin sources', () => {
     const state = render(
       S([
-        CoreStateClosure<RenderedBlock>,
+        Core<RenderedBlock>,
         {
-          Renderer: D(TestRendererStateClosure),
-          text: D('base'),
-          patches: D(ReactiveState.of<IPatchItem<RenderedBlock>[]>([])),
-          config: D(DEFAULT_CONFIG),
-          renders: D(
-            ReactiveState.of<
-              IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
-            >([]),
-          ),
+          Renderer: D(TestRenderer),
+          text: ReactiveState.of('base'),
+          patches: [],
+          config: DEFAULT_CONFIG,
+          renders: [],
         },
       ]),
     );
@@ -383,7 +361,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('uses the injected renderer and reacts to render plugin changes', () => {
-    const harness = setupCoreStateClosure();
+    const harness = setupCore();
     const initial = first(harness.state.value.value);
 
     harness.renders.next([TestRenderPlugin]);
@@ -401,7 +379,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('reacts to configured extra pluggables while preserving block identity', () => {
-    const harness = setupCoreStateClosure();
+    const harness = setupCore();
     const initialBlock = first(harness.state.value.value);
 
     expect(initialBlock).toBeDefined();
@@ -430,7 +408,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('gates math and dangling-footnote behavior through core config', () => {
-    const math = setupCoreStateClosure('$x$');
+    const math = setupCore('$x$');
 
     math.remarks.next([]);
     math.rehypes.next([]);
@@ -450,7 +428,7 @@ describe('CoreStateClosure', () => {
       }),
     ).toBeDefined();
 
-    const footnote = setupCoreStateClosure('first[^12');
+    const footnote = setupCore('first[^12');
 
     footnote.remarks.next([]);
     footnote.rehypes.next([]);
@@ -473,7 +451,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('lets framework-managed remark fields override user tuple options', () => {
-    const harness = setupCoreStateClosure('abc');
+    const harness = setupCore('abc');
     const renderPatch = vi.fn(() => first(harness.state.value.value)!);
 
     harness.remarks.next([
@@ -512,7 +490,7 @@ describe('CoreStateClosure', () => {
       { key: 'actual', render: updatedRenderPatch },
     ]);
 
-    const math = setupCoreStateClosure('prefix$a+b');
+    const math = setupCore('prefix$a+b');
 
     math.remarks.next([
       [SyntaxMathRemarkPlugin, { repairEnding: true }] as unknown as IPluggable<
@@ -549,7 +527,7 @@ describe('CoreStateClosure', () => {
       }),
     ).toBeDefined();
 
-    const ending = setupCoreStateClosure('first\n\nsecond');
+    const ending = setupCore('first\n\nsecond');
 
     ending.remarks.next([
       [ApplyRepairsRemarkPlugin, { ending: false, plugins: [] }] as unknown as IPluggable<
@@ -566,7 +544,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('reacts to enabled repair extras, their configs, and list changes', () => {
-    const harness = setupCoreStateClosure('base');
+    const harness = setupCore('base');
 
     harness.remarks.next([]);
     harness.rehypes.next([]);
@@ -598,7 +576,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('uses an extra configured tuple for a preset class without appending a duplicate', () => {
-    const harness = setupCoreStateClosure('prefix ![tail');
+    const harness = setupCore('prefix ![tail');
 
     harness.remarks.next([]);
     harness.rehypes.next([]);
@@ -621,7 +599,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('keeps the compiled block graph reactive without taking ownership of inputs', () => {
-    const harness = setupCoreStateClosure('first\n\nsecond');
+    const harness = setupCore('first\n\nsecond');
     const initial = harness.state.value.value;
 
     harness.text.next('updated\n\nsecond\n\nthird');
@@ -662,38 +640,38 @@ describe('CoreStateClosure', () => {
     expect(harness.repairs.closed).toBe(false);
     expect(inputs.map(getObserverCount)).toEqual(inputs.map(() => 0));
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(3);
-    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledOnce();
+    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledTimes(3);
   });
 
   test('releases per-block descriptor scopes as blocks leave the graph', () => {
-    const harness = setupCoreStateClosure('first\n\nsecond\n\nthird');
+    const harness = setupCore('first\n\nsecond\n\nthird');
 
     expect(harness.state.value.value).toHaveLength(3);
 
     const initialRemarkObservers = getObserverCount(harness.remarks);
 
-    expect(initialRemarkObservers).toBe(3);
+    expect(initialRemarkObservers).toBe(1);
 
     harness.text.next('first');
 
     expect(harness.state.value.value).toHaveLength(1);
-    expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers - 2);
+    expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers);
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(2);
 
     harness.text.next('first\n\nfourth');
 
     expect(harness.state.value.value).toHaveLength(2);
-    expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers - 1);
+    expect(getObserverCount(harness.remarks)).toBe(initialRemarkObservers);
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(2);
 
     harness.state.destroy();
 
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(4);
-    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledOnce();
+    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledTimes(4);
   });
 
   test('releases per-block repair plugins as blocks leave the graph', () => {
-    const harness = setupCoreStateClosure('first\n\nsecond');
+    const harness = setupCore('first\n\nsecond');
 
     harness.remarks.next([]);
     harness.rehypes.next([]);
@@ -730,7 +708,7 @@ describe('CoreStateClosure', () => {
   });
 
   test('destroying before initialization builds no graph', () => {
-    const harness = setupCoreStateClosure();
+    const harness = setupCore();
 
     harness.state.destroy();
     harness.state.destroy();

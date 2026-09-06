@@ -2,32 +2,31 @@ import type { IPluginWithConfig } from '@flowdown/types';
 import type { IDestructible } from 'reactive';
 
 import { cacheDiffMap } from '@flowdown/utils';
-import { useClearable, useMap, useRef, useStableFn } from 'reactive';
+import { once, useClearable, useMap } from 'reactive';
 
-import type { PluginBuilderStateClosureInputs, PluginEntry } from './type';
+import type { PluginBuilderInputs, PluginEntry } from './type';
 
 import { buildPluggables, isPluggableEqual, sortPluginInstances } from './utils';
 
 export * from './type';
-export { isPluggableEqual } from './utils';
+export * from './utils';
 
-export function PluginBuilderStateClosure<T extends IPluginWithConfig & IDestructible>({
-  plugins,
-  sort = true,
-}: PluginBuilderStateClosureInputs<T>) {
-  const entries = useRef<PluginEntry<T>[]>([]);
+export const PluginBuilder = /*#__PURE__*/ once(function PluginBuilder<
+  T extends IPluginWithConfig & IDestructible,
+>({ plugins, sort = true }: PluginBuilderInputs<T>) {
+  let entries: PluginEntry<T>[] = [];
 
-  const cleanup = useStableFn(() => {
-    for (const { instance } of entries.current) {
+  useClearable(() => {
+    for (const { instance } of entries) {
       instance.destroy();
     }
 
-    entries.current = [];
+    entries = [];
   });
 
-  const state = useMap(plugins, (currentPluggables) => {
-    entries.current = cacheDiffMap({
-      prev: entries.current.map((entry) => [entry.pluggable, entry]),
+  return useMap(plugins, (currentPluggables) => {
+    entries = cacheDiffMap({
+      prev: entries.map((entry) => [entry.pluggable, entry]),
       current: currentPluggables,
       mapper: (pluggable) => ({
         instance: buildPluggables(pluggable),
@@ -37,12 +36,8 @@ export function PluginBuilderStateClosure<T extends IPluginWithConfig & IDestruc
       teardown: ({ instance }) => instance.destroy(),
     });
 
-    const instances = entries.current.map(({ instance }) => instance);
+    const instances = entries.map(({ instance }) => instance);
 
     return sort ? sortPluginInstances(instances) : instances;
   });
-
-  useClearable(cleanup);
-
-  return state;
-}
+});

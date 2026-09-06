@@ -174,4 +174,119 @@ describe('cacheDiffMap', () => {
       ['existing:second', 'second'],
     ]);
   });
+
+  test('releases newly mapped values when a later mapper fails and preserves previous entries', () => {
+    const failure = new Error('Mapping failed.');
+    const teardown = vi.fn();
+    const prev: [string, string][] = [
+      ['kept', 'existing:kept'],
+      ['removed', 'existing:removed'],
+    ];
+
+    expect(() =>
+      cacheDiffMap({
+        prev,
+        current: ['kept', 'first', 'second', 'fails'],
+        mapper: (source) => {
+          if (source === 'fails') {
+            throw failure;
+          }
+
+          return `new:${source}`;
+        },
+        teardown,
+      }),
+    ).toThrow(failure);
+
+    expect(teardown.mock.calls).toEqual([
+      ['new:second', 'second'],
+      ['new:first', 'first'],
+    ]);
+    expect(prev).toEqual([
+      ['kept', 'existing:kept'],
+      ['removed', 'existing:removed'],
+    ]);
+  });
+
+  test('releases newly mapped values when a later comparison fails', () => {
+    const failure = new Error('Comparison failed.');
+    const teardown = vi.fn();
+
+    expect(() =>
+      cacheDiffMap({
+        prev: [['existing', 'existing:value']],
+        current: ['added', 'fails'],
+        mapper: (source) => `new:${source}`,
+        comparer: (left, right) => {
+          if (right === 'fails') {
+            throw failure;
+          }
+
+          return left === right;
+        },
+        teardown,
+      }),
+    ).toThrow(failure);
+
+    expect(teardown.mock.calls).toEqual([['new:added', 'added']]);
+  });
+
+  test('attempts every rollback cleanup and retains the original failure when cleanup also fails', () => {
+    const failure = new Error('Mapping failed.');
+    const cleanupFailure = new Error('Cleanup failed.');
+    const teardown = vi.fn((_value: string, source: string) => {
+      if (source === 'second') {
+        throw cleanupFailure;
+      }
+    });
+
+    let caught: unknown;
+
+    try {
+      cacheDiffMap({
+        prev: [],
+        current: ['first', 'second', 'fails'],
+        mapper: (source) => {
+          if (source === 'fails') {
+            throw failure;
+          }
+
+          return `new:${source}`;
+        },
+        teardown,
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AggregateError);
+    expect(caught).toMatchObject({ errors: [failure, cleanupFailure] });
+    expect(teardown.mock.calls).toEqual([
+      ['new:second', 'second'],
+      ['new:first', 'first'],
+    ]);
+  });
+
+  test('releases newly mapped values if retiring an old value fails before the result can be returned', () => {
+    const failure = new Error('Retirement failed.');
+    const teardown = vi.fn((_value: string, source: string) => {
+      if (source === 'removed') {
+        throw failure;
+      }
+    });
+
+    expect(() =>
+      cacheDiffMap({
+        prev: [['removed', 'existing:removed']],
+        current: ['added'],
+        mapper: (source) => `new:${source}`,
+        teardown,
+      }),
+    ).toThrow(failure);
+
+    expect(teardown.mock.calls).toEqual([
+      ['existing:removed', 'removed'],
+      ['new:added', 'added'],
+    ]);
+  });
 });

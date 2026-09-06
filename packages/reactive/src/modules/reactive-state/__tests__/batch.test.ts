@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { combineMapState, combineState, mapState } from '../../../helpers/operator';
 import { BatchScheduler } from '../../batch-scheduler';
 import { MutableState } from '../../mutable-state';
+import { combineMapState, combineState, mapState } from '../exports/operator';
 
 describe('BatchScheduler', () => {
   test('publishes one consistent snapshot for multiple source updates', () => {

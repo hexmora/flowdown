@@ -1,6 +1,6 @@
-import type { IReactiveState, Newable } from 'reactive';
+import type { IReadableClosure, Newable } from 'reactive';
 
-import type { BaseRendererStateClosure } from '.';
+import type { BaseRenderer } from '.';
 import type { IBlockState } from '../../states/base';
 import type { IRenderPlugin } from '../base-render-plugin';
 
@@ -12,15 +12,15 @@ export interface IRenderPatchItem<R> {
   render: IRenderPatchRender<R>;
 }
 
-export interface BaseRendererStateClosureInputs<T, E, P, R, C = {}> {
-  source: IReactiveState<IBlockState<T>[]>;
+export interface BaseRendererInputs<T, E, P, R, C = {}> {
+  source: IReadableClosure<IBlockState<T>[]>;
 
-  patches: IReactiveState<IRenderPatchItem<R>[]>;
+  patches: IReadableClosure<IRenderPatchItem<R>[]>;
 
-  plugins: IReactiveState<IRenderPlugin<E, P, R, C>[]>;
+  plugins: IReadableClosure<IRenderPlugin<E, P, R, C>[]>;
 }
 
 export type RendererClass<T, E, P, R, C> = Newable<
-  BaseRendererStateClosure<T, E, P, R, C>,
-  [BaseRendererStateClosureInputs<T, E, P, R, C>]
+  BaseRenderer<T, E, P, R, C>,
+  [BaseRendererInputs<T, E, P, R, C>]
 >;

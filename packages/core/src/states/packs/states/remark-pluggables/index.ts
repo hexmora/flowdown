@@ -7,74 +7,79 @@ import {
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
 } from '@flowdown/preset-plugins';
-import { isEqual } from 'lodash-es';
 import { memo } from 'reactive';
 
 import type { RemarkPluggablesMapperInputs } from './type';
 
+import { isPluggablesEqual } from '../../../base/plugin-builder/utils';
 import { getPluggableClass, getPluggableConfig, mergePluginPluggables } from '../utils';
+import { isInputsEqual } from './utils';
 
 export * from './type';
 
-export const RemarkPluggablesMapper = /*#__PURE__*/ memo(function RemarkPluggablesMapper({
-  config,
-  extras,
-  repairs,
-}: RemarkPluggablesMapperInputs): IPluggable<IRemarkPlugin, unknown>[] {
-  const presets = PRESET_REMARK_PLUGINS.filter((Plugin) => {
-    if (Plugin === SyntaxFootnoteRemarkPlugin) {
-      return config.footnote;
-    }
+export const RemarkPluggablesMapper = /*#__PURE__*/ memo(
+  function RemarkPluggablesMapper({
+    config,
+    extras,
+    repairs,
+  }: RemarkPluggablesMapperInputs): IPluggable<IRemarkPlugin, unknown>[] {
+    const presets = PRESET_REMARK_PLUGINS.filter((Plugin) => {
+      if (Plugin === SyntaxFootnoteRemarkPlugin) {
+        return config.footnote;
+      }
 
-    if (Plugin === SyntaxMathRemarkPlugin) {
-      return config.tex;
-    }
+      if (Plugin === SyntaxMathRemarkPlugin) {
+        return config.tex;
+      }
 
-    if (Plugin === ApplyRepairsRemarkPlugin) {
-      return config.repair;
-    }
+      if (Plugin === ApplyRepairsRemarkPlugin) {
+        return config.repair;
+      }
 
-    return true;
-  });
+      return true;
+    });
 
-  const pluggables = mergePluginPluggables(presets, extras);
+    const pluggables = mergePluginPluggables(presets, extras);
 
-  return pluggables.map((pluggable) => {
-    const Plugin = getPluggableClass(pluggable);
+    return pluggables.map((pluggable) => {
+      const Plugin = getPluggableClass(pluggable);
 
-    const pluginConfig = getPluggableConfig(pluggable);
+      const pluginConfig = getPluggableConfig(pluggable);
 
-    if (Plugin === PatchesRemarkPlugin) {
-      return [
-        Plugin,
-        {
-          ...pluginConfig,
-          patches: config.patches,
-        },
-      ];
-    }
+      if (Plugin === PatchesRemarkPlugin) {
+        return [
+          Plugin,
+          {
+            ...pluginConfig,
+            patches: config.patches,
+          },
+        ];
+      }
 
-    if (Plugin === SyntaxMathRemarkPlugin) {
-      return [
-        Plugin,
-        {
-          ...pluginConfig,
-          repairEnding: config.repair && config.repairEnding,
-        },
-      ];
-    }
+      if (Plugin === SyntaxMathRemarkPlugin) {
+        return [
+          Plugin,
+          {
+            ...pluginConfig,
+            repairEnding: config.repair && config.repairEnding,
+          },
+        ];
+      }
 
-    if (Plugin === ApplyRepairsRemarkPlugin) {
-      return [
-        Plugin,
-        {
-          ...pluginConfig,
-          plugins: repairs,
-          ending: config.repairEnding,
-        },
-      ];
-    }
+      if (Plugin === ApplyRepairsRemarkPlugin) {
+        return [
+          Plugin,
+          {
+            ...pluginConfig,
+            plugins: repairs,
+            ending: config.repairEnding,
+          },
+        ];
+      }
 
-    return pluggable;
-  });
-}, isEqual);
+      return pluggable;
+    });
+  },
+  isInputsEqual,
+  isPluggablesEqual,
+);

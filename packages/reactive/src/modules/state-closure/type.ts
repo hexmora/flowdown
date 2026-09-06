@@ -1,8 +1,9 @@
-import type { BehaviorSubject } from 'rxjs';
+import type { BehaviorSubject, Subscription } from 'rxjs';
 
-import type { ImmediateDescriptor, StateClosureDescriptor } from '../../helpers/render';
 import type { IDestructible } from '../destructible';
+import type { MutableState } from '../mutable-state';
 import type { IReactiveState } from '../reactive-state';
+import type { ImmediateDescriptor, StateClosureDescriptor } from './exports/render';
 
 export type StateClosureDirectSource<T> = T | BehaviorSubject<T> | IReactiveState<T>;
 
@@ -11,6 +12,13 @@ export type StateClosureSource<T> =
   | ImmediateDescriptor<T>
   | StateClosureDescriptor<T>;
 
-export interface IStateClosure<T> extends IDestructible {
+export interface IReadableClosure<T> extends IDestructible {
   readonly value: IReactiveState<T>;
 }
+
+export type ListEntry<T, R> = {
+  input: MutableState<T>;
+  closure: IReadableClosure<R>;
+  state: IReactiveState<R>;
+  subscription?: Subscription;
+};

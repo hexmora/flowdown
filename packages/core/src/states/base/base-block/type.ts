@@ -1,26 +1,28 @@
-import { IReactiveState, IStateClosure, Newable } from 'reactive';
+import { IReactiveState, IReadableClosure, Newable } from 'reactive';
 
 import { IRangeState } from '../range';
 
-export type BaseBlockStateClosureInputs<T> = {
-  source: IReactiveState<T>;
+export type BaseBlockItemInputs<T> = {
+  source: IReadableClosure<T>;
 
-  meta: IReactiveState<IBlockMeta>;
+  meta: IReadableClosure<IBlockMeta>;
 
-  range?: IReactiveState<IRangeState | null>;
+  range?: IReadableClosure<IRangeState | null>;
 
   mapper?: IBlockStateMapper<T>;
 };
 
-export type BlockStateClosureClass<T> = Newable<IBlockState<T>, [BaseBlockStateClosureInputs<T>]>;
+export type BlockItemClass<T> = Newable<IBlockState<T>, [BaseBlockItemInputs<T>]>;
 
-export interface IBlockMeta {
+export interface IBlockMeta extends IBlockRawMeta {
   /** Unique block identifier */
   key: string;
 
   /** Text that the block slice belongs to */
   sourceText: string;
+}
 
+export interface IBlockRawMeta {
   /** Start index of the block slice text */
   charStart: number;
 
@@ -55,7 +57,7 @@ export interface IBlockStateCloneParams<T> {
   mapper?: IBlockStateMapper<T>;
 }
 
-export interface IBlockState<T> extends IStateClosure<T> {
+export interface IBlockState<T> extends IReadableClosure<T> {
   /** Text length of the built output */
   length: IReactiveState<number>;
 

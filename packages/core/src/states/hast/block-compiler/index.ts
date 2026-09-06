@@ -1,212 +1,39 @@
-import type { IRehypePlugin } from '@flowdown/types';
-import type { IReactiveState, StateSource } from 'reactive';
+import { isEqual } from 'lodash-es';
+import { once, S, useMap, useMapEach } from 'reactive';
 
-import { assert } from '@flowdown/utils';
-import { isEqual, isNil, zip } from 'lodash-es';
-import { BaseStateClosure, BatchScheduler, combineMapState, MutableState, toState } from 'reactive';
-import { shallowEqual } from 'shallow-equal';
+import type { BlockCompilerInputs, BlockCompilerItem, IBlockCompiler } from './type';
 
-import type { HastRoot } from '../../../typings';
-import type { IBlockMeta, IBlockSection, IBlockState } from '../../base';
-import type {
-  BlockClosure,
-  BlockCompilerStateClosureInputs,
-  BlockRemarksConfig,
-  CreateBlockClosure,
-  IBlockCompilerStateClosure,
-  MutableBlockMeta,
-} from './type';
+import { CompiledBlock } from './states';
 
-import { BlockStateClosure } from '../block';
-import { destroyAll, markdownToHast } from './utils';
-
+export * from './states';
 export * from './type';
 
-export class BlockCompilerStateClosure
-  extends BaseStateClosure<IBlockState<HastRoot>[], BlockCompilerStateClosureInputs>
-  implements IBlockCompilerStateClosure
-{
-  private closures: BlockClosure[] = [];
+export const BlockCompiler = /*#__PURE__*/ once(
+  ({ sections, config, getRemarks, getRehypes }: BlockCompilerInputs): IBlockCompiler => {
+    let nextKey = 0;
 
-  private rehypes: IReactiveState<IRehypePlugin[]> | null = null;
+    const items = useMap(sections, (currentSections) => {
+      let charStart = 0;
 
-  private prevKeyIndex: number | null = null;
+      return currentSections.map((section, currentIndex): BlockCompilerItem => {
+        const charEnd = charStart + section.text.length;
 
-  protected render() {
-    const { config, getRehypes, getRemarks, sections } = this.inputs;
+        const item = {
+          section,
+          meta: { charStart, charEnd, currentIndex, blockCount: currentSections.length },
+        };
 
-    const createClosure: CreateBlockClosure = ({ charStart, count, index, section }) => {
-      const blockKey = this.createKey();
+        charStart = charEnd;
 
-      const sectionState = new MutableState({ initial: section, distinctor: isEqual });
-
-      const metaState = new MutableState<MutableBlockMeta>({
-        initial: {
-          charStart,
-          charEnd: charStart + section.text.length,
-          currentIndex: index,
-          blockCount: count,
-        },
-        distinctor: isEqual,
+        return item;
       });
-
-      const remarksConfig = combineMapState(
-        [config, sectionState, metaState],
-        ([
-          { repairEnding, ...restConfig },
-          { patches },
-          { currentIndex, blockCount },
-        ]): BlockRemarksConfig => {
-          return {
-            ...restConfig,
-            repairEnding: repairEnding && currentIndex === blockCount - 1,
-            patches,
-          };
-        },
-        isEqual,
-      );
-
-      const remarks = toState(getRemarks(remarksConfig));
-
-      const rehypes = (this.rehypes ??= toState(getRehypes()));
-
-      const source = combineMapState(
-        [sectionState, remarks, rehypes],
-        ([currentSection, currentRemarks, currentRehypes]) => {
-          return markdownToHast({
-            text: currentSection.text,
-            remarks: currentRemarks,
-            rehypes: currentRehypes,
-          });
-        },
-        isEqual,
-      );
-
-      const meta = combineMapState(
-        [metaState, sectionState],
-        ([currentMeta, currentSection]): IBlockMeta => ({
-          ...currentMeta,
-          key: blockKey,
-          sourceText: currentSection.text,
-        }),
-        isEqual,
-      );
-
-      const state = new BlockStateClosure({ source, meta });
-
-      return {
-        meta: metaState,
-        section: sectionState,
-        state,
-        destroy: () => {
-          destroyAll([state, meta, source, remarksConfig, metaState, sectionState]);
-        },
-      };
-    };
-
-    const closures = this.getClosuresState(sections, createClosure);
-
-    const states = this.map(closures, (items) => items.map(({ state }) => state), shallowEqual);
-
-    this.clearable(() => {
-      destroyAll(this.closures);
-
-      this.closures = [];
     });
 
-    return states;
-  }
-
-  private getClosuresState(
-    sections: StateSource<IBlockSection[]>,
-    createClosure: CreateBlockClosure,
-  ) {
-    return this.map(sections, (currentSections, prev): BlockClosure[] => {
-      const currentCount = currentSections.length;
-
-      if (!prev) {
-        let nextCharStart = 0;
-
-        const initialClosures = currentSections.map((section, index) => {
-          const charStart = nextCharStart;
-
-          nextCharStart += section.text.length;
-
-          return createClosure({
-            charStart,
-            count: currentCount,
-            index,
-            section,
-          });
-        });
-
-        this.closures = initialClosures;
-
-        return initialClosures;
-      }
-
-      const [prevSections, prevClosures] = prev;
-
-      assert(
-        prevSections.length === prevClosures.length,
-        'Previous sections and closures must have the same length.',
-      );
-
-      let nextCharStart = 0;
-
-      const nextClosures = zip(prevSections, prevClosures, currentSections)
-        .map<BlockClosure | null>(([prevSection, prevClosure, currentSection], index) => {
-          const charStart = nextCharStart;
-
-          if (currentSection) {
-            nextCharStart += currentSection.text.length;
-          }
-
-          if (!prevSection) {
-            assert(currentSection);
-
-            return createClosure({
-              charStart,
-              count: currentCount,
-              index,
-              section: currentSection,
-            });
-          }
-
-          assert(prevClosure);
-
-          if (!currentSection) {
-            return null;
-          }
-
-          BatchScheduler.batch(() => {
-            prevClosure.meta.next({
-              charStart,
-              charEnd: charStart + currentSection.text.length,
-              currentIndex: index,
-              blockCount: currentCount,
-            });
-
-            prevClosure.section.next(currentSection);
-          });
-
-          return prevClosure;
-        })
-        .filter((closure): closure is BlockClosure => Boolean(closure));
-
-      destroyAll(prevClosures.slice(currentCount));
-
-      this.closures = nextClosures;
-
-      return nextClosures;
-    });
-  }
-
-  private createKey() {
-    const key = isNil(this.prevKeyIndex) ? 1 : this.prevKeyIndex + 1;
-
-    this.prevKeyIndex = key;
-
-    return String(key);
-  }
-}
+    return useMapEach(
+      items,
+      (item) =>
+        S([CompiledBlock, { item, key: String(++nextKey), config, getRemarks, getRehypes }]),
+      isEqual,
+    );
+  },
+);

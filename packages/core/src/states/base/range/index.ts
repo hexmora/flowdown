@@ -6,7 +6,7 @@ import type { IRangeState } from './type';
 
 export * from './type';
 
-export class RangeStateClosure extends BaseStateClosure<IRangeState | null> {
+export class Range extends BaseStateClosure<IRangeState | null> {
   protected render() {
     return null;
   }
