@@ -11,7 +11,7 @@ import { createTypeOfSlot, SlotProvider } from '../components';
 import { useSlots } from '../hooks';
 
 interface SlotComponentProps {
-  Raw?: ComponentType<SlotComponentProps> | null;
+  Raw: ComponentType<Omit<SlotComponentProps, 'Raw'>> | null;
   children?: ReactNode;
   error?: unknown;
   onReset?: () => void;
@@ -102,7 +102,11 @@ const CompositionSlotC = ({ Raw, children, ...props }: SlotComponentProps) => (
 );
 
 const FirstSlot = (props: SlotComponentProps) => (
-  <span data-has-raw={String(has(props, 'Raw'))} data-testid="first-slot">
+  <span
+    data-has-raw={String(has(props, 'Raw'))}
+    data-raw-is-null={String(props.Raw === null)}
+    data-testid="first-slot"
+  >
     {props.children}
   </span>
 );
@@ -121,8 +125,8 @@ const ChangingSlotB = ({ children }: SlotComponentProps) => (
 
 const WrappedParagraph = ({ children }: SlotComponentProps) => <p>{children}</p>;
 
-const SlotWrapper = ({ children, type }: SlotComponentProps) => (
-  <section data-testid="wrapper" data-slot-type={type}>
+const SlotWrapper = ({ Raw, children, type }: SlotComponentProps) => (
+  <section data-raw-is-null={String(Raw === null)} data-testid="wrapper" data-slot-type={type}>
     {children}
   </section>
 );
@@ -131,8 +135,8 @@ const BrokenSlot = () => {
   throw new Error('slot failed');
 };
 
-const ErrorFallback = ({ error, type }: SlotComponentProps) => (
-  <output data-testid="fallback" data-slot-type={type}>
+const ErrorFallback = ({ Raw, error, type }: SlotComponentProps) => (
+  <output data-raw-is-null={String(Raw === null)} data-testid="fallback" data-slot-type={type}>
     {error instanceof Error ? error.message : 'unknown'}
   </output>
 );
@@ -200,10 +204,12 @@ describe('slots', () => {
     expect(screen.getByTestId('slot-c')).toHaveTextContent('C[B[A[content]]]');
   });
 
-  test('does not inject a Raw prop into the first slot layer', () => {
+  test('injects a null Raw prop into the first slot layer', () => {
     render(<SlotHarness plugins={[createSlotPlugin('first-slot', 'Paragraph', FirstSlot)]} />);
 
-    expect(screen.getByTestId('first-slot')).toHaveAttribute('data-has-raw', 'false');
+    expect(screen.getByTestId('first-slot')).toHaveAttribute('data-has-raw', 'true');
+
+    expect(screen.getByTestId('first-slot')).toHaveAttribute('data-raw-is-null', 'true');
   });
 
   test('does not share mutable slot arrays between hook instances', () => {
@@ -290,6 +296,8 @@ describe('slots', () => {
 
     expect(screen.getByTestId('wrapper')).toHaveAttribute('data-slot-type', 'Paragraph');
 
+    expect(screen.getByTestId('wrapper')).toHaveAttribute('data-raw-is-null', 'true');
+
     expect(screen.getByTestId('wrapper')).toHaveTextContent('content');
   });
 
@@ -306,6 +314,8 @@ describe('slots', () => {
     );
 
     expect(screen.getByTestId('fallback')).toHaveAttribute('data-slot-type', 'Paragraph');
+
+    expect(screen.getByTestId('fallback')).toHaveAttribute('data-raw-is-null', 'true');
 
     expect(screen.getByTestId('fallback')).toHaveTextContent('slot failed');
   });

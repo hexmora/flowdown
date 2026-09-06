@@ -53,7 +53,7 @@ export type SlotBaseProps<
   HasChildren extends boolean = false,
   HasNode extends boolean = false,
 > = {
-  Raw?: SlotPositionType<SlotBasePropsWithoutRaw<T, HasChildren, HasNode>>;
+  Raw: SlotPositionType<SlotBasePropsWithoutRaw<T, HasChildren, HasNode>>;
 } & SlotBasePropsWithoutRaw<T, HasChildren, HasNode>;
 
 export type BlockquoteProps = SlotBaseProps<{}, true, true>;
@@ -68,6 +68,7 @@ export interface CodeBlockBaseContent {
   meta?: string;
 }
 
+/** Called after the default copy action successfully writes code to the clipboard. */
 export type CodeBlockHandleCopyFunction = (content: CodeBlockBaseContent) => void;
 
 export enum CodeHeaderInnerActionKey {
@@ -118,8 +119,6 @@ export type ImageProps = SlotBaseProps<
   {
     alt?: string;
 
-    forceHttps?: boolean;
-
     height?: number | string;
 
     onClick?: (params: ImageClickParams) => void;
@@ -140,8 +139,6 @@ export interface LinkClickParams {
 
 export type LinkProps = SlotBaseProps<
   {
-    forceHttps?: boolean;
-
     href: string;
 
     onClick?: (params: LinkClickParams) => void;
@@ -185,7 +182,7 @@ type FallbackPropsWithoutRaw = SlotBasePropsWithoutRaw<FallbackOwnProps, false, 
 };
 
 export type FallbackProps = {
-  Raw?: SlotPositionType<FallbackPropsWithoutRaw>;
+  Raw: SlotPositionType<FallbackPropsWithoutRaw>;
 } & FallbackPropsWithoutRaw;
 
 type WrapperPropsWithoutRaw = SlotBasePropsWithoutRaw<{ props?: unknown }, true, false> & {
@@ -193,7 +190,7 @@ type WrapperPropsWithoutRaw = SlotBasePropsWithoutRaw<{ props?: unknown }, true,
 };
 
 export type WrapperProps = {
-  Raw?: SlotPositionType<WrapperPropsWithoutRaw>;
+  Raw: SlotPositionType<WrapperPropsWithoutRaw>;
 } & WrapperPropsWithoutRaw;
 
 export interface SlotProps {
@@ -229,6 +226,10 @@ export interface SlotProps {
 
   Wrapper: WrapperProps;
 }
+
+export type SlotInputProps<T extends SlotType = SlotType> = {
+  [K in T]: Omit<SlotProps[K], 'Raw'>;
+}[T];
 
 export interface ISlotPlugin<T extends SlotType> {
   readonly config: IBasePluginConfig;

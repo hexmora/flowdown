@@ -4,7 +4,7 @@ import { get, has, keys } from 'lodash-es';
 import { createElement, memo } from 'react';
 import { shallowEqual } from 'shallow-equal';
 
-import type { SlotProps, SlotType } from '../../../types';
+import type { SlotInputProps, SlotType } from '../../../types';
 
 import { EO } from '../../../consts';
 import { SlotRenderer } from '../index';
@@ -47,10 +47,10 @@ const isSlotPropsEqual = (left: StyleProps, right: StyleProps): boolean => {
   return true;
 };
 
-export const createTypeOfSlot = <T extends SlotType>(type: T): ComponentType<SlotProps[T]> => {
-  const TypeOfSlot = (props: SlotProps[T]) => createElement(SlotRenderer, { props, type });
+export const createTypeOfSlot = <T extends SlotType>(type: T): ComponentType<SlotInputProps<T>> => {
+  const TypeOfSlot = (props: SlotInputProps<T>) => createElement(SlotRenderer, { props, type });
 
   TypeOfSlot.displayName = `FlowdownTypeOfSlot(${type})`;
 
-  return memo<SlotProps[T]>(TypeOfSlot, isSlotPropsEqual);
+  return memo<SlotInputProps<T>>(TypeOfSlot, isSlotPropsEqual);
 };

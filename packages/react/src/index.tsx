@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Core, isPluggablesEqual } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
+import cn from 'classnames';
 import { forwardRef, memo, useEffect, useImperativeHandle, useState } from 'react';
 import { D, render, S } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
@@ -13,13 +14,18 @@ import { DEFAULT_CONFIG, EL, EO } from './consts';
 import { useDeferredUnmount, usePlugins, useStateOf, useStatic } from './hooks';
 import { ReactRenderer } from './modules';
 import { PRESET_RENDER_PLUGINS, PRESET_SLOT_PLUGINS } from './plugins';
+import styles from './styles/index.module.scss';
+import { useThemeStyles } from './theme';
 import { isPatchesEqual, isPropsEqual, isSmoothEqual } from './utils';
+
+export * from './types';
 
 export const Flowdown = /*#__PURE__*/ memo(
   /*#__PURE__*/ forwardRef<FlowdownRef, FlowdownProps>(function Flowdown(
     {
       className,
       style,
+      theme = 'light',
       text: _text,
       build: _build = EO,
       smooth: _smooth = false,
@@ -28,6 +34,8 @@ export const Flowdown = /*#__PURE__*/ memo(
     },
     ref,
   ) {
+    const themeStyles = useThemeStyles(theme);
+
     const [committed, setCommitted] = useState(false);
 
     const build = useStateOf(defaultsBy(_build, DEFAULT_CONFIG), shallowEqual);
@@ -90,7 +98,7 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     return (
       <SlotProvider plugins={slots}>
-        <RootReconciler className={className} style={style}>
+        <RootReconciler className={cn(styles.root, className)} style={{ ...themeStyles, ...style }}>
           {core.value}
         </RootReconciler>
       </SlotProvider>

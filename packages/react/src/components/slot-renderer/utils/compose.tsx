@@ -1,30 +1,61 @@
-import type { AnySlotPlugin, SlotType } from '../../../types';
-import type { NamedSlotType, RuntimeSlotComponent, RuntimeSlotProps } from '../type';
+import { createElement } from 'react';
 
-export const composePlugins = (plugins: readonly AnySlotPlugin[]): RuntimeSlotComponent | null => {
-  let Raw: RuntimeSlotComponent | null = null;
+import type { AnySlotPlugin, SlotInputProps, SlotType } from '../../../types';
+import type { NamedSlotType, RuntimeSlotComponent, RuntimeSlotInputComponent } from '../type';
 
-  for (const plugin of plugins) {
-    const Component = plugin.Component as unknown as RuntimeSlotComponent | null;
+export const createSlotComposer = () => {
+  const rawSlots = new WeakMap<RuntimeSlotComponent, RuntimeSlotInputComponent>();
 
-    if (!Component) {
-      continue;
+  const composedSlots = new WeakMap<
+    RuntimeSlotComponent,
+    WeakMap<RuntimeSlotInputComponent, RuntimeSlotInputComponent>
+  >();
+
+  return (plugins: readonly AnySlotPlugin[]): RuntimeSlotInputComponent | null => {
+    let Raw: RuntimeSlotInputComponent | null = null;
+
+    for (const plugin of plugins) {
+      const Component = plugin.Component as unknown as RuntimeSlotComponent | null;
+
+      if (!Component) {
+        continue;
+      }
+
+      const Previous: RuntimeSlotInputComponent | null = Raw;
+
+      const compositions = composedSlots.get(Component);
+
+      const cached: RuntimeSlotInputComponent | undefined = Previous
+        ? compositions?.get(Previous)
+        : rawSlots.get(Component);
+
+      if (cached) {
+        Raw = cached;
+
+        continue;
+      }
+
+      const ComposedSlot = (props: SlotInputProps) =>
+        createElement(Component, { ...props, Raw: Previous });
+
+      ComposedSlot.displayName = `FlowdownSlot(${Component.displayName ?? (Component.name || 'Anonymous')})`;
+
+      if (Previous) {
+        const current =
+          compositions ?? new WeakMap<RuntimeSlotInputComponent, RuntimeSlotInputComponent>();
+
+        current.set(Previous, ComposedSlot);
+
+        composedSlots.set(Component, current);
+      } else {
+        rawSlots.set(Component, ComposedSlot);
+      }
+
+      Raw = ComposedSlot;
     }
 
-    if (!Raw) {
-      Raw = Component;
-
-      continue;
-    }
-
-    const Previous = Raw;
-
-    Raw = function ComposedSlot(props: RuntimeSlotProps) {
-      return <Component {...props} Raw={Previous} />;
-    };
-  }
-
-  return Raw;
+    return Raw;
+  };
 };
 
 export const isNamedSlot = (type: SlotType): type is NamedSlotType =>

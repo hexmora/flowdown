@@ -1,9 +1,11 @@
+import cn from 'classnames';
+
 import type { BreakLineProps } from '../../../../types';
 
-export const BreakLineRenderer = ({ Raw, ...props }: BreakLineProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
-  }
+import styles from './index.module.scss';
 
-  return <br {...props} />;
+export const BreakLineRenderer = ({ Raw: _Raw, ...props }: BreakLineProps) => {
+  const { className, ...elementProps } = props;
+
+  return <br {...elementProps} className={cn(styles.root, className)} />;
 };

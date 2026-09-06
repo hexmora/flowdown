@@ -42,14 +42,25 @@ export default function App() {
 
 ### 流式渲染
 
-将截至当前收到的完整 Markdown 文本传给 `text`，每收到一个新片段，就将它追加到应用状态中的文本末尾。Flowdown 会随文本增长自动更新，可以搭配你使用的任意流式 API。
+每收到一个片段，就将累积的 Markdown 传给 `text`。开启 `smooth` 后，新内容会逐步平滑显示，可搭配任意流式 API。
 
 ```jsx
 import { Flowdown } from "flowdown";
 
 export function StreamingMessage({ text }) {
-  return <Flowdown text={text} config={{ repair: true, repairEnding: true }} />;
+  return <Flowdown smooth text={text} build={{ repair: true, repairEnding: true }} />;
 }
+```
+
+### 定制主题
+
+支持 `"light"`（默认）、`"dark"` 或 `[preset, overrides]`。直接传入部分 token 配置时扩展 light。
+
+```jsx
+<Flowdown
+  text="# 你的 Markdown"
+  theme={["dark", { tokens: { heading: { h1: { fontSize: "2.25rem" } } } }]}
+/>
 ```
 
 ## 参与贡献

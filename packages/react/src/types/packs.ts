@@ -11,6 +11,7 @@ import type { IReadableClosure } from 'reactive';
 
 import type { IReactRenderPluggable } from './plugin';
 import type { AnySlotPluggable } from './slots';
+import type { Theme } from './theme';
 
 export interface IPluginItem {
   config?: PluginConfigs;
@@ -40,6 +41,11 @@ export interface FlowdownProps {
    * Inline styles applied to the rendered root.
    */
   style?: CSSProperties;
+
+  /**
+   * Preset theme, deep partial overrides of light, or a preset/overrides tuple.
+   */
+  theme?: Theme;
 
   /**
    * Markdown source text to compile and render.

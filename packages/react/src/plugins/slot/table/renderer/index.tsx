@@ -1,11 +1,15 @@
+import cn from 'classnames';
+
 import type { TableProps } from '../../../../types';
 
-export const TableRenderer = ({ Raw, ...props }: TableProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
-  }
+import styles from './index.module.scss';
 
-  const { children, ...elementProps } = props;
+export const TableRenderer = ({ Raw: _Raw, ...props }: TableProps) => {
+  const { children, className, ...elementProps } = props;
 
-  return <table {...elementProps}>{children}</table>;
+  return (
+    <div {...elementProps} className={cn(styles.root, className)}>
+      <table>{children}</table>
+    </div>
+  );
 };

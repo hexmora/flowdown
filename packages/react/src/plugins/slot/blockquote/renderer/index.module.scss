@@ -1,0 +1,25 @@
+@use "@prefix" as *;
+
+.root {
+  margin: var(--#{$prefix}-spacing-lg) 0;
+  padding: var(--#{$prefix}-spacing-sm) var(--#{$prefix}-spacing-lg);
+
+  border-inline-start: 3px solid var(--#{$prefix}-colors-border-emphasis);
+  border-radius: 0 var(--#{$prefix}-radius-md) var(--#{$prefix}-radius-md) 0;
+  background: var(--#{$prefix}-colors-surface-subtle);
+
+  color: var(--#{$prefix}-colors-fg-muted);
+  line-height: var(--#{$prefix}-typography-line-height-md);
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  & & {
+    margin-block: var(--#{$prefix}-spacing-sm);
+  }
+}

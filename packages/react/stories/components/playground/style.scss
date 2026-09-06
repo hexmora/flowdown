@@ -34,7 +34,8 @@
     box-sizing: border-box;
   }
 
-  button {
+  .playground-deck button,
+  .playground-preview-tools button {
     min-height: 2.35rem;
     padding: 0.45rem 0.8rem;
     border: 1px solid #aeb8b1;
@@ -335,24 +336,7 @@
   min-height: 0;
   overflow: auto;
   padding: clamp(1.2rem, 3vw, 2.5rem);
-  line-height: 1.7;
   flex: 1;
-
-  > div > :first-child {
-    margin-top: 0;
-  }
-
-  pre {
-    overflow-x: auto;
-    padding: 1rem;
-    border-radius: 0.65rem;
-    color: #e8f1eb;
-    background: #1d2924;
-  }
-
-  a {
-    color: #176344;
-  }
 }
 
 .playground-patch-replacement {
@@ -383,7 +367,8 @@
   .playground-shell {
     padding: 0.75rem;
 
-    button {
+    .playground-deck button,
+    .playground-preview-tools button {
       width: 100%;
     }
   }

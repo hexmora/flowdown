@@ -314,7 +314,7 @@ describe('Flowdown smooth streaming', () => {
     try {
       const markup = renderToStaticMarkup(<Flowdown smooth text="# Smooth server heading" />);
 
-      expect(markup).toContain('<h1>Smooth server heading</h1>');
+      expect(markup).toMatch(/<h1\b[^>]*>Smooth server heading<\/h1>/);
 
       expect(request).not.toHaveBeenCalled();
 
