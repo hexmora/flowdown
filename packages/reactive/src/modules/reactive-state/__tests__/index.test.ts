@@ -2,9 +2,9 @@ import { BehaviorSubject, type Observer } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
 import { ReactiveState } from '..';
-import { toReactiveState } from '../../../helpers/operator';
 import { assert } from '../../../utils';
 import { BatchScheduler } from '../../batch-scheduler';
+import { toReactiveState } from '../exports/operator';
 
 describe('ReactiveState', () => {
   test('defers emitter setup until value access by default', () => {

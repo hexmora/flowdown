@@ -8,9 +8,9 @@ type BatchUpdate = () => void;
 export class BatchScheduler {
   private constructor() {}
 
-  private static readonly priorities = new WeakMap<object, number>();
+  private static readonly priorities = /*#__PURE__*/ new WeakMap<object, number>();
 
-  private static readonly pendingUpdates = new Map<unknown, BatchUpdate>();
+  private static readonly pendingUpdates = /*#__PURE__*/ new Map<unknown, BatchUpdate>();
 
   private static depth = 0;
 

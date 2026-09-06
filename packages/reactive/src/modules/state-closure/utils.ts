@@ -1,13 +1,13 @@
-import type { IStateClosure, StateClosureDirectSource, StateClosureSource } from './type';
+import type { IReadableClosure, StateClosureDirectSource, StateClosureSource } from './type';
 
-import { isReactiveStateLike } from '../../helpers/operator';
+import { isReactiveStateLike } from '../reactive-state';
 import {
   isImmediateDescriptor,
-  isStateClosure,
+  isReadableClosure,
   isStateClosureDescriptor,
   render,
   unwrapImmediateDescriptor,
-} from '../../helpers/render';
+} from './exports/render';
 
 export type ResolvedDirectSource<T> = {
   readonly type: 'direct';
@@ -24,9 +24,7 @@ export type ResolvedImmediateSource<T> = {
 export type ResolvedClosureSource<T> = {
   readonly type: 'closure';
 
-  readonly source: IStateClosure<T>;
-
-  readonly owned: boolean;
+  readonly source: IReadableClosure<T>;
 };
 
 export type ResolvedStateClosureSource<T> =
@@ -51,15 +49,14 @@ export const resolveSource = <T>(source: StateClosureSource<T>): ResolvedStateCl
     return { type: 'direct', source };
   }
 
-  if (isStateClosure<T>(source)) {
-    return { type: 'closure', source, owned: false };
+  if (isReadableClosure<T>(source)) {
+    return { type: 'closure', source };
   }
 
-  if (isStateClosureDescriptor<T>(source)) {
+  if (source !== null && isStateClosureDescriptor<T>(source)) {
     return {
       type: 'closure',
-      source: render(source) as IStateClosure<T>,
-      owned: true,
+      source: render<T>(source),
     };
   }
 

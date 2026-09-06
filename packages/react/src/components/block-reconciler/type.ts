@@ -1,16 +1,16 @@
 import type { IBlockState, IRenderPatchItem } from '@flowdown/core';
 import type { ElementContent, Parent, Root } from 'hast';
 import type { ReactNode } from 'react';
-import type { IReactiveState } from 'reactive';
+import type { IReactiveState, StateSource } from 'reactive';
 
 import type { IReactRenderPlugin } from '../../types';
 
 export interface BlockReconcilerProps {
   block: IBlockState<Root>;
 
-  patches: IReactiveState<IRenderPatchItem<ReactNode>[]>;
+  patches: StateSource<IRenderPatchItem<ReactNode>[]>;
 
-  plugins: IReactiveState<IReactRenderPlugin[]>;
+  plugins: StateSource<IReactRenderPlugin[]>;
 }
 
 export interface RenderNodeParams {

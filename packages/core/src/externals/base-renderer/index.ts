@@ -2,16 +2,16 @@ import { BaseStateClosure } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { IBlockState } from '../../states/base';
-import type { BaseRendererStateClosureInputs } from './type';
+import type { BaseRendererInputs } from './type';
 
 import { mapRendererItems } from './utils';
 
 export * from './type';
 export * from './utils';
 
-export abstract class BaseRendererStateClosure<T, E, P, R, C = {}> extends BaseStateClosure<
+export abstract class BaseRenderer<T, E, P, R, C = {}> extends BaseStateClosure<
   R[],
-  BaseRendererStateClosureInputs<T, E, P, R, C>
+  BaseRendererInputs<T, E, P, R, C>
 > {
   protected abstract renderItem(item: IBlockState<T>): R;
 
@@ -21,7 +21,7 @@ export abstract class BaseRendererStateClosure<T, E, P, R, C = {}> extends BaseS
     return this.combineMap(
       [source, plugins],
       (current, prev): R[] => mapRendererItems(current, prev, (item) => this.renderItem(item)),
-      (left, right) => shallowEqual(left, right),
+      shallowEqual,
     );
   }
 }

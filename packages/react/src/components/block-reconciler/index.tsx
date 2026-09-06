@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { toState } from 'reactive';
 
 import type { BlockReconcilerProps } from './type';
 
@@ -12,7 +13,11 @@ export const BlockReconciler = /*#__PURE__*/ memo(function BlockReconciler({
 }: BlockReconcilerProps) {
   const root = useStateValue(block.value);
 
-  const renderPlugins = useStateValue(plugins);
+  const patchState = useMemo(() => toState(patches), [patches]);
 
-  return renderParentChildren(root, [root], patches, renderPlugins);
+  const pluginState = useMemo(() => toState(plugins), [plugins]);
+
+  const renderPlugins = useStateValue(pluginState);
+
+  return renderParentChildren(root, [root], patchState, renderPlugins);
 });

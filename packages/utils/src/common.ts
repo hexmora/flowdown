@@ -1,4 +1,4 @@
-import { isArray } from 'lodash-es';
+import { isArray, reverse } from 'lodash-es';
 
 export type ComputeCalculator<T> = () => T;
 
@@ -39,20 +39,46 @@ export const cacheDiffMap = <T, R>({
 }: cacheDiffMapParams<T, R>): R[] => {
   const prevEntries = isArray(prev) ? prev : [...prev.entries()];
   const unmatchedEntries = [...prevEntries];
+  const created: [T, R][] = [];
 
-  const result = current.map((source) => {
-    const matchedIndex = unmatchedEntries.findIndex(([prevSource]) => comparer(prevSource, source));
+  let result: R[];
 
-    if (matchedIndex === -1) {
-      return mapper(source);
+  try {
+    result = current.map((source) => {
+      const matchedIndex = unmatchedEntries.findIndex(([prevSource]) =>
+        comparer(prevSource, source),
+      );
+
+      if (matchedIndex === -1) {
+        const value = mapper(source);
+
+        created.push([source, value]);
+
+        return value;
+      }
+
+      const [[, value]] = unmatchedEntries.splice(matchedIndex, 1);
+
+      return value;
+    });
+
+    for (const [source, value] of unmatchedEntries) {
+      teardown?.(value, source);
+    }
+  } catch (error) {
+    const errors = [error];
+
+    for (const [source, value] of reverse(created)) {
+      try {
+        teardown?.(value, source);
+      } catch (cleanupError) {
+        errors.push(cleanupError);
+      }
     }
 
-    const [[, value]] = unmatchedEntries.splice(matchedIndex, 1);
-    return value;
-  });
-
-  for (const [source, value] of unmatchedEntries) {
-    teardown?.(value, source);
+    throw errors.length === 1
+      ? error
+      : new AggregateError(errors, 'Failed to map values and release newly created entries.');
   }
 
   return result;

@@ -1,7 +1,7 @@
 import type { PluginConfigs } from '@flowdown/core';
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
-import { PluginBuilderStateClosure } from '@flowdown/core';
+import { PluginBuilder } from '@flowdown/core';
 import { get, has, set } from 'lodash-es';
 import { useMemo } from 'react';
 import { render, S } from 'reactive';
@@ -60,7 +60,7 @@ export const useSlots = (pluggables: readonly AnySlotPluggable[]): Partial<Slots
   const builder = useStatic(() =>
     render(
       S([
-        PluginBuilderStateClosure<AnySlotPlugin>,
+        PluginBuilder<AnySlotPlugin>,
         {
           plugins,
           sort: false,

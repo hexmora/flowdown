@@ -1,7 +1,8 @@
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
+import type { IReadableClosure } from 'reactive';
 
-export interface PluginBuilderStateClosureInputs<T extends IPluginWithConfig> {
-  plugins: IPluggable<T, unknown>[];
+export interface PluginBuilderInputs<T extends IPluginWithConfig> {
+  plugins: IReadableClosure<IPluggable<T, unknown>[]>;
 
   sort?: boolean;
 }

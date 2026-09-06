@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { CoreStateClosure } from '@flowdown/core';
+import { Core } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
 import { forwardRef, memo, useImperativeHandle } from 'react';
 import { D, render, S } from 'reactive';
@@ -54,16 +54,16 @@ export const Flowdown = /*#__PURE__*/ memo(
     const core = useStatic(() =>
       render(
         S([
-          CoreStateClosure<ReactNode, ReactRenderExtraParams>,
+          Core<ReactNode, ReactRenderExtraParams>,
           {
             Renderer: D(ReactRenderer),
-            config: D(config),
-            patches: D(patches),
-            rehypes: D(rehypes),
-            remarks: D(remarks),
-            renders: D(renders),
-            repairs: D(repairs),
-            text: D(text),
+            config,
+            patches,
+            rehypes,
+            remarks,
+            renders,
+            repairs,
+            text,
           },
         ]),
       ),

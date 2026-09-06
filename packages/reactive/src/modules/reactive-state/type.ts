@@ -1,4 +1,6 @@
-import type { Observer, Subscription, TeardownLogic } from 'rxjs';
+import type { BehaviorSubject, Observer, Subscription, TeardownLogic } from 'rxjs';
+
+import type { IReadableClosure } from '../state-closure';
 
 export type NextFunction<T> = (value: T) => void;
 
@@ -30,3 +32,27 @@ export type IReactiveState<T> = {
 
   subscribe(subscriber: StateSubscriber<T>): Subscription;
 };
+
+export type StateValue<T> =
+  T extends IReactiveState<infer V>
+    ? V
+    : T extends BehaviorSubject<infer V>
+      ? V
+      : T extends IReadableClosure<infer V>
+        ? V
+        : T;
+
+export type StateSource<T> =
+  T extends IReactiveState<unknown>
+    ? T
+    : T extends BehaviorSubject<unknown>
+      ? T
+      : T extends IReadableClosure<unknown>
+        ? T
+        : T | IReactiveState<T> | BehaviorSubject<T> | IReadableClosure<T>;
+
+export type StateValues<TSources extends readonly unknown[]> = {
+  [K in keyof TSources]: StateValue<TSources[K]>;
+};
+
+export type StateMapper<A, B> = (value: A, prev: [A, B] | null) => B;

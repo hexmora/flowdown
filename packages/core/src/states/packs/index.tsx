@@ -3,13 +3,13 @@
 import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import { D, immediate, type JSXDescriptor } from 'reactive';
+import { type JSXDescriptor, once, useDefaults } from 'reactive';
 
 import type { IRenderPlugin } from '../../externals';
-import type { CoreStateClosureInputs } from './type';
+import type { CoreInputs } from './type';
 
-import { PluginBuilderStateClosure, TextChunkerStateClosure } from '../base';
-import { BlockCompilerStateClosure } from '../hast';
+import { PluginBuilder, TextChunker } from '../base';
+import { BlockCompiler } from '../hast';
 import {
   RawPatchesMapper,
   RehypePluggablesMapper,
@@ -20,47 +20,39 @@ import {
 
 export * from './states';
 export * from './type';
-export * from './utils';
 
-export const CoreStateClosure = /*#__PURE__*/ immediate(function CoreStateClosure<R, C = {}>({
+export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
   Renderer,
   text,
   patches,
-  config,
+  config: coreConfig,
   renders,
   remarks,
   rehypes,
   repairs,
-}: CoreStateClosureInputs<R, C>): JSXDescriptor<R[]> {
-  const remarkSources = remarks ?? [];
+}: CoreInputs<R, C>): JSXDescriptor<R[]> {
+  const remarkSources = useDefaults(remarks, []);
 
-  const rehypeSources = rehypes ?? [];
+  const rehypeSources = useDefaults(rehypes, []);
 
-  const repairSources = repairs ?? [];
+  const repairSources = useDefaults(repairs, []);
 
   return (
     <Renderer
       patches={<RenderPatchesMapper<R> patches={patches} />}
-      plugins={
-        <PluginBuilderStateClosure<IRenderPlugin<ElementContent, Parent, R, C>> plugins={renders} />
-      }
+      plugins={<PluginBuilder<IRenderPlugin<ElementContent, Parent, R, C>> plugins={renders} />}
       source={
-        <BlockCompilerStateClosure
-          sections={
-            <TextChunkerStateClosure
-              text={D(text)}
-              patches={D(<RawPatchesMapper<R> patches={patches} />)}
-            />
-          }
-          config={config}
-          getRemarks={(blockConfig) => (
-            <PluginBuilderStateClosure<IRemarkPlugin>
+        <BlockCompiler
+          sections={<TextChunker text={text} patches={<RawPatchesMapper<R> patches={patches} />} />}
+          config={coreConfig}
+          getRemarks={({ config }) => (
+            <PluginBuilder<IRemarkPlugin>
               plugins={
                 <RemarkPluggablesMapper
-                  config={blockConfig}
+                  config={config}
                   extras={remarkSources}
                   repairs={
-                    <PluginBuilderStateClosure<IRepairPlugin>
+                    <PluginBuilder<IRepairPlugin>
                       plugins={<RepairPluggablesMapper config={config} extras={repairSources} />}
                     />
                   }
@@ -69,8 +61,8 @@ export const CoreStateClosure = /*#__PURE__*/ immediate(function CoreStateClosur
             />
           )}
           getRehypes={() => (
-            <PluginBuilderStateClosure<IRehypePlugin>
-              plugins={<RehypePluggablesMapper config={config} extras={rehypeSources} />}
+            <PluginBuilder<IRehypePlugin>
+              plugins={<RehypePluggablesMapper config={coreConfig} extras={rehypeSources} />}
             />
           )}
         />

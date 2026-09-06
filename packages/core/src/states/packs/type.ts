@@ -12,7 +12,7 @@ import type {
   IRepairPlugin,
 } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
-import type { IReactiveState, StateSource } from 'reactive';
+import type { IReadableClosure } from 'reactive';
 
 import type { IRenderPatchRender, IRenderPluggable, RendererClass } from '../../externals';
 import type { HastRoot } from '../../typings';
@@ -53,20 +53,20 @@ export interface IPatchItem<R> {
   render: IRenderPatchRender<R>;
 }
 
-export type CoreStateClosureInputs<R, C = {}> = {
+export type CoreInputs<R, C = {}> = {
   Renderer: RendererClass<HastRoot, ElementContent, Parent, R, C>;
 
-  text: StateSource<string>;
+  text: IReadableClosure<string>;
 
-  patches: IReactiveState<IPatchItem<R>[]>;
+  patches: IReadableClosure<IPatchItem<R>[]>;
 
-  config: StateSource<BlockCompilerConfig>;
+  config: IReadableClosure<BlockCompilerConfig>;
 
-  renders: IReactiveState<IRenderPluggable<ElementContent, Parent, R, C, unknown>[]>;
+  renders: IReadableClosure<IRenderPluggable<ElementContent, Parent, R, C, unknown>[]>;
 
-  remarks?: IReactiveState<IPluggable<IRemarkPlugin, unknown>[]>;
+  remarks?: IReadableClosure<IPluggable<IRemarkPlugin, unknown>[]>;
 
-  rehypes?: IReactiveState<IPluggable<IRehypePlugin, unknown>[]>;
+  rehypes?: IReadableClosure<IPluggable<IRehypePlugin, unknown>[]>;
 
-  repairs?: IReactiveState<IPluggable<IRepairPlugin, unknown>[]>;
+  repairs?: IReadableClosure<IPluggable<IRepairPlugin, unknown>[]>;
 };

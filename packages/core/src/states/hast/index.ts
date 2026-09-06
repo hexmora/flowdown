@@ -1,2 +1,2 @@
-export * from './block';
+export * from './block-item';
 export * from './block-compiler';

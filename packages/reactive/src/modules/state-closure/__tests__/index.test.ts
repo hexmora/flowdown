@@ -4,41 +4,49 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { IReactiveState, StateSubscriber } from '../../reactive-state';
 
-import { BaseStateClosure, type IStateClosure, type StateClosureSource } from '..';
-import { combineMapState, mapState, toReactiveState } from '../../../helpers/operator';
-import { D, S } from '../../../helpers/render';
+import {
+  BaseStateClosure,
+  combineMapClosure,
+  FactoryReadableClosure,
+  type IReadableClosure,
+  mapClosure,
+  type StateClosureSource,
+  toClosure,
+} from '..';
 import { BatchScheduler } from '../../batch-scheduler';
 import { MutableState } from '../../mutable-state';
+import { combineMapState, mapState, ReactiveState, toReactiveState } from '../../reactive-state';
+import { D, render as renderDescriptor, S, type StateClosureResult } from '../exports/render';
 
-type SourceStateClosureInputs<T> = {
+type SourceInputs<T> = {
   source: StateClosureSource<T>;
 };
 
-class SourceStateClosure<T> extends BaseStateClosure<T, SourceStateClosureInputs<T>> {
+class Source<T> extends BaseStateClosure<T, SourceInputs<T>> {
   protected render() {
     const { source } = this.inputs;
 
-    return source;
+    return toClosure(source);
   }
 }
 
-class WritableStateClosure<T> extends SourceStateClosure<T> {
+class WritableSource<T> extends Source<T> {
   write(value: T) {
     this.next(value);
   }
 }
 
-class NumberStateClosure extends BaseStateClosure<number> {
+class NumberSource extends BaseStateClosure<number> {
   protected render() {
-    return 7;
+    return ReactiveState.of(7);
   }
 }
 
-type ReactiveInputStateClosureInputs = {
-  source: IReactiveState<number>;
+type InputSourceInputs = {
+  source: IReadableClosure<number>;
 };
 
-class ReactiveInputStateClosure extends BaseStateClosure<number, ReactiveInputStateClosureInputs> {
+class InputSource extends BaseStateClosure<number, InputSourceInputs> {
   protected render() {
     const { source } = this.inputs;
 
@@ -46,19 +54,19 @@ class ReactiveInputStateClosure extends BaseStateClosure<number, ReactiveInputSt
   }
 }
 
-type RenderStateClosureInputs<T> = {
+type FactorySourceInputs<T> = {
   source: () => StateClosureSource<T>;
 };
 
-class RenderStateClosure<T> extends BaseStateClosure<T, RenderStateClosureInputs<T>> {
+class FactorySource<T> extends BaseStateClosure<T, FactorySourceInputs<T>> {
   constructor(source: () => StateClosureSource<T>) {
     super({ source });
   }
 
-  readonly render = vi.fn((): StateClosureSource<T> => {
+  readonly render = vi.fn((): StateClosureResult<T> => {
     const { source } = this.inputs;
 
-    return source();
+    return toClosure(source());
   });
 }
 
@@ -112,8 +120,8 @@ const createTrackedReactiveSource = <T>(initial: T) => {
 };
 
 describe('BaseStateClosure runtime', () => {
-  test('supports inherited static initial values and next updates', () => {
-    const closure = new WritableStateClosure({ source: 1 });
+  test('supports inherited initial values and next updates', () => {
+    const closure = new WritableSource({ source: new BehaviorSubject(1) });
 
     const next = vi.fn();
 
@@ -135,7 +143,7 @@ describe('BaseStateClosure runtime', () => {
 
     const source = toReactiveState(sourceSubject);
 
-    const closure = new WritableStateClosure({ source });
+    const closure = new WritableSource({ source });
 
     const next = vi.fn();
 
@@ -169,7 +177,7 @@ describe('BaseStateClosure runtime', () => {
   test('updates directly constructed closures from BehaviorSubject and reactive state sources', () => {
     const subjectSource = new BehaviorSubject(1);
 
-    const subjectClosure = new SourceStateClosure({ source: subjectSource });
+    const subjectClosure = new Source({ source: subjectSource });
 
     const subjectNext = vi.fn();
 
@@ -177,7 +185,7 @@ describe('BaseStateClosure runtime', () => {
 
     const stateSource = toReactiveState(stateSourceSubject);
 
-    const stateClosure = new SourceStateClosure({ source: stateSource });
+    const stateClosure = new Source({ source: stateSource });
 
     const stateNext = vi.fn();
 
@@ -209,7 +217,7 @@ describe('BaseStateClosure runtime', () => {
   test('cleans up source and value subscriptions on destroy', () => {
     const source = createTrackedReactiveSource(1);
 
-    const closure = new SourceStateClosure({ source: source.source });
+    const closure = new Source({ source: source.source });
 
     const next = vi.fn();
 
@@ -239,7 +247,7 @@ describe('BaseStateClosure runtime', () => {
   test('closes an obtained value when destroyed', () => {
     const source = createTrackedReactiveSource(1);
 
-    const closure = new SourceStateClosure({ source: source.source });
+    const closure = new Source({ source: source.source });
 
     const value = closure.value;
 
@@ -253,7 +261,7 @@ describe('BaseStateClosure runtime', () => {
   test('defers setup until value access', () => {
     const source = createTrackedReactiveSource(1);
 
-    const closure = new SourceStateClosure({ source: source.source });
+    const closure = new Source({ source: source.source });
 
     expect(source.subscribe).toHaveBeenCalledTimes(0);
 
@@ -269,7 +277,7 @@ describe('BaseStateClosure runtime', () => {
   test('cannot initialize after being destroyed while still lazy', () => {
     const sourceFactory = vi.fn(() => 1);
 
-    const closure = new RenderStateClosure(sourceFactory);
+    const closure = new FactorySource(sourceFactory);
 
     closure.destroy();
 
@@ -281,7 +289,7 @@ describe('BaseStateClosure runtime', () => {
   test('sets up lazily when inherited next is called before value access', () => {
     const source = createTrackedReactiveSource(1);
 
-    const closure = new WritableStateClosure({ source: source.source });
+    const closure = new WritableSource({ source: source.source });
 
     expect(source.subscribe).toHaveBeenCalledTimes(0);
 
@@ -297,7 +305,7 @@ describe('BaseStateClosure runtime', () => {
 
     const sourceFactory = vi.fn(() => current);
 
-    const closure = new RenderStateClosure(sourceFactory);
+    const closure = new FactorySource(sourceFactory);
 
     current = 2;
 
@@ -324,7 +332,7 @@ describe('BaseStateClosure runtime', () => {
       },
     ) as IReactiveState<number> & (() => number);
 
-    const closure = new SourceStateClosure<number>({ source: callableSource });
+    const closure = new Source<number>({ source: callableSource });
 
     expect(closure.value.value).toBe(1);
 
@@ -344,7 +352,7 @@ describe('BaseStateClosure runtime', () => {
   test('preserves function values returned by render', () => {
     const value = vi.fn(() => 42);
 
-    const closure = new SourceStateClosure<typeof value>({ source: value });
+    const closure = new Source<typeof value>({ source: value });
 
     expect(closure.value.value).toBe(value);
 
@@ -358,7 +366,7 @@ describe('BaseStateClosure runtime', () => {
 
     const sourceFactory = vi.fn(() => source);
 
-    const closure = new RenderStateClosure(sourceFactory);
+    const closure = new FactorySource(sourceFactory);
 
     const next = vi.fn();
 
@@ -394,7 +402,7 @@ describe('BaseStateClosure runtime', () => {
 
     const sourceFactory = vi.fn(() => source);
 
-    const closure = new RenderStateClosure(sourceFactory);
+    const closure = new FactorySource(sourceFactory);
 
     const next = vi.fn();
 
@@ -428,7 +436,7 @@ describe('BaseStateClosure runtime', () => {
 
     const sourceFactory = vi.fn(() => source);
 
-    const closure = new RenderStateClosure(sourceFactory);
+    const closure = new FactorySource(sourceFactory);
 
     const next = vi.fn();
 
@@ -464,7 +472,7 @@ describe('BaseStateClosure runtime', () => {
 
     const longSource = mapState(longHead, (value) => value * 100);
 
-    const closure = new SourceStateClosure({ source: longSource });
+    const closure = new Source({ source: longSource });
 
     const joinMapper = vi.fn(
       ([shortValue, longValue]: [number, number]) => `${shortValue}:${longValue}`,
@@ -481,7 +489,7 @@ describe('BaseStateClosure runtime', () => {
     next.mockClear();
 
     expect(BatchScheduler.getPriority(closure.value)).toBe(
-      BatchScheduler.getPriority(longSource) + 1,
+      BatchScheduler.getPriority(longSource) + 2,
     );
 
     source.next(2);
@@ -508,7 +516,7 @@ describe('BaseStateClosure runtime', () => {
   test('releases its subscription without destroying the source', () => {
     const source = new BehaviorSubject(1);
 
-    const closure = new SourceStateClosure({ source });
+    const closure = new Source({ source });
 
     closure.value.subscribe({});
 
@@ -528,7 +536,7 @@ describe('BaseStateClosure descriptor render values', () => {
   test('builds zero-argument class descriptors lazily', () => {
     const constructed = vi.fn();
 
-    class TrackedNumberStateClosure extends BaseStateClosure<number> {
+    class TrackedNumberSource extends BaseStateClosure<number> {
       constructor() {
         super();
 
@@ -536,11 +544,11 @@ describe('BaseStateClosure descriptor render values', () => {
       }
 
       protected render() {
-        return 3;
+        return ReactiveState.of(3);
       }
     }
 
-    const closure = new SourceStateClosure<number>({ source: TrackedNumberStateClosure });
+    const closure = new Source<number>({ source: TrackedNumberSource });
 
     expect(constructed).not.toHaveBeenCalled();
 
@@ -558,9 +566,9 @@ describe('BaseStateClosure descriptor render values', () => {
   test('builds slotted descriptors returned by render', () => {
     const source = MutableState.of(2);
 
-    const sourceFactory = vi.fn(() => S([ReactiveInputStateClosure, { source }]));
+    const sourceFactory = vi.fn(() => S([InputSource, { source }]));
 
-    const closure = new RenderStateClosure<number>(sourceFactory);
+    const closure = new FactorySource<number>(sourceFactory);
 
     expect(sourceFactory).not.toHaveBeenCalled();
 
@@ -582,7 +590,7 @@ describe('BaseStateClosure descriptor render values', () => {
 
     const mapper = vi.fn((value: number) => value * 3);
 
-    const closure = new SourceStateClosure<number>({ source: S([mapper, source]) });
+    const closure = new Source<number>({ source: S([mapper, source]) });
 
     expect(mapper).not.toHaveBeenCalled();
 
@@ -604,7 +612,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
   test('exposes inputs and resolves render lazily once', () => {
     const render = vi.fn(() => 2);
 
-    const closure = new RenderStateClosure(render);
+    const closure = new FactorySource(render);
 
     expect(closure.inputs.source).toBe(render);
 
@@ -630,7 +638,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
   test('does not render when destroyed before lazy setup', () => {
     const render = vi.fn(() => 2);
 
-    const closure = new RenderStateClosure(render);
+    const closure = new FactorySource(render);
 
     closure.destroy();
 
@@ -642,7 +650,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
   });
 
   test('builds zero-argument class descriptors returned by render', () => {
-    const closure = new RenderStateClosure<number>(() => NumberStateClosure);
+    const closure = new FactorySource<number>(() => NumberSource);
 
     expect(closure.render).not.toHaveBeenCalled();
 
@@ -656,9 +664,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
   test('builds slotted descriptors returned by render', () => {
     const source = MutableState.of(2);
 
-    const closure = new RenderStateClosure<number>(() =>
-      S([ReactiveInputStateClosure, { source }]),
-    );
+    const closure = new FactorySource<number>(() => S([InputSource, { source }]));
 
     expect(closure.value.value).toBe(2);
 
@@ -678,7 +684,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
 
     const mapper = vi.fn((value: number) => value * 4);
 
-    const closure = new RenderStateClosure<number>(() => S([mapper, source]));
+    const closure = new FactorySource<number>(() => S([mapper, source]));
 
     expect(mapper).not.toHaveBeenCalled();
 
@@ -698,9 +704,9 @@ describe('BaseStateClosure inputs and descriptors', () => {
   test('uses D to preserve descriptor-shaped render values', () => {
     const tuple = [doubleValue, 2] as const;
 
-    const sourceClosure = new SourceStateClosure<typeof tuple>({ source: D(tuple) });
+    const sourceClosure = new Source<typeof tuple>({ source: D(tuple) });
 
-    const renderClosure = new RenderStateClosure<typeof tuple>(() => D(tuple));
+    const renderClosure = new FactorySource<typeof tuple>(() => D(tuple));
 
     expect(sourceClosure.value.value).toBe(tuple);
 
@@ -716,9 +722,9 @@ describe('BaseStateClosure inputs and descriptors', () => {
 
     const subject = new BehaviorSubject(2);
 
-    const sourceClosure = new SourceStateClosure<MutableState<number>>({ source: D(state) });
+    const sourceClosure = new Source<MutableState<number>>({ source: D(state) });
 
-    const renderClosure = new RenderStateClosure<BehaviorSubject<number>>(() => D(subject));
+    const renderClosure = new FactorySource<BehaviorSubject<number>>(() => D(subject));
 
     expect(sourceClosure.value.value).toBe(state);
 
@@ -750,9 +756,9 @@ describe('BaseStateClosure inputs and descriptors', () => {
 
     const destroyRoot = vi.fn();
 
-    class OwnedChildStateClosure extends BaseStateClosure<number> {
+    class Child extends BaseStateClosure<number> {
       protected render() {
-        return 5;
+        return ReactiveState.of(5);
       }
 
       override destroy() {
@@ -762,10 +768,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
       }
     }
 
-    class OwnedRootStateClosure extends BaseStateClosure<
-      number,
-      { child: IReactiveState<number> }
-    > {
+    class Parent extends BaseStateClosure<number, { child: IReadableClosure<number> }> {
       protected render() {
         const { child } = this.inputs;
 
@@ -779,11 +782,11 @@ describe('BaseStateClosure inputs and descriptors', () => {
       }
     }
 
-    const closure = new RenderStateClosure<number>(() =>
+    const closure = new FactorySource<number>(() =>
       S([
-        OwnedRootStateClosure,
+        Parent,
         {
-          child: OwnedChildStateClosure,
+          child: Child,
         },
       ]),
     );
@@ -802,7 +805,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
   test('destroys a failing owned descriptor root only once', () => {
     const destroyRoot = vi.fn();
 
-    class ThrowingStateClosure extends BaseStateClosure<number> {
+    class FailingSource extends BaseStateClosure<number> {
       protected render(): never {
         throw new Error('Failed to render the descriptor source.');
       }
@@ -814,7 +817,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
       }
     }
 
-    const closure = new RenderStateClosure<number>(() => ThrowingStateClosure);
+    const closure = new FactorySource<number>(() => FailingSource);
 
     expect(() => closure.value).toThrowError('Failed to render the descriptor source.');
 
@@ -830,7 +833,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
 
     const destroyRoot = vi.fn();
 
-    class ThrowingValueStateClosure implements IStateClosure<number> {
+    class UnreadableSource implements IReadableClosure<number> {
       readonly value: IReactiveState<number> = {
         get value(): number {
           throw new Error('Failed to read the descriptor source.');
@@ -848,7 +851,7 @@ describe('BaseStateClosure inputs and descriptors', () => {
       }
     }
 
-    const closure = new RenderStateClosure<number>(() => ThrowingValueStateClosure);
+    const closure = new FactorySource<number>(() => UnreadableSource);
 
     expect(() => closure.value).toThrowError('Failed to read the descriptor source.');
 
@@ -856,23 +859,23 @@ describe('BaseStateClosure inputs and descriptors', () => {
 
     expect(destroyRoot).toHaveBeenCalledOnce();
 
-    expect(() => closure.value).toThrowError('Failed to read the descriptor source.');
+    expect(() => closure.value).toThrowError('Cannot set up a destroyed state closure.');
 
-    expect(constructRoot).toHaveBeenCalledTimes(2);
+    expect(constructRoot).toHaveBeenCalledOnce();
 
-    expect(destroyRoot).toHaveBeenCalledTimes(2);
+    expect(destroyRoot).toHaveBeenCalledOnce();
 
     closure.destroy();
 
-    expect(destroyRoot).toHaveBeenCalledTimes(2);
+    expect(destroyRoot).toHaveBeenCalledOnce();
   });
 
-  test('does not destroy external state closures returned by render', () => {
+  test('owns readable closures returned by render', () => {
     const destroyExternal = vi.fn();
 
-    class ExternalStateClosure extends BaseStateClosure<number> {
+    class ExternalSource extends BaseStateClosure<number> {
       protected render() {
-        return 9;
+        return ReactiveState.of(9);
       }
 
       override destroy() {
@@ -882,20 +885,401 @@ describe('BaseStateClosure inputs and descriptors', () => {
       }
     }
 
-    const external = new ExternalStateClosure();
+    const external = new ExternalSource();
 
-    const closure = new RenderStateClosure<number>(() => external);
+    const closure = new FactorySource<number>(() => external);
 
     expect(closure.value.value).toBe(9);
 
     closure.destroy();
 
-    expect(destroyExternal).not.toHaveBeenCalled();
+    expect(destroyExternal).toHaveBeenCalledOnce();
 
-    expect(external.value.closed).toBe(false);
+    expect(external.value.closed).toBe(true);
 
     external.destroy();
 
     expect(destroyExternal).toHaveBeenCalledOnce();
+  });
+});
+
+describe('readable closure ownership and derivation', () => {
+  test('routes readable clearable targets through shared ownership', () => {
+    const subject = new BehaviorSubject(1);
+
+    const child = toClosure(subject);
+
+    class Owner extends Source<number> {
+      constructor(source: IReadableClosure<number>) {
+        super({ source });
+
+        this.clearable(source);
+      }
+    }
+
+    const first = new Owner(child);
+
+    const second = new Owner(child);
+
+    expect(first.value.value).toBe(1);
+
+    expect(second.value.value).toBe(1);
+
+    first.destroy();
+
+    subject.next(2);
+
+    expect(second.value.value).toBe(2);
+
+    expect(child.value.closed).toBe(false);
+
+    second.destroy();
+
+    expect(child.value.closed).toBe(true);
+
+    expect(subject.observed).toBe(false);
+  });
+
+  test('disconnects sibling derivatives before child cleanup can emit source values', () => {
+    const subject = new BehaviorSubject(1);
+
+    const mapper = vi.fn((value: number) => value * 2);
+
+    class Owner extends BaseStateClosure<number, { source: IReadableClosure<number> }> {
+      readonly derived: IReadableClosure<number>;
+
+      constructor(inputs: { source: IReadableClosure<number> }) {
+        super(inputs);
+
+        const { source } = this.inputs;
+
+        this.derived = this.map(source, mapper);
+
+        this.own({
+          value: ReactiveState.of(0),
+          destroy: () => subject.next(2),
+        });
+      }
+
+      protected render() {
+        return this.derived;
+      }
+    }
+
+    const owner = new Owner({ source: toClosure(subject) });
+
+    expect(owner.value.value).toBe(2);
+
+    mapper.mockClear();
+
+    owner.destroy();
+
+    expect(mapper).not.toHaveBeenCalled();
+
+    expect(subject.observed).toBe(false);
+  });
+
+  test('releases remaining children and resources when a child cleanup throws', () => {
+    const subject = new BehaviorSubject(1);
+
+    const source = toClosure(subject);
+
+    const cleanup = vi.fn();
+
+    class Owner extends BaseStateClosure<number, { source: IReadableClosure<number> }> {
+      constructor(inputs: { source: IReadableClosure<number> }) {
+        super(inputs);
+
+        this.clearable(cleanup);
+
+        this.own({
+          value: ReactiveState.of(0),
+          destroy: () => {
+            throw new Error('Cleanup failed.');
+          },
+        });
+      }
+
+      protected render() {
+        const { source: input } = this.inputs;
+
+        return input;
+      }
+    }
+
+    const owner = new Owner({ source });
+
+    expect(owner.value.value).toBe(1);
+
+    expect(() => owner.destroy()).toThrowError('Cleanup failed.');
+
+    expect(cleanup).toHaveBeenCalledOnce();
+
+    expect(source.value.closed).toBe(true);
+
+    expect(subject.observed).toBe(false);
+  });
+
+  test('does not read plain-object readable or reactive sources during construction', () => {
+    const state = ReactiveState.of(2);
+
+    const read = vi.fn(() => state);
+
+    const closure: IReadableClosure<number> = {
+      get value() {
+        return read();
+      },
+      destroy: vi.fn(),
+    };
+
+    const mapped = mapClosure(closure, (value) => value * 2);
+
+    expect(read).not.toHaveBeenCalled();
+
+    expect(mapped.value.value).toBe(4);
+
+    mapped.destroy();
+
+    const readValue = vi.fn(() => 3);
+
+    const source: IReactiveState<number> = {
+      get value() {
+        return readValue();
+      },
+      closed: false,
+      subscribe: () => new Subscription(),
+    };
+
+    const composed = toClosure(source);
+
+    expect(readValue).not.toHaveBeenCalled();
+
+    expect(composed.value.value).toBe(3);
+
+    composed.destroy();
+  });
+
+  test('constructs class derivatives without reading dependencies', () => {
+    const subject = new BehaviorSubject(2);
+
+    const createSource = vi.fn(() => subject);
+
+    const source = new FactorySource(createSource);
+
+    class DerivedSource extends BaseStateClosure<number, { source: IReadableClosure<number> }> {
+      readonly doubled: IReadableClosure<number>;
+
+      readonly joined: IReadableClosure<number>;
+
+      constructor(inputs: { source: IReadableClosure<number> }) {
+        super(inputs);
+
+        const { source: input } = this.inputs;
+
+        this.doubled = this.map(input, (value) => value * 2);
+
+        this.joined = this.combineMap([this.doubled, input], ([doubled, value]) => doubled + value);
+      }
+
+      protected render() {
+        return this.joined;
+      }
+    }
+
+    const closure = new DerivedSource({ source });
+
+    expect(createSource).not.toHaveBeenCalled();
+
+    expect(subject.observed).toBe(false);
+
+    subject.next(3);
+
+    expect(closure.value.value).toBe(9);
+
+    expect(createSource).toHaveBeenCalledOnce();
+
+    subject.next(4);
+
+    expect(closure.value.value).toBe(12);
+
+    closure.destroy();
+
+    expect(source.value.closed).toBe(true);
+
+    expect(closure.doubled.value.closed).toBe(true);
+
+    expect(subject.observed).toBe(false);
+
+    expect(subject.isStopped).toBe(false);
+  });
+
+  test('shares a readable dependency until its final owner is destroyed', () => {
+    const subject = new BehaviorSubject(1);
+
+    const source = toClosure(subject);
+
+    const first = mapClosure(source, (value) => value * 2);
+
+    const second = combineMapClosure([source, first], ([value, doubled]) => value + doubled);
+
+    expect(subject.observed).toBe(false);
+
+    expect(second.value.value).toBe(3);
+
+    const parent = new Source({ source: first });
+
+    expect(parent.value.value).toBe(2);
+
+    parent.destroy();
+
+    expect(first.value.closed).toBe(false);
+
+    subject.next(2);
+
+    expect(second.value.value).toBe(6);
+
+    second.destroy();
+
+    expect(first.value.closed).toBe(true);
+
+    expect(source.value.closed).toBe(true);
+
+    expect(subject.observed).toBe(false);
+
+    expect(subject.isStopped).toBe(false);
+  });
+
+  test('releases readable children individually while preserving other owners', () => {
+    const subject = new BehaviorSubject(1);
+
+    const child = toClosure(subject);
+
+    class Owner extends Source<number> {
+      remove(owned: IReadableClosure<number>) {
+        this.release(owned);
+      }
+    }
+
+    const first = new Owner({ source: child });
+
+    const second = new Owner({ source: child });
+
+    expect(child.value.value).toBe(1);
+
+    first.remove(child);
+
+    expect(child.value.closed).toBe(false);
+
+    second.remove(child);
+
+    expect(child.value.closed).toBe(true);
+
+    expect(subject.observed).toBe(false);
+
+    first.destroy();
+
+    second.destroy();
+  });
+
+  test('releases constructor resources and lazy children when construction fails', () => {
+    const cleanup = vi.fn();
+
+    const subject = new BehaviorSubject(1);
+
+    class FailingConstructor extends BaseStateClosure<
+      number,
+      { source: IReadableClosure<number> }
+    > {
+      constructor(inputs: { source: IReadableClosure<number> }) {
+        super(inputs);
+
+        this.clearable(cleanup);
+
+        this.map(inputs.source, (value) => value * 2).value.subscribe({});
+
+        throw new Error('Construction failed.');
+      }
+
+      protected render() {
+        const { source } = this.inputs;
+
+        return source;
+      }
+    }
+
+    expect(() => renderDescriptor(S([FailingConstructor, { source: subject }]))).toThrowError(
+      'Construction failed.',
+    );
+
+    expect(cleanup).toHaveBeenCalledOnce();
+
+    expect(subject.observed).toBe(false);
+
+    expect(subject.isStopped).toBe(false);
+  });
+});
+
+describe('readable closure construction', () => {
+  test('constructs a factory closure once on its first value access', () => {
+    const subject = new BehaviorSubject(1);
+    const factory = vi.fn(() => subject);
+    const closure = FactoryReadableClosure.create(factory);
+
+    expect(factory).not.toHaveBeenCalled();
+    expect(closure.value.value).toBe(1);
+
+    subject.next(2);
+
+    expect(closure.value.value).toBe(2);
+    expect(factory).toHaveBeenCalledOnce();
+
+    closure.destroy();
+
+    expect(subject.observed).toBe(false);
+    expect(subject.isStopped).toBe(false);
+
+    subject.complete();
+  });
+
+  test('creates concrete class instances and selects owned defaults without reading their values', () => {
+    const started = vi.fn();
+
+    class Child extends BaseStateClosure<number> {
+      readonly label = 'child';
+
+      protected render() {
+        started();
+
+        return ReactiveState.of(2);
+      }
+    }
+
+    class Owner extends BaseStateClosure<number> {
+      readonly child = this.create(Child);
+
+      readonly selected = this.defaults(this.child, 3);
+
+      readonly fallback = this.defaultsFalsy(false, 4);
+
+      protected render() {
+        return this.combineMap([this.selected, this.fallback], ([selected, fallback]) => {
+          return selected + fallback;
+        });
+      }
+    }
+
+    const owner = new Owner();
+
+    expect(owner.child).toBeInstanceOf(Child);
+    expect(owner.child.label).toBe('child');
+    expect(owner.selected).toBe(owner.child);
+    expect(started).not.toHaveBeenCalled();
+    expect(owner.value.value).toBe(6);
+    expect(started).toHaveBeenCalledOnce();
+
+    owner.destroy();
+
+    expect(owner.child.value.closed).toBe(true);
+    expect(owner.fallback.value.closed).toBe(true);
   });
 });

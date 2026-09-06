@@ -1,17 +1,15 @@
 // oxlint-disable typescript/no-explicit-any
-import type { AnyImmediateStateMapper } from './helpers/immediate';
+import type { IReadableClosure } from './modules/state-closure';
+import type { AnyOnceFunction } from './modules/state-closure/exports/once';
 import type {
   Descriptor,
-  FunctionalStateMapperValue,
-  ImmediateDescriptor,
+  FunctionalStateClosureValue,
   JSXDescriptor,
   StateClosureClass,
-  StateClosureDescriptor,
-} from './helpers/render';
-import type { IReactiveState } from './modules/reactive-state';
-import type { IStateClosure } from './modules/state-closure';
+  StateClosureInputProps,
+} from './modules/state-closure/exports/render';
 
-import { markStateClosureDescriptor } from './helpers/render';
+import { markStateClosureDescriptor } from './modules/state-closure/exports/render';
 
 type AnyStateClosureClass = StateClosureClass<any, any[]>;
 
@@ -29,7 +27,7 @@ type EmptyJSXDescriptorProps = {
 
 type ObjectJSXDescriptorProps<P extends object> = keyof P extends never
   ? EmptyJSXDescriptorProps
-  : { [K in keyof P]: Descriptor<P[K]> };
+  : StateClosureInputProps<P>;
 
 type JSXDescriptorObjectProps<P> = [Exclude<P, undefined | void>] extends [never]
   ? EmptyJSXDescriptorProps
@@ -63,8 +61,8 @@ type JSXStateClosureDescriptorAttributes<C, P> =
 type JSXStateMapperAttributes<C, P> = C extends AnyStateMapper
   ? Parameters<C> extends []
     ? EmptyJSXDescriptorProps
-    : C extends AnyImmediateStateMapper
-      ? JSXImmediateDescriptorInputs<P>
+    : C extends AnyOnceFunction
+      ? JSXStateClosureInputProps<P>
       : JSXMappingDescriptorProps<P>
   : never;
 
@@ -80,39 +78,35 @@ type JSXDescriptorProps<C extends AnyStateClosureClass> = JSXDescriptorPropsFrom
 type StateClosureClassValue<C extends AnyStateClosureClass> =
   C extends StateClosureClass<infer T, any[]> ? T : never;
 
-type JSXMappingDescriptor<T> =
-  | ImmediateDescriptor<T>
-  | IReactiveState<T>
-  | StateClosureDescriptor<T>
-  | (T extends (...params: any[]) => unknown
-      ? Descriptor<T>
-      : T extends readonly unknown[]
-        ? { [K in keyof T]: JSXMappingDescriptor<T[K]> }
-        : T extends object
-          ? { [K in keyof T]: JSXMappingDescriptor<T[K]> }
-          : T);
-
 type JSXMappingDescriptorProps<P> = P extends object
   ? keyof P extends never
     ? EmptyJSXDescriptorProps
-    : { [K in keyof P]: JSXMappingDescriptor<P[K]> }
+    : { [K in keyof P]: Descriptor<P[K]> }
   : never;
 
-type JSXImmediateDescriptorInputs<P> = P extends object
+type JSXStateClosureInputProps<P> = P extends object
   ? keyof P extends never
     ? EmptyJSXDescriptorProps
-    : { [K in keyof P]: ImmediateDescriptor<P[K]> }
+    : StateClosureInputProps<P>
   : never;
 
 type StateMapperInput<M extends AnyStateMapper> = Parameters<M> extends [] ? {} : Parameters<M>[0];
 
-type StateMapperInputs<M extends AnyStateMapper> = M extends AnyImmediateStateMapper
-  ? JSXImmediateDescriptorInputs<StateMapperInput<M>>
+type StateMapperInputs<M extends AnyStateMapper> = M extends AnyOnceFunction
+  ? JSXStateClosureInputProps<StateMapperInput<M>>
   : JSXMappingDescriptorProps<StateMapperInput<M>>;
 
-type StateMapperValue<M extends AnyStateMapper> = FunctionalStateMapperValue<ReturnType<M>>;
+type StateMapperValue<M extends AnyStateMapper> = FunctionalStateClosureValue<M>;
 
-export const Fragment = Symbol('FlowdownDescriptorFragment');
+type JSXDescriptorKey<P> = P extends { readonly key?: infer K } ? K : never;
+
+type JSXDescriptorArguments<P> =
+  | [props: P]
+  | ([JSXDescriptorKey<P>] extends [never]
+      ? never
+      : [props: Omit<P, 'key'>, key: JSXDescriptorKey<P>]);
+
+export const Fragment = /*#__PURE__*/ Symbol('FlowdownDescriptorFragment');
 
 type FragmentProps = {
   readonly children?: unknown;
@@ -159,15 +153,13 @@ export const createElement = (
 /** Creates a state closure descriptor. Normally emitted by a JSX transform. */
 export function jsx<const C extends AnyStateClosureClass>(
   Factory: C,
-  props: JSXDescriptorProps<C>,
-  key?: unknown,
+  ...args: JSXDescriptorArguments<JSXDescriptorProps<C>>
 ): JSXDescriptor<StateClosureClassValue<C>> & readonly [C, JSXDescriptorProps<C>];
 export function jsx<const M extends AnyStateMapper>(
   Factory: M,
-  props: StateMapperInputs<M>,
-  key?: unknown,
+  ...args: JSXDescriptorArguments<StateMapperInputs<M>>
 ): JSXDescriptor<StateMapperValue<M>>;
-export function jsx(Factory: typeof Fragment, props: FragmentProps, key?: unknown): never;
+export function jsx(Factory: typeof Fragment, props: FragmentProps): never;
 export function jsx(
   Factory: AnyStateClosureClass | AnyStateMapper | typeof Fragment,
   props: RuntimeProps | FragmentProps,
@@ -183,7 +175,7 @@ export namespace JSX {
 
   export type ElementType = JSXElementType;
 
-  export interface ElementClass extends IStateClosure<any> {}
+  export interface ElementClass extends IReadableClosure<any> {}
 
   export interface ElementChildrenAttribute {
     children: unknown;

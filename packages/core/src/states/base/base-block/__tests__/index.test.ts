@@ -1,11 +1,11 @@
-import { D, MutableState, ReactiveState, render, S } from 'reactive';
+import { D, MutableState, ReactiveState, render, S, type StateClosureInputProps } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import type { IRangeState } from '../../range';
 
-import { BaseBlockStateClosure, type BaseBlockStateClosureInputs, type IBlockMeta } from '..';
+import { BaseBlockItem, type BaseBlockItemInputs, type IBlockMeta } from '..';
 
-class TextBlockStateClosure extends BaseBlockStateClosure<string> {
+class TextBlock extends BaseBlockItem<string> {
   protected slice(value: string, start: number, end: number): string {
     return value.slice(start, end);
   }
@@ -15,8 +15,8 @@ class TextBlockStateClosure extends BaseBlockStateClosure<string> {
   }
 }
 
-const renderTextBlock = (inputs: BaseBlockStateClosureInputs<string>) => {
-  return render(S([TextBlockStateClosure, D(inputs)]));
+const renderTextBlock = (inputs: StateClosureInputProps<BaseBlockItemInputs<string>>) => {
+  return render(S([TextBlock, inputs]));
 };
 
 const createMeta = () =>
@@ -33,7 +33,29 @@ const getObserverCount = (state: object) => {
   return (state as { subject: { observers: unknown[] } }).subject.observers.length;
 };
 
-describe('BaseBlockStateClosure', () => {
+describe('BaseBlockItem', () => {
+  test('keeps input subscriptions lazy until the corresponding values are read', () => {
+    const source = MutableState.of('value');
+    const meta = createMeta();
+    const range = MutableState.of<IRangeState | null>({ start: 1 });
+    const block = renderTextBlock({ source, meta, range });
+
+    expect([source, meta, range].map(getObserverCount)).toEqual([0, 0, 0]);
+
+    expect(block.baseLength.value).toBe(5);
+    expect(getObserverCount(source)).toBe(1);
+    expect(getObserverCount(meta)).toBe(0);
+    expect(getObserverCount(range)).toBe(0);
+
+    expect(block.value.value).toBe('alue');
+    expect(getObserverCount(range)).toBe(1);
+    expect(getObserverCount(meta)).toBe(0);
+
+    block.destroy();
+
+    expect([source, meta, range].map(getObserverCount)).toEqual([0, 0, 0]);
+  });
+
   test('clears internally constructed states without destroying its inputs', () => {
     const source = MutableState.of('value');
     const meta = createMeta();
@@ -42,6 +64,7 @@ describe('BaseBlockStateClosure', () => {
 
     expect(block.value.value).toBe('alue');
     expect(block.length.value).toBe(4);
+    const baseLength = block.baseLength;
     expect(getObserverCount(source)).toBeGreaterThan(0);
     expect(getObserverCount(range)).toBeGreaterThan(0);
 
@@ -49,7 +72,7 @@ describe('BaseBlockStateClosure', () => {
 
     expect(block.value.closed).toBe(true);
     expect(block.length.closed).toBe(true);
-    expect(block.baseLength.closed).toBe(true);
+    expect(baseLength.closed).toBe(true);
     expect(source.closed).toBe(false);
     expect(meta.closed).toBe(false);
     expect(range.closed).toBe(false);
@@ -74,7 +97,7 @@ describe('BaseBlockStateClosure', () => {
     const source = MutableState.of('value');
     const meta = createMeta();
     const mapped = MutableState.of('mapped');
-    const block = renderTextBlock({ source, meta, mapper: () => mapped });
+    const block = renderTextBlock({ source, meta, mapper: D(() => mapped) });
 
     expect(block.value.value).toBe('mapped');
     expect(getObserverCount(mapped)).toBe(1);
@@ -93,7 +116,7 @@ describe('BaseBlockStateClosure', () => {
 
     const fork = block.fork({ range });
 
-    expect(fork).toBeInstanceOf(TextBlockStateClosure);
+    expect(fork).toBeInstanceOf(TextBlock);
     expect(fork.value.value).toBe('lue');
 
     fork.destroy();
@@ -104,5 +127,25 @@ describe('BaseBlockStateClosure', () => {
     expect(block.value.value).toBe('value');
 
     block.destroy();
+  });
+
+  test('retains shared readable inputs until both a block and its fork are destroyed', () => {
+    const source = MutableState.of('value');
+    const meta = createMeta();
+    const block = renderTextBlock({ source, meta });
+    const fork = block.fork();
+
+    expect(fork.value.value).toBe('value');
+
+    block.destroy();
+    source.next('updated');
+
+    expect(fork.value.value).toBe('updated');
+    expect(source.closed).toBe(false);
+
+    fork.destroy();
+
+    expect(getObserverCount(source)).toBe(0);
+    expect(source.closed).toBe(false);
   });
 });

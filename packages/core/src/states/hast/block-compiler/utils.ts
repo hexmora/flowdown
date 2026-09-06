@@ -1,5 +1,4 @@
 import type { IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
-import type { IDestructible } from 'reactive';
 
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -61,10 +60,4 @@ export const markdownToHast = ({ text, remarks, rehypes }: MarkdownToHastParams)
   const mdast = processor.parse(text);
 
   return processor.runSync(mdast, text);
-};
-
-export const destroyAll = (items: readonly IDestructible[]) => {
-  for (const item of items) {
-    item.destroy();
-  }
 };
