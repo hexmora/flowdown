@@ -1,4 +1,4 @@
-import type { IRepairPlugin, RepairPluginRunner } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { Root } from 'mdast';
 
 import { PluginPriority } from '@flowdown/types';
@@ -31,7 +31,7 @@ import { ApplyRepairsRemarkPlugin } from '../apply-repairs';
 class RecordingRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-test-recording';
 
-  readonly config: IRepairPlugin['config'];
+  readonly config: RepairPluginSystemConfig;
 
   visits = 0;
 
@@ -40,7 +40,7 @@ class RecordingRepairPlugin extends BaseRepairPlugin {
   constructor(
     private readonly label: string,
     private readonly events: string[],
-    config: IRepairPlugin['config'] = {},
+    config: RepairPluginSystemConfig = {},
   ) {
     super();
     this.config = config;

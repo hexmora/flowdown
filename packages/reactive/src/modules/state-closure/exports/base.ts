@@ -72,6 +72,7 @@ export const mapClosure = <S, R>(
 
 /**
  * Follows the latest mapped child and releases the previous child graph on replacement.
+ * Completed flows retain the final child graph until the closure is destroyed.
  */
 export function switchMapClosure<S, R>(
   source: S,
@@ -116,6 +117,8 @@ export function switchMapClosure<S, R>(
         let subscription: Subscription | null = null;
 
         let stopped = false;
+
+        let completed = false;
 
         const handleError = (error: unknown) => {
           if (!stopped) {
@@ -170,6 +173,8 @@ export function switchMapClosure<S, R>(
             if (input.closed && inner.closed) {
               stopped = true;
 
+              completed = true;
+
               observer.complete();
             }
           } catch (error) {
@@ -200,7 +205,9 @@ export function switchMapClosure<S, R>(
 
           subscription?.unsubscribe();
 
-          releaseReadableClosure(scope, current);
+          if (!completed) {
+            releaseReadableClosure(scope, current);
+          }
         };
       },
     });

@@ -6,6 +6,7 @@ import type {
   Node as MdastNode,
   Root as MdastRoot,
   Paragraph,
+  PhrasingContent,
   RootContent,
   Strong,
   Text,
@@ -624,7 +625,7 @@ describe('PatchesRemarkPlugin', () => {
     });
 
     test('skips sparse child entries and still applies a patch to a later child', () => {
-      const children: Paragraph['children'] = [];
+      const children: PhrasingContent[] = [];
 
       children.length = 2;
       children[1] = {

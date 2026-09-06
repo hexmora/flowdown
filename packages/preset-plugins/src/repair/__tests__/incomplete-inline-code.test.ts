@@ -1,4 +1,4 @@
-import type { Paragraph, Root } from 'mdast';
+import type { Paragraph, PhrasingContent, Root } from 'mdast';
 
 import { PluginPriority } from '@flowdown/types';
 import { first } from 'lodash-es';
@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { IncompleteInlineCodeRepairPlugin } from '../incomplete-inline-code';
 import { paragraph, root, runRepairs } from './utils';
 
-const repairParagraph = (children: Paragraph['children']): Paragraph => {
+const repairParagraph = (children: PhrasingContent[]): Paragraph => {
   const result = runRepairs(root([paragraph(children)]), new IncompleteInlineCodeRepairPlugin());
   const repaired = first(result.children);
 
@@ -16,7 +16,7 @@ const repairParagraph = (children: Paragraph['children']): Paragraph => {
   return repaired as Paragraph;
 };
 
-const nonTextualTails: Paragraph['children'] = [
+const nonTextualTails: PhrasingContent[] = [
   { type: 'image', url: '/tail.png', alt: 'tail' },
   { type: 'break' },
 ];

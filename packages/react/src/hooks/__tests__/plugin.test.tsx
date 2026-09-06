@@ -1,13 +1,15 @@
+import type { MapperInputs } from '@flowdown/core';
+import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+
 import { renderHook } from '@testing-library/react';
+import { once } from 'reactive';
 import { describe, expect, test } from 'vitest';
 
-import type { IPluginItem } from '../../types';
+import type { IPluginItem, IReactRenderPluggable } from '../../types';
 
 import { usePlugins } from '../index';
 
-type RemarkItem = NonNullable<IPluginItem['remarks']>[number];
-
-type RenderItem = NonNullable<IPluginItem['renders']>[number];
+type RemarkItem = IPluggable<IRemarkPlugin, unknown>;
 
 interface PluginOrderProps {
   defaults: RemarkItem[];
@@ -17,7 +19,7 @@ interface PluginOrderProps {
 
 const asRemark = (name: string) => ({ name }) as unknown as RemarkItem;
 
-const asRender = (name: string) => ({ name }) as unknown as RenderItem;
+const asRender = (name: string) => ({ name }) as unknown as IReactRenderPluggable;
 
 const createPluginClass = (key: string) => {
   return Object.assign(function TestPlugin() {}, { key });
@@ -145,7 +147,26 @@ describe('usePlugins', () => {
     expect(result.current[0]).toBe(tuple);
   });
 
-  test.each(['remarks', 'rehypes', 'repairs', 'renders', 'slots'] as const)(
+  test('preserves mapper closures and tuple fields when flattening plugin packs', () => {
+    const Identity = once(({ source }: MapperInputs) => source);
+
+    const config = { nested: { enabled: true } };
+
+    const pack: IPluginItem = {
+      config: { unrelated: { enabled: false } },
+      mappers: [Identity, [Identity, config]],
+    };
+
+    const { result } = renderHook(() => usePlugins([pack], 'mappers'));
+
+    expect(result.current).toEqual(pack.mappers);
+
+    expect(result.current[0]).toBe(Identity);
+
+    expect(result.current[1]).toBe(pack.mappers?.[1]);
+  });
+
+  test.each(['mappers', 'remarks', 'rehypes', 'repairs', 'renders', 'slots'] as const)(
     'supports the %s plugin channel',
     (type) => {
       const plugin = { type } as never;

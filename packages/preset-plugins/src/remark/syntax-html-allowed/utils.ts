@@ -1,5 +1,3 @@
-import type { SyntaxHtmlAllowedRemarkPluginConfig } from './index';
-
 import { DEFAULT_ENABLED_TAGS, HTML_END_TAG_PATTERN, HTML_START_TAG_PATTERN } from './consts';
 
 export const getTagName = (value: string): string | undefined => {
@@ -10,10 +8,7 @@ export const getTagName = (value: string): string | undefined => {
   return tagName?.toLowerCase();
 };
 
-export const isEnabledTag = (
-  tagName: string,
-  enabledTags: SyntaxHtmlAllowedRemarkPluginConfig['enabledTags'],
-) => {
+export const isEnabledTag = (tagName: string, enabledTags: string[] | boolean | undefined) => {
   if (typeof enabledTags === 'boolean') {
     return enabledTags;
   }

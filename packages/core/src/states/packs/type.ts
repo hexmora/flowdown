@@ -5,6 +5,7 @@ import type {
 } from '@flowdown/preset-plugins';
 import type {
   IBasePluginConfig,
+  IPluggable,
   IRawPatchRange,
   IRehypePlugin,
   IRemarkPlugin,
@@ -21,9 +22,8 @@ import type {
   RendererClass,
 } from '../../externals';
 import type { HastRoot } from '../../typings';
-import type { PluginBuilderInputs, TextChunkerInputs } from '../base';
-import type { BlockCompilerInputs } from '../hast';
-import type { RenderPatchesMapperInputs } from './states';
+import type { MapperPluggable } from '../base';
+import type { BlockCompilerConfig } from '../hast';
 
 type PluginConstructor = (abstract new (...args: never[]) => {
   config: IBasePluginConfig;
@@ -116,6 +116,8 @@ export interface SmoothConfig {
   scheduler: SchedulerType | SmoothSchedulerClass;
 }
 
+export type CoreMappers = MapperPluggable[] | ((prev: MapperPluggable[]) => MapperPluggable[]);
+
 export type CoreInputs<R, C = {}> = {
   /**
    * Renderer used to turn compiled blocks into output values.
@@ -125,17 +127,17 @@ export type CoreInputs<R, C = {}> = {
   /**
    * Markdown source text.
    */
-  text: TextChunkerInputs['text'];
+  text: IReadableClosure<string>;
 
   /**
    * Source ranges and their render replacements.
    */
-  patches: IReadableClosure<RenderPatchesMapperInputs<R>['patches']>;
+  patches: IReadableClosure<IPatchItem<R>[]>;
 
   /**
    * Compiler feature configuration.
    */
-  build: BlockCompilerInputs['config'];
+  build: IReadableClosure<BlockCompilerConfig>;
 
   /**
    * Configure progressive rendering of compiled content.
@@ -146,20 +148,25 @@ export type CoreInputs<R, C = {}> = {
   /**
    * Plugins used to render compiled content.
    */
-  renders: PluginBuilderInputs<IRenderPlugin<ElementContent, Parent, R, C>>['plugins'];
+  renders: IReadableClosure<IPluggable<IRenderPlugin<ElementContent, Parent, R, C>, unknown>[]>;
 
   /**
    * Additional Markdown tree plugins.
    */
-  remarks?: PluginBuilderInputs<IRemarkPlugin>['plugins'];
+  remarks?: IReadableClosure<IPluggable<IRemarkPlugin, unknown>[]>;
 
   /**
    * Additional HAST plugins.
    */
-  rehypes?: PluginBuilderInputs<IRehypePlugin>['plugins'];
+  rehypes?: IReadableClosure<IPluggable<IRehypePlugin, unknown>[]>;
 
   /**
    * Additional streaming Markdown repair plugins.
    */
-  repairs?: PluginBuilderInputs<IRepairPlugin>['plugins'];
+  repairs?: IReadableClosure<IPluggable<IRepairPlugin, unknown>[]>;
+
+  /**
+   * Append block mappers or replace the default mapper list.
+   */
+  mappers?: IReadableClosure<CoreMappers>;
 };

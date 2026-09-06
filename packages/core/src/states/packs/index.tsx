@@ -10,9 +10,10 @@ import { shallowEqual } from 'shallow-equal';
 
 import type { IRenderPlugin } from '../../externals';
 import type { HastRoot } from '../../typings';
-import type { CoreInputs } from './type';
+import type { MapperPluggable } from '../base';
+import type { CoreInputs, CoreMappers } from './type';
 
-import { PluginBuilder, Smooth, TextChunker } from '../base';
+import { isPluggablesEqual, MapperComposer, PluginBuilder, Smooth, TextChunker } from '../base';
 import { BlockCompiler } from '../hast';
 import {
   RawPatchesMapper,
@@ -21,7 +22,7 @@ import {
   RenderPatchesMapper,
   RepairPluggablesMapper,
 } from './states';
-import { toBaseSmoothConfig } from './utils';
+import { patchMappers, toBaseSmoothConfig } from './utils';
 
 export * from './consts';
 export * from './states';
@@ -37,6 +38,7 @@ export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
   remarks,
   rehypes,
   repairs,
+  mappers: _mappers,
 }: CoreInputs<R, C>): JSXDescriptor<R[]> {
   const remarkSources = useDefaults(remarks, []);
 
@@ -50,13 +52,21 @@ export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
 
   const flattenConfig = useFlatten(smooth);
 
+  const DefaultMappers: MapperPluggable[] = [[Smooth<HastRoot>, flattenConfig]];
+
+  const mappers = useMap(
+    useDefaults<CoreMappers>(_mappers, []),
+    (items) => patchMappers(DefaultMappers, items),
+    isPluggablesEqual,
+  );
+
   return (
     <Renderer
       patches={<RenderPatchesMapper<R> patches={patches} />}
       plugins={<PluginBuilder<IRenderPlugin<ElementContent, Parent, R, C>> plugins={renders} />}
       source={
-        <Smooth<HastRoot>
-          {...flattenConfig}
+        <MapperComposer
+          mappers={mappers}
           source={
             <BlockCompiler
               sections={

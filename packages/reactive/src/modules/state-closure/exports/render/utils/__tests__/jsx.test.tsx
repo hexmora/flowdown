@@ -99,7 +99,7 @@ class Formatted extends BaseStateClosure<string, { source: IReadableClosure<numb
   }
 }
 
-const createStringDescriptor: RawFactory['create'] = (source) =>
+const createStringDescriptor = (source: IReactiveState<number>): JSXDescriptor<string> =>
   S<string>(<Formatted source={source} />);
 
 class StringSource extends BaseStateClosure<

@@ -125,11 +125,14 @@ class QuoteReader extends BaseStateClosure<Quote, QuoteInputs> {
   }
 }
 
+type QuoteFactoryParams = {
+  discount: IReactiveState<number>;
+
+  quantity: IReactiveState<number>;
+};
+
 type QuoteFactory = {
-  createQuote(params: {
-    discount: IReactiveState<number>;
-    quantity: IReactiveState<number>;
-  }): StateClosureDescriptor<Quote>;
+  createQuote(params: QuoteFactoryParams): StateClosureDescriptor<Quote>;
 };
 
 class QuoteFactoryReader extends BaseStateClosure<QuoteFactory, QuoteFactory> {
@@ -152,7 +155,7 @@ class MappingFactoryReader extends BaseStateClosure<MappingFactory, MappingFacto
   }
 }
 
-const createMappingDescriptor: MappingFactory['create'] = (source) =>
+const createMappingDescriptor = (source: IReactiveState<number>): StateClosureDescriptor<number> =>
   S([(value: number) => value * 2, source]);
 
 const roundCurrency = (value: number) => round(value * 100) / 100;
@@ -224,7 +227,10 @@ describe('reactive descriptors', () => {
       fee: 2,
       round: roundCurrency,
     };
-    const rawCreateQuote: QuoteFactory['createQuote'] = ({ discount, quantity }) =>
+    const rawCreateQuote = ({
+      discount,
+      quantity,
+    }: QuoteFactoryParams): StateClosureDescriptor<Quote> =>
       S([
         QuoteReader,
         {

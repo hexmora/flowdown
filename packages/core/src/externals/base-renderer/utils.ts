@@ -27,6 +27,5 @@ export const mapRendererItems = <T, P, R>(
     prev: prevEntries,
     current: currentSource,
     mapper: renderItem,
-    comparer: (left, right) => left.meta.value.key === right.meta.value.key,
   });
 };

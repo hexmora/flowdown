@@ -118,7 +118,7 @@ const getObserverCount = (state: IReactiveState<unknown>) => {
 };
 
 describe('BaseRenderer', () => {
-  test('lazily renders new block keys and reuses cached results in source order', () => {
+  test('lazily renders new block instances and reuses cached results in source order', () => {
     const first = createBlock('first', 'first');
     const second = createBlock('second', 'second');
     const { renderer, source } = setupRenderer([first, second]);
@@ -138,15 +138,23 @@ describe('BaseRenderer', () => {
 
     const reordered = renderer.value.value;
 
-    expect(reordered).toEqual([initial[1], initial[0], expect.objectContaining({ key: 'third' })]);
+    expect(reordered[0]).toBe(initial[1]);
 
-    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(3);
+    expect(reordered[1]).not.toBe(initial[0]);
+
+    expect(reordered[1]?.content).toBe(replacementFirst.value);
+
+    expect(reordered[1]?.content.value).toBe('replacement');
+
+    expect(reordered[2]?.key).toBe('third');
+
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(4);
 
     source.next([replacementFirst, second]);
 
-    expect(renderer.value.value).toEqual([initial[0], initial[1]]);
+    expect(renderer.value.value).toEqual([reordered[1], initial[1]]);
 
-    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(3);
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(4);
   });
 
   test('fully rerenders only when plugin instances or order change', () => {

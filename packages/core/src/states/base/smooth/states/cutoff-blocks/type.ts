@@ -2,13 +2,12 @@ import type { IReactiveState, IReadableClosure, MutableState } from 'reactive';
 
 import type { IBlockState } from '../../../base-block';
 import type { SmoothPosition } from '../smooth-cursor';
-import type { CutoffBlockInputs } from './states';
 
 export interface CutoffBlocksInputs<T> {
   /**
    * Blocks whose visible prefix is exposed through owned forks.
    */
-  items: IReadableClosure<CutoffBlockInputs<T>['source'][]>;
+  items: IReadableClosure<IBlockState<T>[]>;
 
   /**
    * Inclusive final block and its exclusive character boundary.

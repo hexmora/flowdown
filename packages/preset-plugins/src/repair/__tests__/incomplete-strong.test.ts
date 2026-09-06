@@ -1,4 +1,4 @@
-import type { Paragraph } from 'mdast';
+import type { Paragraph, PhrasingContent } from 'mdast';
 
 import { PluginPriority } from '@flowdown/types';
 import { first } from 'lodash-es';
@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { IncompleteStrongRepairPlugin } from '../incomplete-strong';
 import { paragraph, root, runRepairs } from './utils';
 
-const repairParagraph = (children: Paragraph['children']): Paragraph => {
+const repairParagraph = (children: PhrasingContent[]): Paragraph => {
   const result = runRepairs(root([paragraph(children)]), new IncompleteStrongRepairPlugin());
   const repaired = first(result.children);
 

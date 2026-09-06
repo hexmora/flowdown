@@ -1,3 +1,5 @@
+import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
@@ -5,7 +7,7 @@ import type { IPluginItem } from '../types';
 
 import { Flowdown } from '../index';
 
-type RemarkPluggable = NonNullable<IPluginItem['remarks']>[number];
+type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 
 const createPatches = (label: string) => [
   {

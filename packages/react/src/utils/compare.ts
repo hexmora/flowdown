@@ -1,7 +1,6 @@
 import type { SmoothConfig } from '@flowdown/core';
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
-import { isPluggableEqual } from '@flowdown/core';
+import { isPluggablesEqual, isPluginConfigEqual } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
 import { every, isEqual } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
@@ -11,37 +10,16 @@ import type { FlowdownConfig, FlowdownProps, IPluginItem } from '../types';
 import { DEFAULT_CONFIG, EL, EO } from '../consts';
 import { isPatchesEqual } from './patches';
 
-export const isPluggablesEqual = <T extends IPluginWithConfig>(
-  left: readonly IPluggable<T, unknown>[],
-  right: readonly IPluggable<T, unknown>[],
-): boolean => {
-  return (
-    left === right ||
-    (left.length === right.length &&
-      every(left, (pluggable, index) => {
-        const other = right[index];
-
-        return pluggable !== undefined && other !== undefined && isPluggableEqual(pluggable, other);
-      }))
-  );
-};
-
-const isOptionalPluggablesEqual = <T extends IPluginWithConfig>(
-  left: readonly IPluggable<T, unknown>[] | undefined,
-  right: readonly IPluggable<T, unknown>[] | undefined,
-): boolean => {
-  return left === right || isPluggablesEqual(left ?? [], right ?? []);
-};
-
 const isPluginItemEqual = (left: IPluginItem, right: IPluginItem): boolean => {
   return (
     left === right ||
-    (isEqual(left.config ?? {}, right.config ?? {}) &&
-      isOptionalPluggablesEqual(left.remarks, right.remarks) &&
-      isOptionalPluggablesEqual(left.rehypes, right.rehypes) &&
-      isOptionalPluggablesEqual(left.repairs, right.repairs) &&
-      isOptionalPluggablesEqual(left.renders, right.renders) &&
-      isOptionalPluggablesEqual(left.slots, right.slots))
+    (isPluginConfigEqual(left.config ?? {}, right.config ?? {}) &&
+      isPluggablesEqual(left.remarks, right.remarks) &&
+      isPluggablesEqual(left.rehypes, right.rehypes) &&
+      isPluggablesEqual(left.repairs, right.repairs) &&
+      isPluggablesEqual(left.mappers, right.mappers) &&
+      isPluggablesEqual(left.renders, right.renders) &&
+      isPluggablesEqual(left.slots, right.slots))
   );
 };
 
