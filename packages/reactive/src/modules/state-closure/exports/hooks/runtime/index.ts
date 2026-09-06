@@ -83,6 +83,16 @@ export class StateClosureHookRuntime {
     return slot.value as StateClosureRef<T>;
   }
 
+  current<T>(factory: () => T): T {
+    const slot = this.useSlot('current', () => ({
+      type: 'current',
+
+      value: withStateClosureHookRuntime(null, factory),
+    }));
+
+    return slot.value as T;
+  }
+
   render<T>(read: () => T): T {
     this.cursor = 0;
 

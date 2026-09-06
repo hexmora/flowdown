@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { IPluginItem, IReactRenderPluggable } from '../types';
 
-import { Flowdown } from '..';
+import { Flowdown } from '../index';
 
 interface LifecycleCounts {
   created: number;

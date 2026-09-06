@@ -237,8 +237,9 @@ const _typecheckContracts = () => {
   // @ts-expect-error Legacy root tuples preserve the distinction between mapper and once results.
   render<IReactiveState<number>>([once(() => ReactiveState.of(1)), {}]);
 
-  // @ts-expect-error Once functions must return a state flow.
-  once(({ value }: { value: number }) => value);
+  const Primitive = once(({ value }: { value: number }) => value);
+
+  expectTypeOf(render(S([Primitive, { value: 2 }]))).toEqualTypeOf<IReadableClosure<number>>();
 
   const Nested = once(({ value }: { value: IReadableClosure<IReactiveState<number>> }) => value);
 

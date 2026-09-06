@@ -55,13 +55,10 @@ type MapperFunction<T> = ((params: any) => T) & {
 
 type LooseMappedSlottedDescriptor<T> =
   | readonly [MapperFunction<T>, MappingDescriptorNode]
-  | readonly [MapperFunction<T>, MappingDescriptorNode, Distinctor<any>];
+  | readonly [MapperFunction<T>, MappingDescriptorNode, Distinctor<any> | undefined];
 
 type LooseOnceSlottedDescriptor<T> = readonly [
-  ((
-    params: any,
-  ) => IReactiveState<T> | ReadableClosureDescriptor<T> | (null extends T ? null : never)) &
-    OnceFunctionMetadata,
+  ((params: any) => StateClosureResult<T>) & OnceFunctionMetadata,
   unknown,
 ];
 
@@ -70,34 +67,41 @@ type ReadableClosureDescriptor<T> =
   | StateClosureClass<T>
   | MarkedStateClosureDescriptor<T>;
 
-/** Describes how to build a readable closure without accessing its value. */
+/**
+ * Describes how to build a readable closure without accessing its value.
+ */
 export type StateClosureDescriptor<T> =
   | (null extends T ? null : never)
+  | ImmediateDescriptor<T>
   | ReadableClosureDescriptor<T>
   | LooseSlottedDescriptor<T>
   | LooseOnceSlottedDescriptor<T>
   | LooseMappedSlottedDescriptor<T>;
 
-/** A once function or class render method constructs a state flow. */
-export type StateClosureResult<T> = IReactiveState<T> | StateClosureDescriptor<T>;
+/**
+ * Once functions and class render methods resolve descriptor trees.
+ * D preserves values without resolving their contents or taking ownership.
+ */
+export type StateClosureResult<T> = Descriptor<T> | StateClosureDescriptor<T>;
 
-export type StateClosureResultValue<S> = S extends null
-  ? null
-  : S extends IReactiveState<infer T>
+export type StateClosureResultNode = MappingDescriptorNode | StateClosureDescriptor<any>;
+
+export type StateClosureResultValue<S> =
+  S extends MarkedStateClosureDescriptor<infer T>
     ? T
-    : S extends IReadableClosure<infer T>
-      ? T
-      : S extends MarkedStateClosureDescriptor<infer T>
+    : S extends readonly [infer C, unknown]
+      ? C extends StateClosureClass<infer T, any[]>
         ? T
-        : S extends StateClosureClass<infer T, any[]>
-          ? T
-          : S extends readonly [infer C, unknown, ...unknown[]]
-            ? C extends StateClosureClass<infer T, any[]>
-              ? T
-              : C extends AnyMappingFunction
-                ? FunctionalStateClosureValue<C>
-                : never
-            : never;
+        : C extends AnyMappingFunction
+          ? FunctionalStateClosureValue<C>
+          : MappingDescriptorValue<S>
+      : S extends readonly [
+            MapperFunction<infer T>,
+            unknown,
+            ((...params: any[]) => unknown) | undefined,
+          ]
+        ? T
+        : MappingDescriptorValue<S>;
 
 export type FunctionalStateClosureValue<M extends AnyMappingFunction> = M extends AnyOnceFunction
   ? StateClosureResultValue<ReturnType<M>>
@@ -143,15 +147,20 @@ type IsClosureFactory<P extends unknown[], R> = [R] extends [IReadableClosure<un
   : false;
 
 type StaticClosureInput<T> =
-  T extends IReadableClosure<unknown>
-    ? never
+  T extends IReadableClosure<infer V>
+    ? IReadableClosure<V> extends T
+      ? never
+      : T
     : T extends (...params: infer P) => infer R
       ? IsClosureFactory<P, R> extends true
         ? never
         : T
       : T;
 
-/** Primitives are static; other static values use D; readable inputs and factories are owned. */
+/**
+ * Primitives are static; other static values use D.
+ * Readable inputs and factories are owned; specialized readable instances may be borrowed with D.
+ */
 export type StateClosureInputSlot<T> =
   | (T extends IReadableClosure<infer V>
       ? ReadableClosureInput<T, V>
@@ -273,20 +282,13 @@ export type MappedSlottedDescriptor<M, D, T> = readonly [M, D] & MarkedStateClos
 export type ComparedMappedSlottedDescriptor<M, D, C, T> = readonly [M, D, C] &
   MarkedStateClosureDescriptor<T>;
 
-export type BuiltClosure<D> = D extends null
-  ? IReadableClosure<null>
-  : D extends IReadableClosure<any>
+export type BuiltClosure<D> =
+  D extends IReadableClosure<any>
     ? D
     : D extends AnyStateClosureClass
       ? InstanceType<D>
-      : D extends readonly [infer C, unknown, ...unknown[]]
+      : D extends readonly [infer C, unknown]
         ? C extends AnyStateClosureClass
           ? InstanceType<C>
-          : D extends MarkedStateClosureDescriptor<infer T>
-            ? IReadableClosure<T>
-            : C extends AnyMappingFunction
-              ? IReadableClosure<FunctionalStateClosureValue<C>>
-              : never
-        : D extends MarkedStateClosureDescriptor<infer T>
-          ? IReadableClosure<T>
-          : never;
+          : IReadableClosure<StateClosureResultValue<D>>
+        : IReadableClosure<StateClosureResultValue<D>>;

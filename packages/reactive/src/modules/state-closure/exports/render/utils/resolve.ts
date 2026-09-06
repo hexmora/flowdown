@@ -1,4 +1,12 @@
-import { forOwn, isArray, isFunction, isObject, isPlainObject, mapValues } from 'lodash-es';
+import {
+  forOwn,
+  identity,
+  isArray,
+  isFunction,
+  isObject,
+  isPlainObject,
+  mapValues,
+} from 'lodash-es';
 
 import type { IReadableClosure } from '../../../type';
 import type { DescriptorScope } from './context';
@@ -67,7 +75,11 @@ export const isStateClosureDescriptor = <T = unknown>(
   value: unknown,
 ): value is StateClosureDescriptor<T> => {
   return (
-    value === null || isReadableClosure<T>(value) || isSlottedDescriptor(value) || isClass(value)
+    value === null ||
+    isImmediateDescriptor<T>(value) ||
+    isReadableClosure<T>(value) ||
+    isSlottedDescriptor(value) ||
+    isClass(value)
   );
 };
 
@@ -269,8 +281,12 @@ export const buildStateClosure = (
   try {
     let closure: IReadableClosure<unknown>;
 
-    if (descriptor === null) {
-      closure = toClosure(null);
+    if (
+      descriptor === null ||
+      isImmediateDescriptor(descriptor) ||
+      isReactiveStateLike(descriptor)
+    ) {
+      closure = toClosure(descriptor);
     } else if (isSlottedDescriptor(descriptor)) {
       closure = buildSlottedStateClosure(descriptor, closureScope);
     } else if (isClass(descriptor)) {
@@ -278,7 +294,16 @@ export const buildStateClosure = (
         withStateClosureHookRuntime(null, () => new descriptor()),
       );
     } else {
-      throw new TypeError('Invalid state closure descriptor.');
+      const dependencies: IReadableClosure<unknown>[] = [];
+
+      const node = resolveMappingNode(descriptor, closureScope, dependencies);
+
+      closure = createMappedStateClosure(
+        identity,
+        () => readMappingNode(node),
+        dependencies,
+        'mapper',
+      );
     }
 
     bindRootDescriptorScope(closureScope, closure);

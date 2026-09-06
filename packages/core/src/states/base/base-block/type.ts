@@ -1,6 +1,6 @@
 import { IReactiveState, IReadableClosure, Newable } from 'reactive';
 
-import { IRangeState } from '../range';
+import { IRangeState } from '../../atoms';
 
 export type BaseBlockItemInputs<T> = {
   source: IReadableClosure<T>;

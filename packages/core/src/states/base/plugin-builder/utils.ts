@@ -33,11 +33,14 @@ export const isPluggableEqual = <T extends IPluginWithConfig>(
   left: IPluggable<T, unknown>,
   right: IPluggable<T, unknown>,
 ): boolean => {
-  const [leftClass, leftConfig] = isArray(left) ? left : [left, undefined];
-
-  const [rightClass, rightConfig] = isArray(right) ? right : [right, undefined];
-
-  return leftClass === rightClass && isPluginConfigEqual(leftConfig, rightConfig);
+  return (
+    left === right ||
+    ((isArray(left) ? left[0] : left) === (isArray(right) ? right[0] : right) &&
+      isPluginConfigEqual(
+        isArray(left) ? left[1] : undefined,
+        isArray(right) ? right[1] : undefined,
+      ))
+  );
 };
 
 export const isPluggablesEqual = <T extends IPluginWithConfig>(

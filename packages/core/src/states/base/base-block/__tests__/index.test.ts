@@ -1,9 +1,9 @@
 import { D, MutableState, ReactiveState, render, S, type StateClosureInputProps } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { IRangeState } from '../../range';
+import type { IRangeState } from '../../../atoms';
 
-import { BaseBlockItem, type BaseBlockItemInputs, type IBlockMeta } from '..';
+import { BaseBlockItem, type BaseBlockItemInputs, type IBlockMeta } from '../index';
 
 class TextBlock extends BaseBlockItem<string> {
   protected slice(value: string, start: number, end: number): string {

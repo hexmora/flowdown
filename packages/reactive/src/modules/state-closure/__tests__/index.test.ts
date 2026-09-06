@@ -4,19 +4,20 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { IReactiveState, StateSubscriber } from '../../reactive-state';
 
+import { BatchScheduler } from '../../batch-scheduler';
+import { MutableState } from '../../mutable-state';
+import { combineMapState, mapState, ReactiveState, toReactiveState } from '../../reactive-state';
+import { D, render as renderDescriptor, S, type StateClosureResult } from '../exports/render';
 import {
   BaseStateClosure,
   combineMapClosure,
   FactoryReadableClosure,
   type IReadableClosure,
   mapClosure,
+  mapEachClosure,
   type StateClosureSource,
   toClosure,
-} from '..';
-import { BatchScheduler } from '../../batch-scheduler';
-import { MutableState } from '../../mutable-state';
-import { combineMapState, mapState, ReactiveState, toReactiveState } from '../../reactive-state';
-import { D, render as renderDescriptor, S, type StateClosureResult } from '../exports/render';
+} from '../index';
 
 type SourceInputs<T> = {
   source: StateClosureSource<T>;
@@ -120,6 +121,132 @@ const createTrackedReactiveSource = <T>(initial: T) => {
 };
 
 describe('BaseStateClosure runtime', () => {
+  test.each([
+    { name: 'direct', create: (source: MutableState<number>) => toClosure(source) },
+
+    { name: 'nested', create: (source: MutableState<number>) => new Source({ source }) },
+  ])('reads pending values when a $name closure is initialized inside a batch', ({ create }) => {
+    const source = MutableState.of(1);
+
+    const closure = create(source);
+
+    BatchScheduler.batch(() => {
+      source.next(2);
+
+      expect(closure.value.value).toBe(2);
+    });
+
+    expect(closure.value.value).toBe(2);
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('preserves pending values before completion during first access', () => {
+    const source = MutableState.of(1);
+
+    const closure = toClosure(source);
+
+    const complete = vi.fn();
+
+    BatchScheduler.batch(() => {
+      source.next(2);
+
+      source.complete();
+
+      closure.value.subscribe({ complete });
+
+      expect(closure.value.value).toBe(2);
+
+      expect(complete).not.toHaveBeenCalled();
+    });
+
+    expect(closure.value.value).toBe(2);
+
+    expect(complete).toHaveBeenCalledOnce();
+
+    closure.destroy();
+  });
+
+  test('preserves pending values before an error during first access', () => {
+    const source = MutableState.of(1);
+
+    const closure = toClosure(source);
+
+    const error = vi.fn();
+
+    const failure = new Error('Failed after the pending value.');
+
+    BatchScheduler.batch(() => {
+      source.next(2);
+
+      source.error(failure);
+
+      closure.value.subscribe({ error });
+
+      expect(closure.value.value).toBe(2);
+
+      expect(error).not.toHaveBeenCalled();
+    });
+
+    expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+
+    expect(() => closure.value.value).toThrow(failure);
+
+    closure.destroy();
+  });
+
+  test('keeps synchronous source advances made during subscription', () => {
+    let current = 1;
+
+    const source: IReactiveState<number> = {
+      get value() {
+        return current;
+      },
+
+      closed: false,
+
+      subscribe(subscriber) {
+        current = 2;
+
+        emitToSubscriber(subscriber, current);
+
+        return new Subscription();
+      },
+    };
+
+    const closure = toClosure(source);
+
+    expect(closure.value.value).toBe(2);
+
+    closure.destroy();
+  });
+
+  test('preserves later event payloads when a source advances reentrantly', () => {
+    const source = new BehaviorSubject(0);
+
+    source.subscribe((value) => {
+      if (value === 1) {
+        source.next(2);
+      }
+    });
+
+    const closure = toClosure(source);
+
+    const next = vi.fn();
+
+    closure.value.subscribe(next);
+
+    source.next(1);
+
+    expect(next.mock.calls).toEqual([[0], [2], [1]]);
+
+    closure.destroy();
+
+    source.complete();
+  });
+
   test('supports inherited initial values and next updates', () => {
     const closure = new WritableSource({ source: new BehaviorSubject(1) });
 
@@ -461,6 +588,122 @@ describe('BaseStateClosure runtime', () => {
     expect(closure.value.value).toBe(1);
 
     expect(next).toHaveBeenCalledTimes(0);
+  });
+
+  test.each([
+    { name: 'direct', create: (source: IReadableClosure<number>) => source },
+
+    {
+      name: 'descriptor',
+
+      create: (source: IReadableClosure<number>) => {
+        return renderDescriptor(S([InputSource, { source }]));
+      },
+    },
+  ])('exposes $name closure priorities without initializing lazy state flows', ({ create }) => {
+    const build = vi.fn(() => ReactiveState.of(1));
+
+    const closure = create(FactoryReadableClosure.create(build));
+
+    expect(BatchScheduler.getPriority(closure)).toBe(0);
+
+    expect(build).not.toHaveBeenCalled();
+
+    expect(closure.value.value).toBe(1);
+
+    expect(BatchScheduler.getPriority(closure)).toBe(BatchScheduler.getPriority(closure.value));
+
+    expect(BatchScheduler.getPriority(closure)).toBeGreaterThan(0);
+
+    expect(build).toHaveBeenCalledOnce();
+
+    closure.destroy();
+
+    expect(() => BatchScheduler.getPriority(closure)).not.toThrow();
+
+    const unopened = create(FactoryReadableClosure.create(build));
+
+    unopened.destroy();
+
+    expect(BatchScheduler.getPriority(unopened)).toBe(0);
+
+    expect(build).toHaveBeenCalledOnce();
+  });
+
+  test('follows new dependency depth through a closure priority alias', () => {
+    const source = MutableState.of([0]);
+
+    const value = MutableState.of(2);
+
+    const child = mapClosure(mapClosure(value, doubleValue), doubleValue);
+
+    const closure = mapEachClosure(source, (_item, index) => {
+      return index === 0 ? ReactiveState.of(0) : child;
+    });
+
+    expect(closure.value.value).toEqual([0]);
+
+    const initial = BatchScheduler.getPriority(closure);
+
+    source.next([0, 1]);
+
+    expect(closure.value.value).toEqual([0, 8]);
+
+    expect(BatchScheduler.getPriority(closure)).toBeGreaterThan(initial);
+
+    expect(BatchScheduler.getPriority(closure)).toBe(BatchScheduler.getPriority(closure.value));
+
+    BatchScheduler.setPriority(value, 20);
+
+    expect(BatchScheduler.getPriority(closure)).toBeGreaterThan(20);
+
+    closure.destroy();
+
+    expect(() => BatchScheduler.getPriority(closure)).not.toThrow();
+
+    source.destroy();
+
+    value.destroy();
+  });
+
+  test('keeps explicit closure priorities when its value is initialized', () => {
+    const source = MutableState.of(1);
+
+    const closure = toClosure(source);
+
+    BatchScheduler.setPriority(closure, 7);
+
+    expect(closure.value.value).toBe(1);
+
+    BatchScheduler.setPriority(source, 20);
+
+    expect(BatchScheduler.getPriority(closure)).toBe(7);
+
+    expect(BatchScheduler.getPriority(closure.value)).toBeGreaterThan(20);
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('inherits source priority changes through initialized closure wrappers', () => {
+    const source = MutableState.of(1);
+
+    const closure = new Source({ source });
+
+    const mapped = mapClosure(closure, (value) => value + 1);
+
+    const initial = BatchScheduler.getPriority(mapped.value);
+
+    BatchScheduler.setPriority(source, 10);
+
+    expect(BatchScheduler.getPriority(mapped.value)).toBe(initial + 10);
+
+    mapped.destroy();
+
+    closure.destroy();
+
+    source.destroy();
   });
 
   test('preserves scheduler priority through an unequal diamond dependency', () => {

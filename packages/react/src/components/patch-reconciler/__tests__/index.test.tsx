@@ -5,7 +5,7 @@ import { act, render, screen } from '@testing-library/react';
 import { MutableState } from 'reactive';
 import { describe, expect, test } from 'vitest';
 
-import { PatchReconciler } from '..';
+import { PatchReconciler } from '../index';
 
 type RenderPatch = IRenderPatchItem<ReactNode>;
 

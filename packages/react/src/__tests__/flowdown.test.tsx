@@ -6,7 +6,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { FlowdownRef, IPluginItem } from '../types';
 
-import { Flowdown } from '..';
+import { Flowdown } from '../index';
 
 type RemarkPluggable = NonNullable<IPluginItem['remarks']>[number];
 type RenderPluggable = NonNullable<IPluginItem['renders']>[number];
@@ -129,7 +129,8 @@ describe('Flowdown', () => {
       '',
       '$x + y$',
     ].join('\n');
-    const { container } = render(<Flowdown config={{ tex: true }} text={text} />);
+
+    const { container } = render(<Flowdown build={{ tex: true }} text={text} />);
     const image = screen.getByRole('img', { name: 'diagram' });
 
     expect(image).toHaveAttribute('src', 'https://example.com/diagram.png');

@@ -6,8 +6,8 @@ import { shallowEqual } from 'shallow-equal';
 
 import type { SlotProps, SlotType } from '../../../types';
 
-import { SlotRenderer } from '..';
 import { EO } from '../../../consts';
+import { SlotRenderer } from '../index';
 
 type StyleProps = {
   style?: CSSProperties;

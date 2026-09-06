@@ -1,18 +1,33 @@
+import { mapValues } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
 import type { DestructibleTarget } from '../../../destructible';
 import type {
   Distinctor,
+  IReactiveState,
   StateMapper,
   StateSource,
   StateValue,
   StateValues,
 } from '../../../reactive-state';
 import type { IReadableClosure, StateClosureSource } from '../../type';
-import type { BuiltClosure, StateClosureDescriptor } from '../render';
-import type { StateClosureRef } from './type';
+import type {
+  BuiltClosure,
+  StateClosureDescriptor,
+  StateClosureResult,
+  StateClosureResultNode,
+  StateClosureResultValue,
+} from '../render';
+import type { FlattenedState, StateClosureRef } from './type';
 
-import { combineMapClosure, mapClosure, mapEachClosure, toClosure } from '../base';
+import { toState } from '../../../reactive-state';
+import {
+  combineMapClosure,
+  mapClosure,
+  mapEachClosure,
+  switchMapClosure,
+  toClosure,
+} from '../base';
 import { isStateClosureDescriptor, render } from '../render';
 import { getReadableClosureScope, ownReadableClosure } from '../render/utils/context';
 import { getCurrentStateClosureHookRuntime } from './runtime/utils';
@@ -27,6 +42,44 @@ export const useMap = <S, R>(
   const { owner } = getCurrentStateClosureHookRuntime('useMap', 'once');
 
   return ownReadableClosure(getReadableClosureScope(owner), mapClosure(source, mapper, distinctor));
+};
+
+export function useSwitchMap<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => R & StateClosureResultNode,
+  distinctor?: Distinctor<StateClosureResultValue<R>>,
+): IReadableClosure<StateClosureResultValue<R>>;
+export function useSwitchMap<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => StateClosureResult<R>,
+  distinctor?: Distinctor<R>,
+): IReadableClosure<R>;
+export function useSwitchMap<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => StateClosureResult<R>,
+  distinctor?: Distinctor<R>,
+): IReadableClosure<R> {
+  const { owner } = getCurrentStateClosureHookRuntime('useSwitchMap', 'once');
+
+  return ownReadableClosure(
+    getReadableClosureScope(owner),
+    switchMapClosure<S, R>(source, mapper, distinctor),
+  );
+}
+
+/**
+ * Derive a readable closure for each field present in the initial source value.
+ */
+export const useFlatten = <T extends object>(
+  source: IReadableClosure<T> | IReactiveState<T>,
+): FlattenedState<T> => {
+  getCurrentStateClosureHookRuntime('useFlatten', 'once');
+
+  const state = toState(source);
+
+  return mapValues(state.value, (_, key) =>
+    useMap(state, (value) => value[key as keyof T]),
+  ) as FlattenedState<T>;
 };
 
 export const useMapEach = <T, R>(
@@ -100,6 +153,10 @@ export const useRef = <T>(initialValue: T): StateClosureRef<T> => {
   return getCurrentStateClosureHookRuntime('useRef', 'mapper').ref(initialValue);
 };
 
+export const useCurrent = <T>(factory: () => T): T => {
+  return getCurrentStateClosureHookRuntime('useCurrent', 'mapper').current(factory);
+};
+
 export const useStableFn = <TParams extends unknown[], TReturn>(
   callback: (...params: TParams) => TReturn,
 ): ((...params: TParams) => TReturn) => {
@@ -107,7 +164,9 @@ export const useStableFn = <TParams extends unknown[], TReturn>(
 
   callbackRef.current = callback;
 
-  const stableCallbackRef = useRef((...params: TParams) => callbackRef.current(...params));
-
-  return stableCallbackRef.current;
+  return useCurrent(
+    () =>
+      (...params: TParams) =>
+        callbackRef.current(...params),
+  );
 };

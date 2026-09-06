@@ -2,8 +2,8 @@ import type { IRawPatchItem } from '@flowdown/types';
 
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import type { IPatchItem } from '..';
 import type { IRenderPatchItem } from '../../../externals';
+import type { IPatchItem } from '../index';
 
 import { isKeyablesEqual, splitPatches } from '../utils';
 
@@ -14,6 +14,16 @@ const renderFirst = () => 'first';
 const renderSecond = () => 'second';
 
 describe('patch utilities', () => {
+  test('does not read values when keyed collections are the same reference', () => {
+    const items = new Proxy([{ key: 'stable' }], {
+      get: () => {
+        throw new Error('Unexpected collection access.');
+      },
+    });
+
+    expect(isKeyablesEqual(items, items)).toBe(true);
+  });
+
   test('splits raw and render fields while preserving render functions', () => {
     const render = vi.fn(() => 'rendered');
     const patches: IPatchItem<string>[] = [

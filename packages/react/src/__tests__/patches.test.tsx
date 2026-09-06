@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { IPluginItem } from '../types';
 
-import { Flowdown } from '..';
+import { Flowdown } from '../index';
 
 type RemarkPluggable = NonNullable<IPluginItem['remarks']>[number];
 

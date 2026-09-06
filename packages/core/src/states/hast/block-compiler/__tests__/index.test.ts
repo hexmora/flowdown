@@ -25,7 +25,7 @@ import {
   type BlockRemarksConfig,
   type IBlockSection,
   type IRawPatchItem,
-} from '..';
+} from '../index';
 
 type SourceInputs<T> = {
   source: IReadableClosure<T>;

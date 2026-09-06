@@ -2,6 +2,7 @@ import type { Distinctor } from '../../../reactive-state';
 import type { IReadableClosure } from '../../type';
 import type { AnyOnceFunction, OnceFunctionMetadata } from '../once';
 import type {
+  AnyStateClosureClass,
   BuiltClosure,
   ComparedMappedSlottedDescriptor,
   ImmediateDescriptor,
@@ -9,11 +10,14 @@ import type {
   MappedSlottedDescriptor,
   MappingDescriptorNode,
   MappingDescriptorValue,
+  MarkedStateClosureDescriptor,
   SlottedDescriptor,
   StateClosureClass,
   StateClosureDescriptor,
   StateClosureInputDescriptor,
   StateClosureInputValue,
+  StateClosureResult,
+  StateClosureResultNode,
   StateClosureResultValue,
 } from './utils';
 
@@ -46,12 +50,16 @@ type RuntimeSlottedDescriptor = readonly [
   unknown?,
 ];
 
-/** Marks a value to bypass descriptor resolution. */
+/**
+ * Marks a value to bypass descriptor resolution.
+ */
 export const D = <T>(value: T): ImmediateDescriptor<T> => {
   return { [immediateDescriptor]: value };
 };
 
-/** Types a descriptor and returns it unchanged. */
+/**
+ * Types a descriptor and returns it unchanged.
+ */
 export function S<
   const C extends OneArgumentStateClosureClass,
   const P extends StateClosureInputDescriptor<ConstructorParameters<C>[0]>,
@@ -83,12 +91,22 @@ export function S(descriptor: RuntimeSlottedDescriptor | JSXDescriptor<unknown>)
   return markStateClosureDescriptor(descriptor);
 }
 
-/** Renders a descriptor tree into its root state closure. */
-export function render<const D extends StateClosureDescriptor<unknown>>(
-  descriptor: D,
-): BuiltClosure<D>;
+/**
+ * Renders a descriptor tree into its root state closure.
+ */
+export function render<
+  const D extends
+    | AnyStateClosureClass
+    | readonly [AnyStateClosureClass, unknown]
+    | IReadableClosure<unknown>
+    | MarkedStateClosureDescriptor<unknown>
+    | ImmediateDescriptor<unknown>
+    | null,
+>(descriptor: D): BuiltClosure<D>;
 export function render<T>(descriptor: StateClosureDescriptor<T>): IReadableClosure<T>;
-export function render(descriptor: StateClosureDescriptor<unknown>): IReadableClosure<unknown> {
+export function render<const D extends StateClosureResultNode>(descriptor: D): BuiltClosure<D>;
+export function render<T>(descriptor: StateClosureResult<T>): IReadableClosure<T>;
+export function render(descriptor: StateClosureResult<unknown>): IReadableClosure<unknown> {
   const scope = createDescriptorScope();
 
   try {
