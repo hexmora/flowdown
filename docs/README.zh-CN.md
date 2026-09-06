@@ -1,6 +1,8 @@
-[English](../README.md) | **简体中文**
+<p align="center">
+  <img src="./assets/logo.png" alt="Flowdown" width="480" />
+</p>
 
-# Flowdown
+[English](../README.md) | **简体中文**
 
 **专为流式场景打造的响应式 Markdown 渲染库。**
 
