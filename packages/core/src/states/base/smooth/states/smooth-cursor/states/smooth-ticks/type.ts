@@ -1,6 +1,6 @@
 import type { IReadableClosure } from 'reactive';
 
-import type { TickerFramesInputs } from './states';
+import type { SmoothTickerClass } from '../../../../../../packs';
 
 export type { SmoothTick } from './states';
 
@@ -13,5 +13,5 @@ export interface SmoothTicksInputs {
   /**
    * Constructor used to supply animation timestamps.
    */
-  ticker: IReadableClosure<TickerFramesInputs['Ticker']>;
+  ticker: IReadableClosure<SmoothTickerClass>;
 }

@@ -41,7 +41,7 @@ type RemarkExtensionData = Data & {
 
   fromMarkdownExtensions?: unknown[];
 
-  toMarkdownExtensions?: NonNullable<ToMarkdownOptions['extensions']>;
+  toMarkdownExtensions?: ToMarkdownOptions[];
 };
 
 const createPlugin = (config?: SyntaxMathRemarkPluginConfig): SyntaxMathRemarkPlugin => {
@@ -849,7 +849,7 @@ f'(x) &= 2x
       const data = processor.data() as RemarkExtensionData;
       const existingMicromark = { existing: 'micromark' };
       const existingFromMarkdown = { existing: 'from-markdown' };
-      const existingToMarkdown: NonNullable<ToMarkdownOptions['extensions']>[number] = {};
+      const existingToMarkdown: ToMarkdownOptions = {};
 
       data.micromarkExtensions = [existingMicromark];
       data.fromMarkdownExtensions = [existingFromMarkdown];

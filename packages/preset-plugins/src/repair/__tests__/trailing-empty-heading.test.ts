@@ -1,4 +1,4 @@
-import type { Heading } from 'mdast';
+import type { PhrasingContent } from 'mdast';
 
 import { PluginPriority } from '@flowdown/types';
 import { describe, expect, test } from 'vitest';
@@ -17,7 +17,7 @@ describe('TrailingEmptyHeadingRepairPlugin', () => {
     });
   });
 
-  test.each<{ children: Heading['children'] }>([
+  test.each<{ children: PhrasingContent[] }>([
     { children: [{ type: 'text', value: '   ' }] },
     { children: [] },
   ])('removes a trailing empty level-one heading', ({ children }) => {

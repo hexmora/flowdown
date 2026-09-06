@@ -1,6 +1,7 @@
 import { type IPluggable, type IPluginWithConfig, PluginPriority } from '@flowdown/types';
 import { assert } from '@flowdown/utils';
 import {
+  every,
   first,
   isArray,
   isEqualWith,
@@ -19,7 +20,7 @@ const isOpaqueConfigValue = (value: unknown) => {
   );
 };
 
-const isPluginConfigEqual = (left: unknown, right: unknown) => {
+export const isPluginConfigEqual = (left: unknown, right: unknown) => {
   return isEqualWith(left, right, (leftValue, rightValue) => {
     if (isOpaqueConfigValue(leftValue) || isOpaqueConfigValue(rightValue)) {
       return leftValue === rightValue;
@@ -29,10 +30,7 @@ const isPluginConfigEqual = (left: unknown, right: unknown) => {
   });
 };
 
-export const isPluggableEqual = <T extends IPluginWithConfig>(
-  left: IPluggable<T, unknown>,
-  right: IPluggable<T, unknown>,
-): boolean => {
+export const isPluggableEqual = <T>(left: T | [T, unknown], right: T | [T, unknown]): boolean => {
   return (
     left === right ||
     ((isArray(left) ? left[0] : left) === (isArray(right) ? right[0] : right) &&
@@ -43,13 +41,18 @@ export const isPluggableEqual = <T extends IPluginWithConfig>(
   );
 };
 
-export const isPluggablesEqual = <T extends IPluginWithConfig>(
-  left: readonly IPluggable<T, unknown>[],
-  right: readonly IPluggable<T, unknown>[],
+export const isPluggablesEqual = <T>(
+  left: readonly T[] = [],
+  right: readonly T[] = [],
 ): boolean => {
   return (
-    left.length === right.length &&
-    left.every((item, index) => isPluggableEqual(item, right[index]))
+    left === right ||
+    (left.length === right.length &&
+      every(left, (pluggable, index) => {
+        const other = right[index];
+
+        return pluggable !== undefined && other !== undefined && isPluggableEqual(pluggable, other);
+      }))
   );
 };
 

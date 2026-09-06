@@ -1,4 +1,4 @@
-import type { Paragraph, Root, Text } from 'mdast';
+import type { Paragraph, PhrasingContent, PhrasingContentMap, Root, Text } from 'mdast';
 
 import { describe, expect, test } from 'vitest';
 
@@ -16,7 +16,7 @@ const htmlValues = (paragraph: Paragraph): string[] => {
   return paragraph.children.filter((node) => node.type === 'html').map((node) => node.value);
 };
 
-const legacyTagCases: Array<[string, Paragraph['children'][number]['type']]> = [
+const legacyTagCases: Array<[string, keyof PhrasingContentMap]> = [
   ['<div hidden>', 'html'],
   ['<div id = "x">', 'html'],
   ['</div >', 'html'],
@@ -24,7 +24,7 @@ const legacyTagCases: Array<[string, Paragraph['children'][number]['type']]> = [
   ['</div><span>', 'html'],
 ];
 
-const transformHtmlNode = (value: string): Paragraph['children'][number] => {
+const transformHtmlNode = (value: string): PhrasingContent => {
   const tree: Root = {
     type: 'root',
     children: [{ type: 'paragraph', children: [{ type: 'html', value }] }],
@@ -32,7 +32,7 @@ const transformHtmlNode = (value: string): Paragraph['children'][number] => {
 
   runRemarkPlugin(tree, new SyntaxHtmlAllowedRemarkPlugin());
 
-  return firstParagraph(tree).children[0] as Paragraph['children'][number];
+  return firstParagraph(tree).children[0] as PhrasingContent;
 };
 
 describe('SyntaxHtmlAllowedRemarkPlugin', () => {
@@ -81,7 +81,7 @@ describe('SyntaxHtmlAllowedRemarkPlugin', () => {
   });
 
   test('skips sparse child entries without throwing', () => {
-    const children: Paragraph['children'] = [{ type: 'html', value: '<div>x</div>' }];
+    const children: PhrasingContent[] = [{ type: 'html', value: '<div>x</div>' }];
 
     children.length = 2;
 

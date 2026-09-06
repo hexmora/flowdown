@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Core } from '@flowdown/core';
+import { Core, isPluggablesEqual } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';
 import { forwardRef, memo, useEffect, useImperativeHandle, useState } from 'react';
 import { D, render, S } from 'reactive';
@@ -13,7 +13,7 @@ import { DEFAULT_CONFIG, EL, EO } from './consts';
 import { useDeferredUnmount, usePlugins, useStateOf, useStatic } from './hooks';
 import { ReactRenderer } from './modules';
 import { PRESET_RENDER_PLUGINS, PRESET_SLOT_PLUGINS } from './plugins';
-import { isPatchesEqual, isPluggablesEqual, isPropsEqual, isSmoothEqual } from './utils';
+import { isPatchesEqual, isPropsEqual, isSmoothEqual } from './utils';
 
 export const Flowdown = /*#__PURE__*/ memo(
   /*#__PURE__*/ forwardRef<FlowdownRef, FlowdownProps>(function Flowdown(
@@ -48,6 +48,8 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     const _repairs = usePlugins(_plugins, 'repairs');
 
+    const _mappers = usePlugins(_plugins, 'mappers');
+
     const _renders = usePlugins(_plugins, 'renders', PRESET_RENDER_PLUGINS);
 
     const slots = usePlugins(_plugins, 'slots', PRESET_SLOT_PLUGINS);
@@ -57,6 +59,8 @@ export const Flowdown = /*#__PURE__*/ memo(
     const rehypes = useStateOf(_rehypes, isPluggablesEqual);
 
     const repairs = useStateOf(_repairs, isPluggablesEqual);
+
+    const mappers = useStateOf(_mappers, isPluggablesEqual);
 
     const renders = useStateOf(_renders, isPluggablesEqual);
 
@@ -72,6 +76,7 @@ export const Flowdown = /*#__PURE__*/ memo(
             remarks,
             renders,
             repairs,
+            mappers,
             smooth,
             text,
           },

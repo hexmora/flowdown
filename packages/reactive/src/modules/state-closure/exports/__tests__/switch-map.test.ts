@@ -14,6 +14,7 @@ import {
   S,
   switchMapClosure,
   useClearable,
+  useCreate,
   useMap,
   useSwitchMap,
 } from '../../../../index';
@@ -351,7 +352,7 @@ describe('switchMapClosure', () => {
     output.destroy();
   });
 
-  test('releases completed child resources when the combined flow closes', () => {
+  test('retains the final completed child until its owner is destroyed', () => {
     const source = MutableState.of(true);
 
     const cleaned = vi.fn();
@@ -380,9 +381,49 @@ describe('switchMapClosure', () => {
 
     expect(output.value.closed).toBe(true);
 
-    expect(cleaned).toHaveBeenCalledTimes(2);
+    expect(cleaned).toHaveBeenCalledOnce();
 
     output.destroy();
+
+    expect(cleaned).toHaveBeenCalledTimes(2);
+  });
+
+  test('keeps lazy closures in a completed value readable until the output is destroyed', () => {
+    const initialized = vi.fn();
+
+    const cleaned = vi.fn();
+
+    const Lazy = once(() => {
+      initialized();
+
+      useClearable(cleaned);
+
+      return ReactiveState.of(42);
+    });
+
+    const Child = once(() => {
+      const item = useCreate(S([Lazy, {}]));
+
+      return ReactiveState.of([item]);
+    });
+
+    const output = switchMapClosure(ReactiveState.of(true), () => S([Child, {}]));
+
+    expect(output.value.closed).toBe(true);
+
+    expect(initialized).not.toHaveBeenCalled();
+
+    const [item] = output.value.value;
+
+    expect(item?.value.value).toBe(42);
+
+    expect(initialized).toHaveBeenCalledOnce();
+
+    expect(cleaned).not.toHaveBeenCalled();
+
+    output.destroy();
+
+    expect(cleaned).toHaveBeenCalledOnce();
   });
 
   test('settles source replacement and pending inner changes in one batched output', () => {

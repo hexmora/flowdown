@@ -1,4 +1,10 @@
-import type { BlockCompilerConfig, IPatchItem, PluginConfigs, SmoothConfig } from '@flowdown/core';
+import type {
+  BlockCompilerConfig,
+  IPatchItem,
+  MapperPluggable,
+  PluginConfigs,
+  SmoothConfig,
+} from '@flowdown/core';
 import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { CSSProperties, ReactNode } from 'react';
 import type { IReadableClosure } from 'reactive';
@@ -14,6 +20,8 @@ export interface IPluginItem {
   rehypes?: IPluggable<IRehypePlugin, unknown>[];
 
   repairs?: IPluggable<IRepairPlugin, unknown>[];
+
+  mappers?: MapperPluggable[];
 
   renders?: IReactRenderPluggable[];
 

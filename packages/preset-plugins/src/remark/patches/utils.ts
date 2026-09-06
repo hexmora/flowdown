@@ -6,7 +6,7 @@ import { isMdastParent } from '@flowdown/utils';
 import { first, isArray, isSafeInteger, last } from 'lodash-es';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 
-import type { ParserPatch } from '../../typings';
+import type { ParserPatch, ParserPatchProperties } from '../../typings';
 import type {
   MappedTextPatch,
   MappedTextPoint,
@@ -126,7 +126,7 @@ const normalizePatches = (patches: IRawPatchItem[]): NormalizedPatch[] => {
 };
 
 const createParserPatch = (patch: NormalizedPatch, replacement?: string): ParserPatch => {
-  const hProperties: ParserPatch['data']['hProperties'] = {
+  const hProperties: ParserPatchProperties = {
     dataParserPatch: PARSER_PATCH_MARKER,
     dataPatchKey: patch.item.key,
   };

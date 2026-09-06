@@ -1,12 +1,13 @@
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
+import type { IPluggable, IPluginWithConfig, IRemarkPlugin } from '@flowdown/types';
 import type { ReactNode } from 'react';
 
+import { isPluggablesEqual } from '@flowdown/core';
 import { first } from 'lodash-es';
 import { describe, expect, test } from 'vitest';
 
 import type { FlowdownProps, IPluginItem } from '../../types';
 
-import { isPluggablesEqual, isPropsEqual } from '../index';
+import { isPropsEqual } from '../index';
 
 class TestPlugin implements IPluginWithConfig {
   static readonly key = 'test-plugin';
@@ -29,6 +30,28 @@ const replacementPlugin = ReplacementTestPlugin as TestPluggable;
 const renderPatch = (): ReactNode => null;
 
 describe('comparison utilities', () => {
+  test('treats omitted plugin lists as empty lists', () => {
+    expect(isPluggablesEqual()).toBe(true);
+
+    expect(isPluggablesEqual(undefined, [])).toBe(true);
+
+    expect(isPluggablesEqual([], undefined)).toBe(true);
+
+    expect(isPluggablesEqual(undefined, [plugin])).toBe(false);
+
+    expect(isPluggablesEqual([plugin], undefined)).toBe(false);
+
+    expect(
+      isPropsEqual(
+        { text: '', plugins: [{}] },
+        {
+          text: '',
+          plugins: [{ remarks: [], rehypes: [], repairs: [], mappers: [], renders: [], slots: [] }],
+        },
+      ),
+    ).toBe(true);
+  });
+
   test('compares pluggable arrays by class, order, and deep tuple options', () => {
     expect(
       isPluggablesEqual(
@@ -60,7 +83,7 @@ describe('comparison utilities', () => {
       plugins: [
         {
           config: { [TestPlugin.key]: { nested: { enabled: true } } },
-          remarks: [remark as NonNullable<IPluginItem['remarks']>[number]],
+          remarks: [remark as IPluggable<IRemarkPlugin, unknown>],
         },
       ],
       style: { color: 'red' },
@@ -79,9 +102,10 @@ describe('comparison utilities', () => {
         {
           config: { [TestPlugin.key]: { nested: { enabled: true } } },
           remarks: [
-            [TestPlugin, { nested: { enabled: true } }] as unknown as NonNullable<
-              IPluginItem['remarks']
-            >[number],
+            [TestPlugin, { nested: { enabled: true } }] as unknown as IPluggable<
+              IRemarkPlugin,
+              unknown
+            >,
           ],
         },
       ],

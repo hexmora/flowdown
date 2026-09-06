@@ -1,4 +1,4 @@
-import type { Element, ElementContent, Root, RootContent, Text } from 'hast';
+import type { Element, ElementContent, Properties, Root, RootContent, Text } from 'hast';
 
 import { clamp, create, floor, last, min, toArray, values } from 'lodash-es';
 import { describe, expect, test, vi } from 'vitest';
@@ -27,7 +27,7 @@ const preservedWhitespace = (value: string): Text => ({
 const element = (
   tagName: string,
   children: ElementContent[] = [],
-  properties: Element['properties'] = {},
+  properties: Properties = {},
 ): Element => ({
   type: 'element',
   tagName,

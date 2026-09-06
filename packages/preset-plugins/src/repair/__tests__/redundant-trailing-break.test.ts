@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 import { RedundantTrailingBreakRepairPlugin } from '../redundant-trailing-break';
 import { paragraph, root, runRepairs } from './utils';
 
-const repairParagraph = (children: Paragraph['children']): Paragraph => {
+const repairParagraph = (children: PhrasingContent[]): Paragraph => {
   const result = runRepairs(root([paragraph(children)]), new RedundantTrailingBreakRepairPlugin(), {
     ending: false,
   });

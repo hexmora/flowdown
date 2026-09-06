@@ -1,16 +1,16 @@
+import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+
 import { PluginPriority } from '@flowdown/types';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { type ComponentType, createRef, type ReactNode, StrictMode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { FlowdownRef, IPluginItem } from '../types';
+import type { AnySlotPluggable, FlowdownRef, IReactRenderPluggable } from '../types';
 
 import { Flowdown } from '../index';
 
-type RemarkPluggable = NonNullable<IPluginItem['remarks']>[number];
-type RenderPluggable = NonNullable<IPluginItem['renders']>[number];
-type SlotPluggable = NonNullable<IPluginItem['slots']>[number];
+type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 
 interface ParagraphSlotProps {
   Raw?: ComponentType<ParagraphSlotProps> | null;
@@ -20,7 +20,7 @@ interface ParagraphSlotProps {
 const createParagraphSlotPlugin = (
   key: string,
   Component: ComponentType<ParagraphSlotProps>,
-): SlotPluggable => {
+): AnySlotPluggable => {
   class TestParagraphSlotPlugin {
     static readonly key = key;
 
@@ -33,7 +33,7 @@ const createParagraphSlotPlugin = (
     destroy() {}
   }
 
-  return TestParagraphSlotPlugin as unknown as SlotPluggable;
+  return TestParagraphSlotPlugin as unknown as AnySlotPluggable;
 };
 
 const NestedSlotA = ({ children }: ParagraphSlotProps) => (
@@ -214,7 +214,7 @@ describe('Flowdown', () => {
         text="custom-token"
         plugins={[
           {
-            renders: [CustomTextRenderPlugin as unknown as RenderPluggable],
+            renders: [CustomTextRenderPlugin as unknown as IReactRenderPluggable],
           },
         ]}
       />,

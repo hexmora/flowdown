@@ -1,15 +1,14 @@
-import type { PluginConfigs } from '@flowdown/core';
+import type { MapperPluggable, PluginConfigs } from '@flowdown/core';
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
-import { PluginBuilder } from '@flowdown/core';
-import { get, has, set } from 'lodash-es';
+import { isPluggablesEqual, PluginBuilder } from '@flowdown/core';
+import { get, has, isArray, set } from 'lodash-es';
 import { useMemo } from 'react';
 import { render, S } from 'reactive';
 
 import type { AnySlotPluggable, AnySlotPlugin, IPluginItem, Slots } from '../types';
 
 import { EL } from '../consts';
-import { isPluggablesEqual } from '../utils';
 import { useDeferredUnmount, useStatic } from './base';
 import { useStateOf, useStateValue } from './reactive';
 
@@ -17,13 +16,13 @@ type PluginChannel = Exclude<keyof IPluginItem, 'config'>;
 
 type PluginList<T extends PluginChannel> = NonNullable<IPluginItem[T]>;
 
-type PackPluggable = IPluggable<IPluginWithConfig, unknown>;
+type PackPluggable = IPluggable<IPluginWithConfig, unknown> | MapperPluggable;
 
 const configurePluggable = (
   pluggable: PackPluggable,
   config: PluginConfigs | undefined,
 ): PackPluggable => {
-  if (Array.isArray(pluggable) || !config || !has(config, [pluggable.key])) {
+  if (isArray(pluggable) || !('key' in pluggable) || !config || !has(config, [pluggable.key])) {
     return pluggable;
   }
 
