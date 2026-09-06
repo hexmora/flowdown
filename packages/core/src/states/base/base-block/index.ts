@@ -2,7 +2,7 @@ import type { IReactiveState, IReadableClosure } from 'reactive';
 
 import { BaseStateClosure, toClosure } from 'reactive';
 
-import type { IRangeState } from '../range';
+import type { IRangeState } from '../../atoms';
 import type {
   BaseBlockItemInputs,
   BlockItemClass,

@@ -14,6 +14,7 @@ import {
   useClearable,
   useCombineMap,
   useCreate,
+  useCurrent,
   useDefaults,
   useDefaultsFalsy,
   useMap,
@@ -30,6 +31,218 @@ const Counter = ({ value }: { value: number }) => {
 };
 
 describe('state closure hooks', () => {
+  test('initializes current values lazily once per rendered closure', () => {
+    const source = MutableState.of(1);
+
+    const create = vi.fn(() => new Map<string, number>());
+
+    const Mapper = (value: number) => {
+      const entries = useCurrent(create);
+
+      expectTypeOf(entries).toEqualTypeOf<Map<string, number>>();
+
+      entries.set('value', value);
+
+      return entries;
+    };
+
+    const first = render(S([Mapper, source]));
+
+    const second = render(S([Mapper, source]));
+
+    const unused = render(S([Mapper, source]));
+
+    expect(create).not.toHaveBeenCalled();
+
+    const initial = first.value.value;
+
+    source.next(2);
+
+    expect(first.value.value).toBe(initial);
+
+    expect(initial.get('value')).toBe(2);
+
+    expect(create).toHaveBeenCalledOnce();
+
+    expect(second.value.value).not.toBe(initial);
+
+    expect(second.value.value.get('value')).toBe(2);
+
+    expect(create).toHaveBeenCalledTimes(2);
+
+    first.destroy();
+
+    second.destroy();
+
+    unused.destroy();
+
+    expect(create).toHaveBeenCalledTimes(2);
+
+    source.destroy();
+  });
+
+  test.each([undefined, null, false, 0, ''] as const)(
+    'retains a current value of %s without rerunning its initializer',
+    (value) => {
+      const source = MutableState.of(1);
+
+      const create = vi.fn(() => value);
+
+      const closure = render(S([(_value: number) => useCurrent(create), source]));
+
+      expect(closure.value.value).toBe(value);
+
+      source.next(2);
+
+      expect(closure.value.value).toBe(value);
+
+      expect(create).toHaveBeenCalledOnce();
+
+      closure.destroy();
+
+      source.destroy();
+    },
+  );
+
+  test('retains function values without calling them', () => {
+    const source = MutableState.of(1);
+
+    const callback = vi.fn(() => 'value');
+
+    const create = vi.fn(() => callback);
+
+    const closure = render(S([(_value: number) => useCurrent(create), source]));
+
+    expect(closure.value.value).toBe(callback);
+
+    source.next(2);
+
+    expect(closure.value.value).toBe(callback);
+
+    expect(create).toHaveBeenCalledOnce();
+
+    expect(callback).not.toHaveBeenCalled();
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('keeps hooks outside initializers and restores the surrounding mapper context', () => {
+    const source = MutableState.of(1);
+
+    const closure = render(
+      S([
+        (value: number) => {
+          const current = useCurrent(() => {
+            expect(() => useRef(0)).toThrow('useRef can only be used in mapper functions');
+
+            return value;
+          });
+
+          const next = useCurrent(() => value + 1);
+
+          return [current, next];
+        },
+        source,
+      ]),
+    );
+
+    expect(closure.value.value).toEqual([1, 2]);
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('releases owned resources when a current initializer fails', () => {
+    const cleanup = vi.fn();
+
+    const failure = new Error('Initialization failed.');
+
+    const closure = render(
+      S([
+        () => {
+          useClearable(cleanup);
+
+          return useCurrent(() => {
+            throw failure;
+          });
+        },
+        {},
+      ]),
+    );
+
+    expect(() => closure.value).toThrow(failure);
+
+    expect(cleanup).toHaveBeenCalledOnce();
+
+    closure.destroy();
+
+    expect(cleanup).toHaveBeenCalledOnce();
+  });
+
+  test.each([false, true])('rejects changing the number of current slots from %s', (extra) => {
+    const source = MutableState.of(extra);
+
+    const closure = render(
+      S([
+        (includeExtra: boolean) => {
+          useCurrent(() => 0);
+
+          if (includeExtra) {
+            useCurrent(() => 1);
+          }
+
+          return includeExtra;
+        },
+        source,
+      ]),
+    );
+
+    expect(closure.value.value).toBe(extra);
+
+    expect(() => source.next(!extra)).toThrow('same order');
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('distinguishes initialized current values from mutable ref slots', () => {
+    const source = MutableState.of(false);
+
+    const closure = render(
+      S([(current: boolean) => (current ? useCurrent(() => 0) : useRef(0)), source]),
+    );
+
+    expect(closure.value.value).toEqual({ current: 0 });
+
+    expect(() => source.next(true)).toThrow('same order');
+
+    closure.destroy();
+
+    source.destroy();
+  });
+
+  test('rejects current initializers in once functions', () => {
+    const create = vi.fn(() => 1);
+
+    const Build = once(() => {
+      useCurrent(create);
+
+      return ReactiveState.of(1);
+    });
+
+    const closure = render(S([Build, {}]));
+
+    expect(() => closure.value).toThrow('useCurrent can only be used in mapper functions');
+
+    expect(create).not.toHaveBeenCalled();
+
+    closure.destroy();
+  });
+
   test('keeps mapper refs across calls and isolates them between rendered closures', () => {
     const source = MutableState.of(1);
 
@@ -284,6 +497,7 @@ describe('state closure hooks', () => {
     ['useDefaults', () => useDefaults(undefined, 1), 'once'],
     ['useDefaultsFalsy', () => useDefaultsFalsy(false, 1), 'once'],
     ['useRef', () => useRef(1), 'mapper'],
+    ['useCurrent', () => useCurrent(() => 1), 'mapper'],
     ['useClearable', () => useClearable(() => {}), 'mapper or once'],
   ] as const)('rejects %s outside its supported function context', (name, hook, usage) => {
     expect(hook).toThrow(`${name} can only be used in ${usage} functions`);

@@ -1,3 +1,4 @@
+import type { StateClosureResult } from './exports/render';
 import type { IReadableClosure, StateClosureDirectSource, StateClosureSource } from './type';
 
 import { isReactiveStateLike } from '../reactive-state';
@@ -61,4 +62,19 @@ export const resolveSource = <T>(source: StateClosureSource<T>): ResolvedStateCl
   }
 
   return { type: 'direct', source: source as StateClosureDirectSource<T> };
+};
+
+export const resolveResult = <T>(result: StateClosureResult<T>): ResolvedStateClosureSource<T> => {
+  if (result === null) {
+    return { type: 'direct', source: null as T };
+  }
+
+  const source =
+    isImmediateDescriptor<T>(result) ||
+    isReactiveStateLike<T>(result) ||
+    isReadableClosure<T>(result)
+      ? result
+      : render<T>(result);
+
+  return resolveSource(source);
 };

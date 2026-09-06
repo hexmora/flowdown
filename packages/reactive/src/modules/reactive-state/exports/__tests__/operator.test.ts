@@ -3,6 +3,9 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { IReactiveState } from '../../type';
 
+import { assert } from '../../../../utils';
+import { BatchScheduler } from '../../../batch-scheduler';
+import { ReactiveState } from '../base';
 import {
   combineMapState,
   combineState,
@@ -10,10 +13,7 @@ import {
   mapState,
   toReactiveState,
   toState,
-} from '..';
-import { assert } from '../../../../utils';
-import { BatchScheduler } from '../../../batch-scheduler';
-import { ReactiveState } from '../base';
+} from '../index';
 
 const assertType = <T>(_value: T) => undefined;
 
@@ -328,6 +328,34 @@ describe('combineMapState', () => {
 });
 
 describe('combineState', () => {
+  test('keeps mapped and combined priorities linked to their current sources', () => {
+    const source = ReactiveState.of(1);
+
+    const mapped = mapState(source, (value) => value + 1);
+
+    const combined = combineState(source, mapped);
+
+    expect(BatchScheduler.getPriority(mapped)).toBe(1);
+
+    expect(BatchScheduler.getPriority(combined)).toBe(2);
+
+    BatchScheduler.setPriority(source, 10);
+
+    expect(BatchScheduler.getPriority(mapped)).toBe(11);
+
+    expect(BatchScheduler.getPriority(combined)).toBe(12);
+
+    BatchScheduler.setPriority(source, NaN);
+
+    expect(BatchScheduler.getPriority(combined)).toBeNaN();
+
+    combined.destroy();
+
+    mapped.destroy();
+
+    source.destroy();
+  });
+
   test('combines direct values as a completed tuple state', () => {
     const combined = combineState(1, 'value', true);
 

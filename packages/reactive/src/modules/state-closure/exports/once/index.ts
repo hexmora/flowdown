@@ -1,9 +1,9 @@
 import { isFunction } from 'lodash-es';
 
-import type { StateClosureResult } from '../render';
+import type { StateClosureResultNode } from '../render';
 
 // oxlint-disable-next-line typescript/no-explicit-any
-type StateFactory = (inputs: any) => StateClosureResult<any>;
+type StateFactory = (inputs: any) => StateClosureResultNode;
 
 const onceFunction = /*#__PURE__*/ Symbol('onceFunction');
 

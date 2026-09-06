@@ -1,11 +1,12 @@
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 import type { ReactNode } from 'react';
 
+import { first } from 'lodash-es';
 import { describe, expect, test } from 'vitest';
 
 import type { FlowdownProps, IPluginItem } from '../../types';
 
-import { isPluggablesEqual, isPropsEqual } from '..';
+import { isPluggablesEqual, isPropsEqual } from '../index';
 
 class TestPlugin implements IPluginWithConfig {
   static readonly key = 'test-plugin';
@@ -54,7 +55,7 @@ describe('comparison utilities', () => {
     const remark = [TestPlugin, { nested: { enabled: true } }] as TestPluggable;
     const base: FlowdownProps = {
       className: 'markdown',
-      config: {},
+      build: {},
       patches: [{ key: 'inline', range: [0, 2], render: renderPatch }],
       plugins: [
         {
@@ -67,7 +68,7 @@ describe('comparison utilities', () => {
     };
     const equivalent: FlowdownProps = {
       className: 'markdown',
-      config: {
+      build: {
         footnote: false,
         repair: false,
         repairEnding: false,
@@ -93,7 +94,8 @@ describe('comparison utilities', () => {
     expect(isPropsEqual(base, { ...equivalent, text: 'changed' })).toBe(false);
     expect(isPropsEqual(base, { ...equivalent, className: 'changed' })).toBe(false);
     expect(isPropsEqual(base, { ...equivalent, style: { color: 'blue' } })).toBe(false);
-    expect(isPropsEqual(base, { ...equivalent, config: { tex: true } })).toBe(false);
+
+    expect(isPropsEqual(base, { ...equivalent, build: { tex: true } })).toBe(false);
     expect(
       isPropsEqual(base, {
         ...equivalent,
@@ -106,10 +108,57 @@ describe('comparison utilities', () => {
         plugins: [
           {
             config: { [TestPlugin.key]: { nested: { enabled: false } } },
-            remarks: equivalent.plugins?.[0]?.remarks,
+            remarks: first(equivalent.plugins)?.remarks,
           },
         ],
       }),
     ).toBe(false);
+  });
+
+  test('compares smoothing enablement and ticker choices', () => {
+    const base: FlowdownProps = { text: 'content' };
+
+    const smooth: FlowdownProps = {
+      ...base,
+      smooth: { enabled: true, ticker: 'raf', scheduler: 'spring' },
+    };
+
+    expect(isPropsEqual(base, { ...base, smooth: false })).toBe(true);
+
+    expect(isPropsEqual(base, { ...base, smooth: true })).toBe(false);
+
+    expect(
+      isPropsEqual(smooth, {
+        ...base,
+        smooth: { enabled: true, ticker: 'raf', scheduler: 'spring' },
+      }),
+    ).toBe(true);
+
+    expect(
+      isPropsEqual(smooth, {
+        ...base,
+        smooth: { enabled: false, ticker: 'raf', scheduler: 'spring' },
+      }),
+    ).toBe(false);
+
+    expect(
+      isPropsEqual(smooth, {
+        ...base,
+        smooth: { enabled: true, ticker: 'interval', scheduler: 'spring' },
+      }),
+    ).toBe(false);
+  });
+
+  test('short-circuits identical props before reading their values', () => {
+    const props = new Proxy<FlowdownProps>(
+      { text: 'content' },
+      {
+        get: () => {
+          throw new Error('Prop values must not be read.');
+        },
+      },
+    );
+
+    expect(isPropsEqual(props, props)).toBe(true);
   });
 });

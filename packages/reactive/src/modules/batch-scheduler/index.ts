@@ -1,4 +1,4 @@
-import { isObject } from 'lodash-es';
+import { isFunction, isObject, isUndefined } from 'lodash-es';
 
 type BatchRunner<T> = () => T;
 
@@ -8,7 +8,9 @@ type BatchUpdate = () => void;
 export class BatchScheduler {
   private constructor() {}
 
-  private static readonly priorities = /*#__PURE__*/ new WeakMap<object, number>();
+  private static readonly priorities = /*#__PURE__*/ new WeakMap<object, number | (() => number)>();
+
+  private static priorityCache: Map<object, number> | null = null;
 
   private static readonly pendingUpdates = /*#__PURE__*/ new Map<unknown, BatchUpdate>();
 
@@ -34,7 +36,10 @@ export class BatchScheduler {
     this.flush();
   }
 
-  static setPriority(handler: unknown, priority: number) {
+  /**
+   * Assigns a priority or resolves it from current dependencies when selecting queued work.
+   */
+  static setPriority(handler: unknown, priority: number | (() => number)) {
     if (!isObject(handler)) {
       throw new TypeError('Batch scheduler handlers must be objects or functions.');
     }
@@ -47,15 +52,41 @@ export class BatchScheduler {
       return 0;
     }
 
-    return this.priorities.get(handler) ?? 0;
+    const previousCache = this.priorityCache;
+
+    const cache = (this.priorityCache ??= new Map());
+
+    try {
+      const cached = cache.get(handler);
+
+      if (!isUndefined(cached)) {
+        return cached;
+      }
+
+      const priority = this.priorities.get(handler) ?? 0;
+
+      const resolved = isFunction(priority) ? priority() : priority;
+
+      cache.set(handler, resolved);
+
+      return resolved;
+    } finally {
+      this.priorityCache = previousCache;
+    }
   }
 
   private static takeNextUpdate(): BatchUpdate | null {
     let nextEntry: [unknown, BatchUpdate] | null = null;
 
+    let nextPriority = 0;
+
     for (const entry of this.pendingUpdates) {
-      if (!nextEntry || this.getPriority(entry[0]) < this.getPriority(nextEntry[0])) {
+      const priority = this.getPriority(entry[0]);
+
+      if (!nextEntry || priority < nextPriority) {
         nextEntry = entry;
+
+        nextPriority = priority;
       }
     }
 

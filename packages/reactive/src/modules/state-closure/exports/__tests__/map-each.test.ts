@@ -22,6 +22,40 @@ import {
 } from '../../../..';
 
 describe('mapEachClosure', () => {
+  test('keeps downstream priorities linked to later entries and their dependencies', () => {
+    const source = MutableState.of([0]);
+
+    const value = MutableState.of(2);
+
+    const child = mapClosure(value, (current) => current);
+
+    const items = mapEachClosure(source, (_item, index) =>
+      index === 0 ? ReactiveState.of(0) : child,
+    );
+
+    const output = mapClosure(items, (current) => current);
+
+    const initial = BatchScheduler.getPriority(output.value);
+
+    source.next([0, 1]);
+
+    expect(output.value.value).toEqual([0, 2]);
+
+    expect(BatchScheduler.getPriority(output.value)).toBeGreaterThan(initial);
+
+    BatchScheduler.setPriority(value, 20);
+
+    expect(BatchScheduler.getPriority(output.value)).toBeGreaterThan(20);
+
+    output.destroy();
+
+    items.destroy();
+
+    source.destroy();
+
+    value.destroy();
+  });
+
   test('defers reading the list and constructing its children until the first value access', () => {
     const started = vi.fn();
 

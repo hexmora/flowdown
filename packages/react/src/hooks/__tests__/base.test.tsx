@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
-import { useStatic } from '..';
+import { useStatic } from '../index';
 
 describe('useStatic', () => {
   test('creates one value for the lifetime of the mounted hook', () => {

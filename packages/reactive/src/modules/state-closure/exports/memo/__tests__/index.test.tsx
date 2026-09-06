@@ -14,7 +14,7 @@ import {
   ReactiveState,
   render,
   S,
-  useRef,
+  useCurrent,
 } from '../../../../..';
 
 function calculate(this: { scale: number }, value: number) {
@@ -147,26 +147,27 @@ describe('mapper memoization', () => {
     source.destroy();
   });
 
-  test('keeps input caches and refs local to each closure', () => {
+  test('keeps input caches and current values local to each closure', () => {
     const source = MutableState.of(1);
 
     const Mapper = memo(({ value }: { value: number }) => {
-      const ref = useRef({ calls: 0 });
+      const current = useCurrent(() => ({ calls: 0 }));
 
-      ref.current.calls += 1;
+      current.calls += 1;
 
-      return { value, ref: ref.current };
+      return { value, current };
     });
 
     const first = render(<Mapper value={source} />);
     const second = render(<Mapper value={source} />);
 
-    expect(first.value.value.ref).not.toBe(second.value.value.ref);
+    expect(first.value.value.current).not.toBe(second.value.value.current);
 
     source.next(2);
 
-    expect(first.value.value.ref.calls).toBe(2);
-    expect(second.value.value.ref.calls).toBe(2);
+    expect(first.value.value.current.calls).toBe(2);
+
+    expect(second.value.value.current.calls).toBe(2);
 
     first.destroy();
     second.destroy();

@@ -42,7 +42,6 @@ import type { HastRoot } from '../../../typings';
 import type { IBlockState } from '../../base';
 import type { BlockCompilerConfig } from '../../hast';
 
-import { Core, type IPatchItem } from '..';
 import {
   BaseRenderer,
   BaseRenderPlugin,
@@ -50,6 +49,7 @@ import {
   type IRenderPluggable,
   type IRenderPlugin,
 } from '../../../externals';
+import { Core, type IPatchItem } from '../index';
 
 interface AppendRemarkPluginConfig {
   suffix?: string;
@@ -279,7 +279,8 @@ const getObserverCount = (state: IReactiveState<unknown>): number => {
 const setupCore = (initialText = 'base') => {
   const text = MutableState.of(initialText);
   const patches = MutableState.of<IPatchItem<RenderedBlock>[]>([]);
-  const config = MutableState.of(DEFAULT_CONFIG);
+
+  const build = MutableState.of(DEFAULT_CONFIG);
   const remarks = MutableState.of<IPluggable<IRemarkPlugin, unknown>[]>([
     [AppendRemarkPlugin, { suffix: '|remark' }] as unknown as IPluggable<IRemarkPlugin, unknown>,
   ]);
@@ -295,7 +296,7 @@ const setupCore = (initialText = 'base') => {
         Renderer: D(TestRenderer),
         text,
         patches,
-        config,
+        build,
         renders,
         remarks,
         rehypes,
@@ -305,7 +306,7 @@ const setupCore = (initialText = 'base') => {
   );
 
   return {
-    config,
+    build,
     patches,
     rehypes,
     remarks,
@@ -347,7 +348,7 @@ describe('Core', () => {
           Renderer: D(TestRenderer),
           text: ReactiveState.of('base'),
           patches: [],
-          config: DEFAULT_CONFIG,
+          build: DEFAULT_CONFIG,
           renders: [],
         },
       ]),
@@ -407,7 +408,7 @@ describe('Core', () => {
     expect(AppendRehypePlugin.destroyed).toHaveBeenCalledOnce();
   });
 
-  test('gates math and dangling-footnote behavior through core config', () => {
+  test('gates math and dangling-footnote behavior through build options', () => {
     const math = setupCore('$x$');
 
     math.remarks.next([]);
@@ -420,7 +421,7 @@ describe('Core', () => {
       }),
     ).toBeUndefined();
 
-    math.config.next({ ...DEFAULT_CONFIG, tex: true });
+    math.build.next({ ...DEFAULT_CONFIG, tex: true });
 
     expect(
       findElement(getFirstBlockTree(math.state), (element) => {
@@ -433,7 +434,8 @@ describe('Core', () => {
     footnote.remarks.next([]);
     footnote.rehypes.next([]);
     footnote.repairs.next([]);
-    footnote.config.next({
+
+    footnote.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -442,7 +444,7 @@ describe('Core', () => {
 
     const disabled = collectText(getFirstBlockTree(footnote.state));
 
-    footnote.config.next({ ...footnote.config.value, footnote: true });
+    footnote.build.next({ ...footnote.build.value, footnote: true });
 
     const enabled = collectText(getFirstBlockTree(footnote.state));
 
@@ -500,7 +502,8 @@ describe('Core', () => {
     ]);
     math.rehypes.next([]);
     math.repairs.next([]);
-    math.config.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
+
+    math.build.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
 
     expect(
       findElement(getFirstBlockTree(math.state), (element) => {
@@ -514,7 +517,8 @@ describe('Core', () => {
         unknown
       >,
     ]);
-    math.config.next({
+
+    math.build.next({
       ...DEFAULT_CONFIG,
       tex: true,
       repair: true,
@@ -536,7 +540,8 @@ describe('Core', () => {
       >,
     ]);
     ending.rehypes.next([]);
-    ending.config.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
+
+    ending.build.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
 
     const values = ending.state.value.value.map((block) => collectText(block.value.value));
 
@@ -551,7 +556,7 @@ describe('Core', () => {
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base');
 
-    harness.config.next({
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -586,7 +591,8 @@ describe('Core', () => {
         unknown
       >,
     ]);
-    harness.config.next({
+
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,
@@ -618,7 +624,7 @@ describe('Core', () => {
     const inputs = [
       harness.text,
       harness.patches,
-      harness.config,
+      harness.build,
       harness.remarks,
       harness.rehypes,
       harness.renders,
@@ -633,7 +639,8 @@ describe('Core', () => {
     expect(harness.state.value).toBeDefined();
     expect(harness.text.closed).toBe(false);
     expect(harness.patches.closed).toBe(false);
-    expect(harness.config.closed).toBe(false);
+
+    expect(harness.build.closed).toBe(false);
     expect(harness.remarks.closed).toBe(false);
     expect(harness.rehypes.closed).toBe(false);
     expect(harness.renders.closed).toBe(false);
@@ -675,7 +682,8 @@ describe('Core', () => {
 
     harness.remarks.next([]);
     harness.rehypes.next([]);
-    harness.config.next({
+
+    harness.build.next({
       ...DEFAULT_CONFIG,
       repair: true,
       repairEnding: true,

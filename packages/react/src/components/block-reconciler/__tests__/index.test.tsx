@@ -9,8 +9,8 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { IReactRenderPlugin } from '../../../types';
 
-import { BlockReconciler } from '..';
 import { PatchReconciler } from '../../patch-reconciler';
+import { BlockReconciler } from '../index';
 
 const createBlock = () =>
   new BlockItem({

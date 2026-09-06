@@ -19,6 +19,15 @@ const config: StorybookConfig = {
           development: false,
         },
       },
+      optimizeDeps: {
+        rolldownOptions: {
+          transform: {
+            jsx: {
+              development: false,
+            },
+          },
+        },
+      },
     });
   },
 };

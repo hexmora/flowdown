@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { Flowdown } from '..';
+import { Flowdown } from '../index';
 
 const isCrossComponentRenderWarning = (value: unknown) =>
   typeof value === 'string' &&

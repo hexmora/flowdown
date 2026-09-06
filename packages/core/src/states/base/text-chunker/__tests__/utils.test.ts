@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash-es';
 import { BatchScheduler, type IReactiveState, MutableState, render, S } from 'reactive';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import { type IBlockSection, type IRawPatchItem, TextChunker } from '..';
+import { type IBlockSection, type IRawPatchItem, TextChunker } from '../index';
 import { type ChunkedPatch, chunkPatchesByTexts, chunkTextOfMarkdown } from '../utils';
 
 type ChunkCase = {

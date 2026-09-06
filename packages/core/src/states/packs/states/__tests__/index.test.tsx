@@ -35,9 +35,7 @@ import {
   RemarkPluggablesMapper,
   RenderPatchesMapper,
   RepairPluggablesMapper,
-} from '..';
-import { isInputsEqual as isRehypeEqual } from '../rehype-pluggables/utils';
-import { isInputsEqual as isRepairEqual } from '../repair-pluggables/utils';
+} from '../index';
 
 const DEFAULT_CONFIG: BlockCompilerConfig = {
   repair: false,
@@ -51,23 +49,45 @@ const getPluggableClass = <T extends IPluginWithConfig>(pluggable: IPluggable<T,
 };
 
 describe('pack state mappers', () => {
-  test.each([
-    { mapper: 'rehype', isInputsEqual: isRehypeEqual },
-    { mapper: 'repair', isInputsEqual: isRepairEqual },
-  ])('compares the full $mapper configuration', ({ isInputsEqual }) => {
-    const inputs = { config: DEFAULT_CONFIG, extras: [] };
+  test.each(['rehype', 'repair'] as const)(
+    'preserves equal %s outputs when unrelated configuration changes',
+    (mapper) => {
+      const config = MutableState.of(DEFAULT_CONFIG);
 
-    expect(isInputsEqual(inputs, { config: { ...DEFAULT_CONFIG }, extras: [] })).toBe(true);
+      const extras = MutableState.of([]);
 
-    for (const key of ['repair', 'repairEnding', 'footnote', 'tex']) {
-      expect(
-        isInputsEqual(inputs, {
-          ...inputs,
-          config: { ...DEFAULT_CONFIG, [key]: true },
-        }),
-      ).toBe(false);
-    }
-  });
+      const state =
+        mapper === 'rehype'
+          ? render(S([RehypePluggablesMapper, { config, extras }]))
+          : render(S([RepairPluggablesMapper, { config, extras }]));
+
+      const initial = state.value.value;
+
+      const next = vi.fn();
+
+      state.value.subscribe(next);
+
+      next.mockClear();
+
+      config.next({ ...DEFAULT_CONFIG, tex: true });
+
+      expect(state.value.value).toBe(initial);
+
+      expect(next).not.toHaveBeenCalled();
+
+      config.next({ ...DEFAULT_CONFIG, footnote: true, repair: true });
+
+      expect(state.value.value).not.toBe(initial);
+
+      expect(next).toHaveBeenCalledOnce();
+
+      state.destroy();
+
+      config.destroy();
+
+      extras.destroy();
+    },
+  );
 
   test('maps raw and render patches independently', () => {
     const renderFirst = vi.fn(() => 'first');

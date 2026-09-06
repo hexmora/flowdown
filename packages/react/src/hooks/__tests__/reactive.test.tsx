@@ -4,7 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { MutableState } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import { useStateOf, useStateValue } from '..';
+import { useStateOf, useStateValue } from '../index';
 
 interface ComparableValue {
   id: number;

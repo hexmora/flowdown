@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { Destructible, type DestructibleTarget } from '..';
+import { Destructible, type DestructibleTarget } from '../index';
 
 class TestDestructible extends Destructible {
   track<T extends DestructibleTarget>(value: T): T {

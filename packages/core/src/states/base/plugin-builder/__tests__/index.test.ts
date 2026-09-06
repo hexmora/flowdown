@@ -10,7 +10,7 @@ import { D, type IReactiveState, render, S, toReactiveState } from 'reactive';
 import { BehaviorSubject } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
-import { isPluggableEqual, PluginBuilder } from '..';
+import { isPluggableEqual, PluginBuilder } from '../index';
 import { buildPluggables } from '../utils';
 
 interface TestPluginConfig extends IBasePluginConfig {
@@ -120,6 +120,18 @@ describe('PluginBuilder', () => {
     expect(isPluggableEqual([Plugin, { source }], [Plugin, { source }])).toBe(true);
     expect(isPluggableEqual([Plugin, { source }], [Plugin, { source: other }])).toBe(false);
     expect(read).not.toHaveBeenCalled();
+  });
+
+  test('does not read options when pluggables are the same reference', () => {
+    const Plugin = createPluginClass('same-reference', vi.fn());
+
+    const tuple = new Proxy<[PluginClass<TestPlugin, unknown>, unknown]>([Plugin, {}], {
+      get: () => {
+        throw new Error('Unexpected tuple access.');
+      },
+    });
+
+    expect(isPluggableEqual(tuple, tuple)).toBe(true);
   });
 
   test('buildPluggables returns one instance or an array based on argument count', () => {

@@ -43,7 +43,7 @@ const createMappedState = <A, B>(
     distinctor,
   });
 
-  BatchScheduler.setPriority(state, BatchScheduler.getPriority(source) + 1);
+  BatchScheduler.setPriority(state, () => BatchScheduler.getPriority(source) + 1);
 
   return state;
 };
@@ -281,11 +281,13 @@ export const combineMapState = <const TSources extends [unknown, ...unknown[]], 
     distinctor,
   });
 
-  const sourcePriorities = states.map((source) => BatchScheduler.getPriority(source));
+  BatchScheduler.setPriority(state, () => {
+    const sourcePriorities = states.map((source) => BatchScheduler.getPriority(source));
 
-  const sourcePriority = sourcePriorities.some(isNaN) ? NaN : (max(sourcePriorities) ?? 0);
+    const sourcePriority = sourcePriorities.some(isNaN) ? NaN : (max(sourcePriorities) ?? 0);
 
-  BatchScheduler.setPriority(state, sourcePriority + 1);
+    return sourcePriority + 1;
+  });
 
   return state;
 };

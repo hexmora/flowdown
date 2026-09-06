@@ -5,7 +5,7 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import type { FlowdownProps } from '../types';
 
-import * as ReactEntry from '..';
+import * as ReactEntry from '../index';
 
 describe('package exports', () => {
   test('keeps the root runtime surface focused on Flowdown', () => {
@@ -19,5 +19,11 @@ describe('package exports', () => {
     expectTypeOf<RootExport>().toEqualTypeOf<'Flowdown'>();
     expectTypeOf<PublicProps>().toMatchTypeOf<FlowdownProps>();
     expectTypeOf<FlowdownProps>().toMatchTypeOf<PublicProps>();
+
+    expectTypeOf<'build' extends keyof PublicProps ? true : false>().toEqualTypeOf<true>();
+
+    expectTypeOf<'smooth' extends keyof PublicProps ? true : false>().toEqualTypeOf<true>();
+
+    expectTypeOf<'config' extends keyof PublicProps ? true : false>().toEqualTypeOf<false>();
   });
 });

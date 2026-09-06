@@ -4,8 +4,8 @@ import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { ReactiveState } from '../../reactive-state';
 
-import { MutableState } from '..';
 import { BatchScheduler } from '../../batch-scheduler';
+import { MutableState } from '../index';
 
 describe('MutableState', () => {
   test('returns a shared readonly reactive state view', () => {

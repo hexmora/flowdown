@@ -12,7 +12,13 @@ import type {
   StateValues,
 } from '../../reactive-state';
 import type { IReadableClosure, ListEntry, StateClosureSource } from '../type';
-import type { BuiltClosure, StateClosureDescriptor, StateClosureResult } from './render';
+import type {
+  BuiltClosure,
+  StateClosureDescriptor,
+  StateClosureResult,
+  StateClosureResultNode,
+  StateClosureResultValue,
+} from './render';
 
 import { assert } from '../../../utils';
 import { BatchScheduler } from '../../batch-scheduler';
@@ -25,8 +31,14 @@ import {
   mapState,
   ReactiveState,
   toReactiveState,
+  toState,
 } from '../../reactive-state';
-import { isResolvedClosureSource, isResolvedImmediateSource, resolveSource } from '../utils';
+import {
+  isResolvedClosureSource,
+  isResolvedImmediateSource,
+  resolveResult,
+  resolveSource,
+} from '../utils';
 import { withStateClosureHookRuntime } from './hooks/runtime/utils';
 import { isStateClosureDescriptor, render } from './render';
 import {
@@ -58,6 +70,160 @@ export const mapClosure = <S, R>(
   );
 };
 
+/**
+ * Follows the latest mapped child and releases the previous child graph on replacement.
+ */
+export function switchMapClosure<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => R & StateClosureResultNode,
+  distinctor?: Distinctor<StateClosureResultValue<R>>,
+): IReadableClosure<StateClosureResultValue<R>>;
+export function switchMapClosure<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => StateClosureResult<R>,
+  distinctor?: Distinctor<R>,
+): IReadableClosure<R>;
+export function switchMapClosure<S, R>(
+  source: S,
+  mapper: (value: StateValue<S>) => StateClosureResult<R>,
+  distinctor?: Distinctor<R>,
+): IReadableClosure<R> {
+  const closure = FactoryReadableClosure.create(() => {
+    const input = toState(source);
+
+    const handleCreate = (value: StateValue<S>) =>
+      ownReadableClosure(
+        scope,
+        FactoryReadableClosure.create(() =>
+          render<R>(withStateClosureHookRuntime(null, () => mapper(value))),
+        ),
+      );
+
+    let previous = input.value;
+
+    let current = handleCreate(previous);
+
+    let inner = current.value;
+
+    const state: ReactiveState<R> = new ReactiveState({
+      initial: inner.value,
+
+      distinctor,
+
+      emitter: (observer) => {
+        const subscriptions = new Subscription();
+
+        let subscription: Subscription | null = null;
+
+        let stopped = false;
+
+        const handleError = (error: unknown) => {
+          if (!stopped) {
+            stopped = true;
+
+            observer.error(error);
+          }
+        };
+
+        const handleSchedule = () => {
+          BatchScheduler.schedule(handleUpdate);
+        };
+
+        const handleSubscribe = () => {
+          subscription = inner.subscribe({
+            next: handleSchedule,
+
+            error: handleError,
+
+            complete: handleSchedule,
+          });
+        };
+
+        const handleUpdate = () => {
+          if (stopped) {
+            return;
+          }
+
+          try {
+            const value = input.value;
+
+            if (!Object.is(value, previous)) {
+              const next = handleCreate(value);
+
+              const nextState = next.value;
+
+              subscription?.unsubscribe();
+
+              releaseReadableClosure(scope, current);
+
+              previous = value;
+
+              current = next;
+
+              inner = nextState;
+
+              handleSubscribe();
+            }
+
+            observer.next(inner.value);
+
+            if (input.closed && inner.closed) {
+              stopped = true;
+
+              observer.complete();
+            }
+          } catch (error) {
+            handleError(error);
+          }
+        };
+
+        BatchScheduler.setPriority(handleUpdate, () => BatchScheduler.getPriority(state));
+
+        BatchScheduler.batch(() => {
+          handleSubscribe();
+
+          subscriptions.add(
+            input.subscribe({
+              next: handleSchedule,
+
+              error: handleError,
+
+              complete: handleSchedule,
+            }),
+          );
+        });
+
+        return () => {
+          stopped = true;
+
+          subscriptions.unsubscribe();
+
+          subscription?.unsubscribe();
+
+          releaseReadableClosure(scope, current);
+        };
+      },
+    });
+
+    BatchScheduler.setPriority(
+      state,
+      () => (max([input, inner].map((value) => BatchScheduler.getPriority(value))) ?? 0) + 1,
+    );
+
+    detachWithDescriptorScope(scope, () => state.destroy());
+
+    return state;
+  });
+
+  const scope = getReadableClosureScope(closure);
+
+  if (isReadableClosure(source)) {
+    ownReadableClosure(scope, source);
+  }
+
+  return closure;
+}
+
 export const combineMapClosure = <const TSources extends [unknown, ...unknown[]], R>(
   sources: [...TSources],
   mapper: StateMapper<StateValues<TSources>, R>,
@@ -84,7 +250,7 @@ export const mapEachClosure = <T, R>(
     const createEntry = (value: T, index: number): ListEntry<T, R> => {
       const item = new MutableState({ initial: value, distinctor: itemDistinctor });
 
-      BatchScheduler.setPriority(item, BatchScheduler.getPriority(sourceState) + 1);
+      BatchScheduler.setPriority(item, () => BatchScheduler.getPriority(sourceState) + 1);
 
       const readable = FactoryReadableClosure.create(() => item);
 
@@ -190,8 +356,6 @@ export const mapEachClosure = <T, R>(
 
             previousItems = items;
 
-            updatePriority();
-
             BatchScheduler.batch(() => {
               entries.forEach((entry, index) => entry.input.next(items[index]));
               created.forEach(connectEntry);
@@ -232,15 +396,13 @@ export const mapEachClosure = <T, R>(
       },
     });
 
-    const updatePriority = () => {
+    BatchScheduler.setPriority(state, () => {
       const priorities = [sourceState, ...entries.map((entry) => entry.state)].map((value) =>
         BatchScheduler.getPriority(value),
       );
 
-      BatchScheduler.setPriority(state, (max(priorities) ?? 0) + 1);
-    };
-
-    updatePriority();
+      return (max(priorities) ?? 0) + 1;
+    });
 
     detachWithDescriptorScope(scope, () => state.destroy());
 
@@ -267,6 +429,10 @@ export abstract class BaseStateClosure<T, TInputs = void>
     super();
 
     this.inputs = inputs;
+
+    BatchScheduler.setPriority(this, () =>
+      this._value ? BatchScheduler.getPriority(this._value) : 0,
+    );
 
     const scope = consumeDescriptorScope();
 
@@ -301,7 +467,7 @@ export abstract class BaseStateClosure<T, TInputs = void>
     assert(!this.destroyed, 'Cannot set up a destroyed state closure.');
 
     try {
-      const resolvedSource = resolveSource(withStateClosureHookRuntime(null, () => this.render()));
+      const resolvedSource = resolveResult(withStateClosureHookRuntime(null, () => this.render()));
 
       const directSource = isResolvedClosureSource(resolvedSource)
         ? this.own(resolvedSource.source).value
@@ -317,7 +483,19 @@ export abstract class BaseStateClosure<T, TInputs = void>
       this.subject = new BehaviorSubject(initial);
 
       if (reactiveSource) {
-        const subscription = reactiveSource.subscribe(this.subject);
+        const subject = this.subject;
+
+        let subscribing = true;
+
+        const subscription = reactiveSource.subscribe({
+          next: (value) => subject.next(subscribing ? reactiveSource.value : value),
+
+          error: (error) => subject.error(error),
+
+          complete: () => subject.complete(),
+        });
+
+        subscribing = false;
 
         detachWithDescriptorScope(getReadableClosureScope(this), () => subscription.unsubscribe());
       }
@@ -327,7 +505,10 @@ export abstract class BaseStateClosure<T, TInputs = void>
       this._value = this.clearable(toReactiveState(this.subject));
 
       if (reactiveSource) {
-        BatchScheduler.setPriority(this._value, BatchScheduler.getPriority(reactiveSource) + 1);
+        BatchScheduler.setPriority(
+          this._value,
+          () => BatchScheduler.getPriority(reactiveSource) + 1,
+        );
       }
 
       return this._value;
@@ -358,6 +539,24 @@ export abstract class BaseStateClosure<T, TInputs = void>
     distinctor?: Distinctor<R>,
   ): IReadableClosure<R> {
     return this.own(mapClosure(source, mapper, distinctor));
+  }
+
+  protected switchMap<S, R>(
+    source: S,
+    mapper: (value: StateValue<S>) => R & StateClosureResultNode,
+    distinctor?: Distinctor<StateClosureResultValue<R>>,
+  ): IReadableClosure<StateClosureResultValue<R>>;
+  protected switchMap<S, R>(
+    source: S,
+    mapper: (value: StateValue<S>) => StateClosureResult<R>,
+    distinctor?: Distinctor<R>,
+  ): IReadableClosure<R>;
+  protected switchMap<S, R>(
+    source: S,
+    mapper: (value: StateValue<S>) => StateClosureResult<R>,
+    distinctor?: Distinctor<R>,
+  ): IReadableClosure<R> {
+    return this.own(switchMapClosure<S, R>(source, mapper, distinctor));
   }
 
   protected mapEach<A, R>(

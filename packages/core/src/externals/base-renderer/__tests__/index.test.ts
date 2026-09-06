@@ -9,13 +9,13 @@ import { describe, expect, test, vi } from 'vitest';
 
 import type { IBlockMeta, IBlockState } from '../../../states/base';
 
-import { BaseRenderer, type IRenderPatchItem } from '..';
 import {
   BaseRenderPlugin,
   type IRenderPlugin,
   type IRenderPluginMatchParams,
   type IRenderPluginRenderParams,
 } from '../../base-render-plugin';
+import { BaseRenderer, type IRenderPatchItem } from '../index';
 
 interface TestRenderConfig {
   suffix: string;
