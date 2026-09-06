@@ -1,6 +1,8 @@
-**English** | [简体中文](./docs/README.zh-CN.md)
+<p align="center">
+  <img src="./docs/assets/logo.png" alt="Flowdown" width="480" />
+</p>
 
-# Flowdown
+**English** | [简体中文](./docs/README.zh-CN.md)
 
 **A reactive Markdown rendering library built for streaming.**
 
