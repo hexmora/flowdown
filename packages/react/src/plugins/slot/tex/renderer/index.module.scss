@@ -1,0 +1,53 @@
+@use "@prefix" as *;
+
+.root {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  overflow-wrap: normal;
+
+  &[data-mode="display"] {
+    display: block;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    margin-block: var(--#{$prefix}-spacing-lg);
+    padding-block: var(--#{$prefix}-spacing-sm);
+
+    text-align: center;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--#{$prefix}-colors-border-emphasis) transparent;
+  }
+
+  &[data-formula-error] {
+    font-family: var(--#{$prefix}-typography-font-mono);
+    font-size: var(--#{$prefix}-code-font-size);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.katex-display) {
+    margin: 0;
+  }
+
+  :global(mjx-container) {
+    display: inline-block;
+    max-width: none;
+
+    line-height: 0;
+    text-indent: 0;
+
+    > svg {
+      overflow: visible;
+
+      min-width: 0;
+      max-width: none;
+    }
+
+    :global([data-mml-node="merror"]) > g {
+      fill: currentColor;
+      stroke: currentColor;
+    }
+  }
+}

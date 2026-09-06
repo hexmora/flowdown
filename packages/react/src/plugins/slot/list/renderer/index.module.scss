@@ -1,0 +1,70 @@
+@use "@prefix" as *;
+
+.root {
+  margin-block: var(--#{$prefix}-spacing-md);
+  padding-inline-start: var(--#{$prefix}-spacing-xl);
+
+  color: var(--#{$prefix}-colors-fg);
+  line-height: var(--#{$prefix}-typography-line-height-md);
+
+  > li {
+    padding-inline-start: var(--#{$prefix}-spacing-xs);
+    margin-block: var(--#{$prefix}-spacing-xs);
+
+    overflow-wrap: anywhere;
+
+    &::marker {
+      color: var(--#{$prefix}-colors-fg-muted);
+      font-weight: var(--#{$prefix}-typography-font-weight-medium);
+    }
+
+    > p {
+      margin-block: var(--#{$prefix}-spacing-sm);
+    }
+
+    > ul,
+    > ol {
+      margin-block: var(--#{$prefix}-spacing-xs);
+    }
+
+    &:global(.task-list-item) {
+      list-style: none;
+
+      > input[type="checkbox"],
+      > p > input[type="checkbox"] {
+        width: 1em;
+        height: 1em;
+
+        margin-inline: calc(-1em - var(--#{$prefix}-spacing-sm)) var(--#{$prefix}-spacing-sm);
+
+        appearance: none;
+
+        border: 1px solid var(--#{$prefix}-colors-border-emphasis);
+        border-radius: 0.2em;
+        background: var(--#{$prefix}-colors-surface-subtle);
+
+        vertical-align: -0.1em;
+
+        &:checked {
+          border-color: var(--#{$prefix}-colors-accent);
+          background: var(--#{$prefix}-colors-accent);
+
+          &::after {
+            display: block;
+            width: 0.25em;
+            height: 0.5em;
+
+            margin: 0.075em auto 0;
+
+            border: solid var(--#{$prefix}-colors-bg);
+            border-width: 0 0.125em 0.125em 0;
+
+            content: "";
+
+            transform: rotate(45deg);
+          }
+        }
+      }
+    }
+  }
+}

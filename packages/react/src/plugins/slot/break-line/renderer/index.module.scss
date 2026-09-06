@@ -1,0 +1,9 @@
+@use "@prefix" as *;
+
+.root {
+  line-height: inherit;
+
+  & + & {
+    line-height: var(--#{$prefix}-typography-line-height-lg);
+  }
+}

@@ -8,6 +8,7 @@ catalog:
   classnames: ^2.5.1
   inversify: ^8.1.1
   katex: ^0.17.0
+  less: ^4.9.1
   lodash-es: ^4.18.1
   marked: ^18.0.5
   mathjax-full: ^3.2.2
@@ -38,6 +39,7 @@ catalog:
   rxjs: ^7.8.2
   sass: ^1.103.1
   shallow-equal: ^3.1.0
+  shiki: ^4.4.2
   unified: ^11.0.5
   "@types/katex": ^0.16.8
   "@types/hast": ^3.0.4
@@ -58,6 +60,8 @@ catalog:
   vite: ^8.0.16
   "@vitejs/plugin-react": ^6.0.2
   vite-plugin-dts: ^5.0.2
+  vite-plugin-lib-inject-css: ^2.2.2
+  vite-plugin-svgr: ^5.2.0
   storybook: ^10.4.4
   "@storybook/addon-docs": ^10.4.4
   "@storybook/react-vite": ^10.4.4

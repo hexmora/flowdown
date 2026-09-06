@@ -1,20 +1,23 @@
-import { createElement } from 'react';
+import { lazy, Suspense } from 'react';
 
 import type { TexProps } from '../../../../types';
 
-export const TexRenderer = ({ Raw, ...props }: TexProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
+import { LightTexRenderer } from './components/light-tex';
+
+const LazyMathjaxKatexTexRenderer = /*#__PURE__*/ lazy(async () => {
+  try {
+    const Component = await import('./components/mathjax-katex-tex');
+
+    return Component;
+  } catch {
+    return { default: LightTexRenderer };
   }
+});
 
-  const {
-    current: _current,
-    mode,
-    parents: _parents,
-    render: _render,
-    tex,
-    ...elementProps
-  } = props;
-
-  return createElement(mode === 'display' ? 'div' : 'span', elementProps, tex);
+export const TexRenderer = (props: TexProps) => {
+  return (
+    <Suspense fallback={<LightTexRenderer {...props} />}>
+      <LazyMathjaxKatexTexRenderer {...props} />
+    </Suspense>
+  );
 };

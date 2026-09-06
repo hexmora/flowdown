@@ -1,18 +1,16 @@
-import { createElement } from 'react';
+import cn from 'classnames';
+import { createElement, useMemo } from 'react';
 
 import type { ImageProps } from '../../../../types';
 
 import { normalizePublicUrl } from '../../url';
+import styles from './index.module.scss';
 
-export const ImageRenderer = ({ Raw, ...props }: ImageProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
-  }
-
+export const ImageRenderer = ({ Raw: _Raw, ...props }: ImageProps) => {
   const {
     alt = '',
+    className,
     current: _current,
-    forceHttps = true,
     onClick,
     parents: _parents,
     render: _render,
@@ -20,7 +18,7 @@ export const ImageRenderer = ({ Raw, ...props }: ImageProps) => {
     ...elementProps
   } = props;
 
-  const safeSrc = normalizePublicUrl(src, { forceHttps });
+  const safeSrc = useMemo(() => normalizePublicUrl(src), [src]);
 
   const handleClick: React.MouseEventHandler<HTMLImageElement> | undefined = onClick
     ? (event) => onClick({ event })
@@ -29,6 +27,7 @@ export const ImageRenderer = ({ Raw, ...props }: ImageProps) => {
   return createElement('img', {
     ...elementProps,
     alt,
+    className: cn(styles.root, className),
     onClick: handleClick,
     src: safeSrc,
   });

@@ -3,9 +3,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import type { SlotRendererProps } from './type';
 
+import { useStatic } from '../../hooks';
 import { SlotErrorFallback } from '../slot-error-fallback';
 import { SlotFallbackContext, SlotsContext } from './context';
-import { composePlugins, isNamedSlot } from './utils/compose';
+import { createSlotComposer, isNamedSlot } from './utils/compose';
 
 export * from './utils';
 
@@ -15,17 +16,28 @@ export const SlotRenderer = /*#__PURE__*/ memo(function SlotRenderer({
 }: SlotRendererProps) {
   const slots = useContext(SlotsContext);
 
+  const composePlugins = useStatic(createSlotComposer);
+
   const currentPlugins = slots?.[type];
 
   const wrapperPlugins = slots?.Wrapper;
 
   const fallbackPlugins = slots?.Fallback;
 
-  const Component = useMemo(() => composePlugins(currentPlugins ?? []), [currentPlugins]);
+  const Component = useMemo(
+    () => composePlugins(currentPlugins ?? []),
+    [composePlugins, currentPlugins],
+  );
 
-  const Wrapper = useMemo(() => composePlugins(wrapperPlugins ?? []), [wrapperPlugins]);
+  const Wrapper = useMemo(
+    () => composePlugins(wrapperPlugins ?? []),
+    [composePlugins, wrapperPlugins],
+  );
 
-  const Fallback = useMemo(() => composePlugins(fallbackPlugins ?? []), [fallbackPlugins]);
+  const Fallback = useMemo(
+    () => composePlugins(fallbackPlugins ?? []),
+    [composePlugins, fallbackPlugins],
+  );
 
   const fallbackContext = useMemo(
     () => (isNamedSlot(type) ? { Component: Fallback, props, type } : null),

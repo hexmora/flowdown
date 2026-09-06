@@ -65,6 +65,7 @@ export const isPropsEqual = (
       left.text === right.text,
       left.className === right.className,
       shallowEqual(left.style ?? EO, right.style ?? EO),
+      isEqual(left.theme ?? 'light', right.theme ?? 'light'),
       isBuildEqual(left.build, right.build),
       isSmoothEqual(left.smooth, right.smooth),
       isPatchesEqual(left.patches ?? EL, right.patches ?? EL),

@@ -1,0 +1,60 @@
+@use "@prefix" as *;
+
+.root {
+  color: var(--#{$prefix}-colors-fg);
+
+  background: var(--#{$prefix}-colors-bg);
+
+  font-family: var(--#{$prefix}-typography-font-sans);
+  font-size: var(--#{$prefix}-typography-font-size-md);
+  font-weight: var(--#{$prefix}-typography-font-weight-normal);
+  line-height: var(--#{$prefix}-typography-line-height-md);
+  overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+
+  &,
+  & * {
+    box-sizing: border-box;
+  }
+
+  :not(pre) > code {
+    padding: 0.15em 0.35em;
+
+    border: 1px solid var(--#{$prefix}-colors-border);
+    border-radius: var(--#{$prefix}-radius-sm);
+    background: var(--#{$prefix}-colors-surface-muted);
+
+    font-family: var(--#{$prefix}-typography-font-mono);
+    font-size: 0.875em;
+    white-space: break-spaces;
+  }
+
+  hr {
+    height: 1px;
+
+    margin: var(--#{$prefix}-spacing-xl) 0;
+
+    border: 0;
+    background: var(--#{$prefix}-colors-border);
+  }
+
+  del {
+    color: var(--#{$prefix}-colors-fg-muted);
+    text-decoration-thickness: 1px;
+  }
+
+  sup {
+    font-size: 0.75em;
+    line-height: 0;
+  }
+
+  :global(.footnotes) {
+    margin-top: var(--#{$prefix}-spacing-xl);
+    padding-top: var(--#{$prefix}-spacing-lg);
+
+    border-top: 1px solid var(--#{$prefix}-colors-border);
+
+    color: var(--#{$prefix}-colors-fg-muted);
+    font-size: var(--#{$prefix}-typography-font-size-sm);
+  }
+}

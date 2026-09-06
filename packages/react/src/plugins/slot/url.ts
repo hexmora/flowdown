@@ -1,6 +1,6 @@
 export const normalizePublicUrl = (
   value: string | undefined,
-  { allowHash = false, forceHttps = true } = {},
+  { allowHash = false, allowMailto = false } = {},
 ) => {
   const source = value?.trim();
 
@@ -10,10 +10,6 @@ export const normalizePublicUrl = (
 
   if (source.startsWith('#')) {
     return allowHash ? source : undefined;
-  }
-
-  if (source.startsWith('//')) {
-    return `https:${source}`;
   }
 
   const scheme = /^([a-z][a-z\d+.-]*):/i.exec(source)?.[1]?.toLowerCase();
@@ -32,19 +28,19 @@ export const normalizePublicUrl = (
     }
   }
 
-  if (scheme !== 'http' && scheme !== 'https') {
+  if (scheme !== 'http' && scheme !== 'https' && !(allowMailto && scheme === 'mailto')) {
     return undefined;
   }
 
   try {
     const url = new URL(source);
 
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    if (
+      url.protocol !== 'http:' &&
+      url.protocol !== 'https:' &&
+      !(allowMailto && url.protocol === 'mailto:')
+    ) {
       return undefined;
-    }
-
-    if (forceHttps && url.protocol === 'http:') {
-      return source.replace(/^http:/i, 'https:');
     }
 
     return source;

@@ -13,7 +13,7 @@ import { Flowdown } from '../index';
 type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 
 interface ParagraphSlotProps {
-  Raw?: ComponentType<ParagraphSlotProps> | null;
+  Raw: ComponentType<Omit<ParagraphSlotProps, 'Raw'>> | null;
   children?: ReactNode;
 }
 
@@ -56,10 +56,10 @@ describe('Flowdown', () => {
   test('renders Markdown synchronously during server rendering', () => {
     const markup = renderToStaticMarkup(<Flowdown text="# Server heading" />);
 
-    expect(markup).toContain('<h1>Server heading</h1>');
+    expect(markup).toMatch(/<h1[^>]*>Server heading<\/h1>/);
   });
 
-  test('renders common Markdown through semantic, unstyled preset slots', () => {
+  test('renders common Markdown through styled preset slots', () => {
     const text = [
       '# Heading',
       '',
@@ -109,6 +109,7 @@ describe('Flowdown', () => {
     const root = container.firstElementChild;
 
     expect(root?.tagName).toBe('DIV');
+    expect(root).toHaveClass('flowdown-root');
     expect(root).toHaveClass('consumer-root');
     expect(root).toHaveStyle({ color: 'rgb(255, 0, 0)' });
 
@@ -120,7 +121,7 @@ describe('Flowdown', () => {
     expect(root).toHaveStyle({ color: 'rgb(0, 0, 255)' });
   });
 
-  test('renders image, hard-break, and raw Tex slots without styling engines', () => {
+  test('renders images, hard breaks, and readable Tex while engines load', () => {
     const text = [
       '![diagram](http://example.com/diagram.png "Diagram")',
       '',
@@ -133,7 +134,7 @@ describe('Flowdown', () => {
     const { container } = render(<Flowdown build={{ tex: true }} text={text} />);
     const image = screen.getByRole('img', { name: 'diagram' });
 
-    expect(image).toHaveAttribute('src', 'https://example.com/diagram.png');
+    expect(image).toHaveAttribute('src', 'http://example.com/diagram.png');
     expect(image).toHaveAttribute('title', 'Diagram');
     expect(container.querySelector('br')).toBeInTheDocument();
     expect(container).toHaveTextContent('x + y');

@@ -4,7 +4,7 @@ import type { ComponentProps, ComponentType } from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import type { ParagraphProps } from '../types';
+import type { ParagraphProps, SlotInputProps } from '../types';
 
 import { createTypeOfSlot, SlotProvider } from '../components';
 import { BaseSlotPlugin } from '../plugins/slot';
@@ -50,9 +50,11 @@ const preventExpectedError = (event: ErrorEvent) => event.preventDefault();
 
 describe('createTypeOfSlot', () => {
   test('infers the exact prop contract for the requested slot type', () => {
-    expectTypeOf<typeof Paragraph>().toEqualTypeOf<ComponentType<ParagraphProps>>();
+    expectTypeOf<typeof Paragraph>().toEqualTypeOf<ComponentType<SlotInputProps<'Paragraph'>>>();
 
-    expectTypeOf<ComponentProps<typeof Paragraph>>().toEqualTypeOf<ParagraphProps>();
+    expectTypeOf<ComponentProps<typeof Paragraph>>().toEqualTypeOf<SlotInputProps<'Paragraph'>>();
+
+    expectTypeOf<ComponentProps<typeof Paragraph>>().not.toHaveProperty('Raw');
   });
 
   test('requires a provider when the typed slot is rendered', () => {
@@ -83,6 +85,49 @@ describe('createTypeOfSlot', () => {
     );
 
     expect(screen.getByTestId('factory-second')).toHaveTextContent('second:[first:content]');
+  });
+
+  test('injects Raw without invalidating memoized equivalent input props', () => {
+    const capture = vi.fn();
+
+    class CapturingParagraphPlugin extends BaseSlotPlugin<'Paragraph'> {
+      static readonly key = 'test-memoized-paragraph';
+
+      readonly Component = (props: ParagraphProps) => {
+        capture(props.Raw);
+
+        return <span>{props.children}</span>;
+      };
+
+      readonly type = 'Paragraph';
+    }
+
+    const props: SlotInputProps<'Paragraph'> = {
+      children: 'memoized',
+      current: paragraphNode,
+      parents: [],
+      render: () => null,
+    };
+
+    const view = (color: string) => (
+      <SlotProvider plugins={[CapturingParagraphPlugin]}>
+        <Paragraph {...props} style={{ color }} />
+      </SlotProvider>
+    );
+
+    const { rerender } = render(view('red'));
+
+    expect(capture).toHaveBeenCalledExactlyOnceWith(null);
+
+    rerender(view('red'));
+
+    expect(capture).toHaveBeenCalledTimes(1);
+
+    rerender(view('blue'));
+
+    expect(capture).toHaveBeenCalledTimes(2);
+
+    expect(capture).toHaveBeenLastCalledWith(null);
   });
 });
 

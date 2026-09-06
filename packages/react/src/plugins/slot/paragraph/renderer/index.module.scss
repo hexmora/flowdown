@@ -1,0 +1,18 @@
+@use "@prefix" as *;
+
+.root {
+  margin-top: var(--#{$prefix}-paragraph-margin-top);
+  margin-bottom: var(--#{$prefix}-paragraph-margin-bottom);
+
+  font-size: inherit;
+  line-height: var(--#{$prefix}-typography-line-height-md);
+  overflow-wrap: anywhere;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}

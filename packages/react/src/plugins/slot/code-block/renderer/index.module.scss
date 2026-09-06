@@ -1,0 +1,23 @@
+@use "@prefix" as *;
+
+.root {
+  min-width: 0;
+  margin-block: var(--#{$prefix}-spacing-lg);
+  overflow: hidden;
+
+  border: 1px solid var(--#{$prefix}-colors-border);
+  border-radius: var(--#{$prefix}-radius-lg);
+  background: var(--#{$prefix}-colors-surface-subtle);
+  color: var(--#{$prefix}-colors-fg);
+
+  > pre {
+    margin: 0;
+
+    border: 0;
+    border-radius: 0;
+  }
+
+  &[aria-busy="true"] {
+    border-color: var(--#{$prefix}-colors-border-emphasis);
+  }
+}

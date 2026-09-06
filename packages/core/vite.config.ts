@@ -17,13 +17,16 @@ export default defineConfig({
   build: {
     cssCodeSplit: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        presets: resolve(__dirname, 'src/presets.ts'),
+      },
       name: 'Flowdown',
       formats: ['es', 'cjs'],
-      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
+      fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      external: [/^reactive(?:\/.*)?$/],
+      external: ['@flowdown/preset-plugins', /^reactive(?:\/.*)?$/],
     },
   },
   test: {

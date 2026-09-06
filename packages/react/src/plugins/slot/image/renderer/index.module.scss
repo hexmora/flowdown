@@ -1,0 +1,21 @@
+@use "@prefix" as *;
+
+.root {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+
+  border: 1px solid var(--#{$prefix}-colors-border);
+  border-radius: var(--#{$prefix}-radius-lg);
+  background: var(--#{$prefix}-colors-surface-subtle);
+
+  vertical-align: middle;
+
+  object-fit: contain;
+
+  &:only-child {
+    display: block;
+
+    margin-inline: auto;
+  }
+}

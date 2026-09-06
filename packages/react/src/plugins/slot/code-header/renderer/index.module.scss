@@ -1,0 +1,90 @@
+@use "@prefix" as *;
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--#{$prefix}-spacing-md);
+
+  min-height: 2.75rem;
+  padding: var(--#{$prefix}-spacing-sm) var(--#{$prefix}-spacing-md);
+
+  border-bottom: 1px solid var(--#{$prefix}-colors-border);
+  background: var(--#{$prefix}-colors-surface-muted);
+  color: var(--#{$prefix}-colors-fg-muted);
+
+  font-size: var(--#{$prefix}-typography-font-size-xs);
+  line-height: var(--#{$prefix}-typography-line-height-sm);
+
+  .language {
+    display: flex;
+    align-items: center;
+    gap: var(--#{$prefix}-spacing-sm);
+
+    min-width: 0;
+    overflow-wrap: anywhere;
+
+    font-family: var(--#{$prefix}-typography-font-mono);
+    font-weight: var(--#{$prefix}-typography-font-weight-medium);
+  }
+
+  .actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--#{$prefix}-spacing-xs);
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--#{$prefix}-spacing-xs);
+
+      padding: var(--#{$prefix}-spacing-xs) var(--#{$prefix}-spacing-sm);
+
+      border: 1px solid transparent;
+      border-radius: var(--#{$prefix}-radius-sm);
+      background: transparent;
+      color: inherit;
+
+      font: inherit;
+      font-weight: var(--#{$prefix}-typography-font-weight-medium);
+
+      cursor: pointer;
+      transition:
+        background-color 120ms ease,
+        color 120ms ease;
+
+      &:hover {
+        background: var(--#{$prefix}-colors-bg);
+        color: var(--#{$prefix}-colors-fg);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--#{$prefix}-colors-accent);
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+
+        cursor: default;
+      }
+    }
+
+    svg {
+      flex-shrink: 0;
+
+      width: 1em;
+      height: 1em;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .actions button {
+      transition: none;
+    }
+  }
+}

@@ -42,14 +42,25 @@ export default function App() {
 
 ### Render a stream
 
-Pass the full Markdown text received so far to `text`, appending each new chunk to your application's state. Flowdown updates as the text grows and works with whichever streaming API you use.
+Pass the accumulated Markdown to `text` as chunks arrive. Enable `smooth` to reveal new content gradually, with any streaming API.
 
 ```jsx
 import { Flowdown } from "flowdown";
 
 export function StreamingMessage({ text }) {
-  return <Flowdown text={text} config={{ repair: true, repairEnding: true }} />;
+  return <Flowdown smooth text={text} build={{ repair: true, repairEnding: true }} />;
 }
+```
+
+### Customize the theme
+
+Use `"light"` (default), `"dark"`, or `[preset, overrides]`. Partial token configurations extend light.
+
+```jsx
+<Flowdown
+  text="# Your Markdown"
+  theme={["dark", { tokens: { heading: { h1: { fontSize: "2.25rem" } } } }]}
+/>
 ```
 
 ## Contributing

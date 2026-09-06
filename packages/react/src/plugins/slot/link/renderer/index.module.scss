@@ -1,0 +1,29 @@
+@use "@prefix" as *;
+
+.root {
+  color: var(--#{$prefix}-colors-accent);
+  text-decoration-line: underline;
+  text-decoration-color: var(--#{$prefix}-colors-border-emphasis);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+
+  transition:
+    color 120ms ease,
+    text-decoration-color 120ms ease;
+
+  &:hover {
+    color: var(--#{$prefix}-colors-accent-hover);
+    text-decoration-color: currentColor;
+  }
+
+  &:focus-visible {
+    border-radius: var(--#{$prefix}-radius-sm);
+    outline: 2px solid var(--#{$prefix}-colors-accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}

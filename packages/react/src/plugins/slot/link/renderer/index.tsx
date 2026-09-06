@@ -1,16 +1,16 @@
+import cn from 'classnames';
+import { useMemo } from 'react';
+
 import type { LinkProps } from '../../../../types';
 
 import { normalizePublicUrl } from '../../url';
+import styles from './index.module.scss';
 
-export const LinkRenderer = ({ Raw, ...props }: LinkProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
-  }
-
+export const LinkRenderer = ({ Raw: _Raw, ...props }: LinkProps) => {
   const {
     children,
+    className,
     current: _current,
-    forceHttps = true,
     href,
     onClick,
     parents: _parents,
@@ -18,14 +18,22 @@ export const LinkRenderer = ({ Raw, ...props }: LinkProps) => {
     ...elementProps
   } = props;
 
-  const safeHref = normalizePublicUrl(href, { allowHash: true, forceHttps });
+  const safeHref = useMemo(
+    () => normalizePublicUrl(href, { allowHash: true, allowMailto: true }),
+    [href],
+  );
 
   const handleClick: React.MouseEventHandler<HTMLAnchorElement> | undefined = onClick
     ? (event) => onClick({ event })
     : undefined;
 
   return (
-    <a {...elementProps} href={safeHref} onClick={handleClick}>
+    <a
+      {...elementProps}
+      className={cn(styles.root, className)}
+      href={safeHref}
+      onClick={handleClick}
+    >
       {children}
     </a>
   );

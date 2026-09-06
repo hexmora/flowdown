@@ -1,0 +1,33 @@
+@use "@prefix" as *;
+
+.root {
+  color: var(--#{$prefix}-colors-fg);
+  font-family: var(--#{$prefix}-typography-font-sans);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+
+  scroll-margin-top: var(--#{$prefix}-spacing-xl);
+
+  @for $level from 1 through 6 {
+    &:where(h#{$level}) {
+      margin-top: var(--#{$prefix}-heading-h#{$level}-margin-top);
+      margin-bottom: var(--#{$prefix}-heading-h#{$level}-margin-bottom);
+
+      font-size: var(--#{$prefix}-heading-h#{$level}-font-size);
+      font-weight: var(--#{$prefix}-heading-h#{$level}-font-weight);
+      line-height: var(--#{$prefix}-heading-h#{$level}-line-height);
+    }
+  }
+
+  &:where(h1, h2) {
+    letter-spacing: -0.025em;
+  }
+
+  &:where(h5, h6) {
+    color: var(--#{$prefix}-colors-fg-muted);
+  }
+
+  &:first-child {
+    margin-top: 0;
+  }
+}

@@ -24,7 +24,11 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "**/*.less",
+    "**/*.scss"
+  ],
   "main": "./src/index.tsx",
   "module": "./src/index.tsx",
   "types": "./src/index.tsx",
@@ -48,10 +52,14 @@
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",
+    "classnames": "catalog:",
+    "katex": "catalog:",
     "lodash-es": "catalog:",
+    "mathjax-full": "catalog:",
     "react-error-boundary": "catalog:",
     "reactive": "workspace:*",
-    "shallow-equal": "catalog:"
+    "shallow-equal": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
     "@storybook/addon-docs": "catalog:",
@@ -64,6 +72,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "jsdom": "catalog:",
+    "less": "catalog:",
     "oxlint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -74,6 +83,8 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
+    "vite-plugin-lib-inject-css": "catalog:",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import { isFunction } from 'lodash-es';
 
 import {
@@ -5,20 +6,28 @@ import {
   CodeHeaderInnerActionKey,
   type CodeHeaderProps,
 } from '../../../../types';
+import CheckIcon from './assets/check.svg?react';
+import CopyIcon from './assets/copy.svg?react';
+import { useCopy } from './hooks';
+import styles from './index.module.scss';
 import { renderAction } from './utils';
 
-export const CodeHeaderRenderer = ({ Raw, ...props }: CodeHeaderProps) => {
-  if (Raw) {
-    return <Raw {...props} />;
-  }
-
-  const { actions, code, language, left, meta, onCopy, ...elementProps } = props;
+export const CodeHeaderRenderer = ({ Raw: _Raw, ...props }: CodeHeaderProps) => {
+  const { actions, className, code, language, left, meta, onCopy, ...elementProps } = props;
+  const { copy, isCopied, isCopying } = useCopy({ code, language, meta, onCopy });
 
   const copyAction: CodeHeaderAction = {
     key: CodeHeaderInnerActionKey.Copy,
     target: (
-      <button type="button" onClick={() => onCopy?.({ code, language, meta })}>
-        Copy
+      <button
+        aria-label={isCopied ? 'Copied' : 'Copy'}
+        aria-live="polite"
+        disabled={isCopying}
+        onClick={() => void copy()}
+        type="button"
+      >
+        {isCopied ? <CheckIcon aria-hidden="true" /> : <CopyIcon aria-hidden="true" />}
+        {isCopied ? 'Copied' : 'Copy'}
       </button>
     ),
   };
@@ -28,9 +37,9 @@ export const CodeHeaderRenderer = ({ Raw, ...props }: CodeHeaderProps) => {
     : [copyAction, ...(actions ?? [])];
 
   return (
-    <div {...elementProps}>
-      {left ?? language}
-      {resolvedActions.map(renderAction)}
+    <div {...elementProps} className={cn(styles.root, className)}>
+      <div className={styles.language}>{left ?? language ?? 'text'}</div>
+      <div className={styles.actions}>{resolvedActions.map(renderAction)}</div>
     </div>
   );
 };

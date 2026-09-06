@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 
-import { keys } from 'lodash-es';
+import { keys, sortBy } from 'lodash-es';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import type { FlowdownProps } from '../types';
@@ -8,15 +8,15 @@ import type { FlowdownProps } from '../types';
 import * as ReactEntry from '../index';
 
 describe('package exports', () => {
-  test('keeps the root runtime surface focused on Flowdown', () => {
-    expect(keys(ReactEntry)).toEqual(['Flowdown']);
+  test('exports Flowdown and runtime values from the public types', () => {
+    expect(sortBy(keys(ReactEntry))).toEqual(['CodeHeaderInnerActionKey', 'Flowdown']);
   });
 
   test('exposes Flowdown with its public prop contract', () => {
     type RootExport = keyof typeof ReactEntry;
     type PublicProps = ComponentProps<typeof ReactEntry.Flowdown>;
 
-    expectTypeOf<RootExport>().toEqualTypeOf<'Flowdown'>();
+    expectTypeOf<RootExport>().toEqualTypeOf<'Flowdown' | 'CodeHeaderInnerActionKey'>();
     expectTypeOf<PublicProps>().toMatchTypeOf<FlowdownProps>();
     expectTypeOf<FlowdownProps>().toMatchTypeOf<PublicProps>();
 
