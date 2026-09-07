@@ -5,7 +5,7 @@
 import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import { Smooth } from '@flowdown/core-presets/mapper';
+import { Shad, Smooth } from '@flowdown/core-presets/mapper';
 import { type JSXDescriptor, once, useDefaults, useFlatten, useMap } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
@@ -24,7 +24,7 @@ import {
   RepairPluggablesMapper,
 } from './states';
 import { mergePluginPluggables } from './states/utils';
-import { toBaseSmoothConfig } from './utils';
+import { toBaseShadConfig, toBaseSmoothConfig } from './utils';
 
 export * from './consts';
 export * from './states';
@@ -36,6 +36,7 @@ export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
   patches,
   build,
   smooth: _smooth,
+  shad: _shad,
   renders,
   remarks,
   rehypes,
@@ -54,7 +55,16 @@ export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
 
   const flattenConfig = useFlatten(smooth);
 
-  const DefaultMappers: MapperPluggable[] = [[Smooth<HastRoot>, flattenConfig]];
+  const shadSource = useDefaults(_shad, false);
+
+  const shad = useMap(shadSource, toBaseShadConfig, shallowEqual);
+
+  const shadConfig = useFlatten(shad);
+
+  const DefaultMappers: MapperPluggable[] = [
+    [Smooth<HastRoot>, flattenConfig],
+    [Shad, shadConfig],
+  ];
 
   const mappers = useMap(
     useDefaults(_mappers, []),

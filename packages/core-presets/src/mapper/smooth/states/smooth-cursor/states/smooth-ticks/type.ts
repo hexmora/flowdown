@@ -3,6 +3,8 @@ import type { IReadableClosure } from 'reactive';
 import type { SmoothTickerClass } from '../../../../type';
 
 export interface SmoothTicksInputs {
+  lengths: IReadableClosure<number[]>;
+
   /**
    * Whether newly appended content advances on ticker events.
    */

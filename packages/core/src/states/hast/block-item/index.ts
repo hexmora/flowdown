@@ -1,7 +1,8 @@
+import { getLengthOfHast, sliceHast } from '@flowdown/utils';
+
 import type { HastRoot } from '../../../typings';
 
 import { BaseBlockItem } from '../../base';
-import { getLengthOfHast, sliceHast } from './utils';
 
 export class BlockItem extends BaseBlockItem<HastRoot> {
   protected slice(value: HastRoot, start: number, end: number): HastRoot {

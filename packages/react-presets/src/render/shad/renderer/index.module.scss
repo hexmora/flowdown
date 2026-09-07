@@ -1,0 +1,32 @@
+@use "@prefix" as *;
+
+.root {
+  display: inline;
+
+  .leading {
+    display: inline;
+  }
+
+  .active {
+    display: inline;
+    background: linear-gradient(to right, var(--#{$prefix}-colors-fg), transparent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .mask,
+  .maskHidden {
+    position: relative;
+    display: inline-block;
+    width: var(--#{$prefix}-shad-mask-width, 15px);
+    margin-left: calc(0px - var(--#{$prefix}-shad-mask-width, 15px));
+    background-image: linear-gradient(to right, transparent, var(--#{$prefix}-colors-bg));
+    pointer-events: none;
+  }
+
+  .maskHidden {
+    opacity: 0;
+  }
+}

@@ -1,9 +1,8 @@
 import type { Element, ElementContent, Properties, Root, RootContent, Text } from 'hast';
 
-import { clamp, create, floor, last, min, toArray, values } from 'lodash-es';
+import { clamp, floor, last, min, toArray, values } from 'lodash-es';
 import { describe, expect, test, vi } from 'vitest';
 
-import { BlockItem } from '../..';
 import { getLengthOfHast, sliceHast } from '../index';
 
 const root = (children: RootContent[]): Root => ({
@@ -216,12 +215,6 @@ const deepFreeze = <T>(value: T): T => {
 
   return value;
 };
-
-class BlockStateSliceHarness extends BlockItem {
-  applySlice(value: Root, start: number, end: number) {
-    return this.slice(value, start, end);
-  }
-}
 
 describe('sliceHast', () => {
   test('treats indices as grapheme offsets', () => {
@@ -644,35 +637,6 @@ describe('sliceHast', () => {
 
     expect(output).not.toBeNull();
     expect(getLengthOfHast(output as Root)).toBe(1);
-  });
-});
-
-describe('BlockItem slicing', () => {
-  const closure = create(BlockStateSliceHarness.prototype) as BlockStateSliceHarness;
-
-  test('delegates visible ranges to sliceHast', () => {
-    const source = root([element('p', [text('hello')])]);
-
-    expect(closure.applySlice(source, 1, 4)).toEqual(sliceHast(source, 1, 4));
-  });
-
-  test('creates a fresh metadata-preserving empty root for an empty range', () => {
-    const source: Root = {
-      type: 'root',
-      children: [text('hello')],
-      data: { sentinel: 'source' },
-    };
-    const first = closure.applySlice(source, 2, 2);
-    const second = closure.applySlice(source, 2, 2);
-
-    expect(first).toEqual({
-      type: 'root',
-      children: [],
-      data: { sentinel: 'source' },
-    });
-    expect(second).toEqual(first);
-    expect(first).not.toBe(second);
-    expect(first.children).not.toBe(second.children);
   });
 });
 

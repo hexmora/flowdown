@@ -4,7 +4,7 @@ import type {
   MapperPluggable,
   PluginConfigs,
 } from '@flowdown/core';
-import type { SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { ShadConfig as CoreShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
 import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
 import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { CSSProperties, ReactNode } from 'react';
@@ -29,6 +29,14 @@ export interface IPluginItem {
 }
 
 export type FlowdownConfig = Partial<BlockCompilerConfig>;
+
+export interface ShadConfig extends CoreShadConfig {
+  /**
+   * Width of the trailing mask in pixels. Set to 0 to hide it.
+   * @default 15
+   */
+  maskWidth?: number;
+}
 
 export interface FlowdownProps {
   /**
@@ -61,6 +69,12 @@ export interface FlowdownProps {
    * @default false
    */
   smooth?: boolean | SmoothConfig;
+
+  /**
+   * Fade the trailing characters of newly revealed content.
+   * @default false
+   */
+  shad?: boolean | ShadConfig;
 
   /**
    * Inline render patches applied to the Markdown source.

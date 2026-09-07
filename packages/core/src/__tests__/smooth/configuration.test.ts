@@ -36,13 +36,15 @@ describe('Smooth configuration', () => {
 
     harness.enabled.next(true);
 
-    const ticker = latest(PrimarySmoothTicker.instances);
-
     expect(collectText(fork.value.value)).toBe('abcde');
 
-    expect(ticker.running).toBe(true);
+    expect(PrimarySmoothTicker.instances).toHaveLength(0);
 
     block.source.next(paragraph('abcdefg'));
+
+    const ticker = latest(PrimarySmoothTicker.instances);
+
+    expect(ticker.running).toBe(true);
 
     expect(collectText(fork.value.value)).toBe('abcde');
 
@@ -168,6 +170,8 @@ describe('Smooth configuration', () => {
     const harness = setupSmooth([block.block]);
 
     const fork = firstBlock(harness.state.value.value);
+
+    block.source.next(paragraph('ab'));
 
     const primary = latest(PrimarySmoothTicker.instances);
 

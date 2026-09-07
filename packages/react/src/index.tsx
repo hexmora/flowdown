@@ -12,7 +12,7 @@ import { PRESET_RENDER_PLUGINS } from '@flowdown/react-presets/render';
 import { PRESET_SLOT_PLUGINS } from '@flowdown/react-presets/slot';
 import { defaultsBy } from '@flowdown/utils';
 import cn from 'classnames';
-import { forwardRef, memo, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, memo, useImperativeHandle } from 'react';
 import { D, render, S } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
@@ -20,11 +20,11 @@ import type { FlowdownProps, FlowdownRef } from './types';
 
 import { RootReconciler } from './components';
 import { DEFAULT_CONFIG, EL, EO } from './consts';
-import { usePlugins } from './hooks';
+import { usePlugins, useShadStyles } from './hooks';
 import { ReactRenderer } from './modules';
 import styles from './styles/index.module.scss';
 import { useThemeStyles } from './theme';
-import { isPatchesEqual, isPropsEqual, isSmoothEqual } from './utils';
+import { isPatchesEqual, isPropsEqual, isShadEqual, isSmoothEqual } from './utils';
 
 export * from './types';
 
@@ -37,6 +37,7 @@ export const Flowdown = /*#__PURE__*/ memo(
       text: _text,
       build: _build = EO,
       smooth: _smooth = false,
+      shad: _shad = false,
       patches: _patches = EL,
       plugins: _plugins = EL,
     },
@@ -44,15 +45,13 @@ export const Flowdown = /*#__PURE__*/ memo(
   ) {
     const themeStyles = useThemeStyles(theme);
 
-    const [committed, setCommitted] = useState(false);
+    const shadStyles = useShadStyles(_shad);
 
     const build = useStateOf(defaultsBy(_build, DEFAULT_CONFIG), shallowEqual);
 
-    const smooth = useStateOf(committed ? _smooth : false, isSmoothEqual);
+    const smooth = useStateOf(_smooth, isSmoothEqual);
 
-    useEffect(() => {
-      setCommitted(true);
-    }, []);
+    const shad = useStateOf(_shad, isShadEqual);
 
     const patches = useStateOf(_patches, isPatchesEqual);
 
@@ -94,6 +93,7 @@ export const Flowdown = /*#__PURE__*/ memo(
             repairs,
             mappers,
             smooth,
+            shad,
             text,
           },
         ]),
@@ -106,7 +106,10 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     return (
       <SlotProvider plugins={slots}>
-        <RootReconciler className={cn(styles.root, className)} style={{ ...themeStyles, ...style }}>
+        <RootReconciler
+          className={cn(styles.root, className)}
+          style={{ ...themeStyles, ...shadStyles, ...style }}
+        >
           {core.value}
         </RootReconciler>
       </SlotProvider>

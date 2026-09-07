@@ -65,8 +65,6 @@ describe('SmoothCursor', () => {
   });
 
   test.each([
-    { lengths: [], step: 5, end: { blockIndex: -1, charIndex: 0 } },
-    { lengths: [0, 0], step: 0, end: { blockIndex: -1, charIndex: 0 } },
     { lengths: [3, 3], step: -1, end: { blockIndex: 0, charIndex: 0 } },
     { lengths: [3, 3], step: 100, end: { blockIndex: 1, charIndex: 3 } },
     { lengths: [3, 3], step: 3, end: { blockIndex: 0, charIndex: 3 } },

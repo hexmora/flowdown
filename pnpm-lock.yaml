@@ -520,6 +520,9 @@ importers:
       '@flowdown/core':
         specifier: workspace:*
         version: link:../core
+      '@flowdown/core-presets':
+        specifier: workspace:*
+        version: link:../core-presets
       '@flowdown/types':
         specifier: workspace:*
         version: link:../types

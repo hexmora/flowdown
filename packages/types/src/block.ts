@@ -37,7 +37,7 @@ export interface IBlockRawMeta {
 }
 
 export interface IBlockStateMapper<T> {
-  (value: IReactiveState<T>, current: IBlockState<T>): IReactiveState<T>;
+  (value: IReactiveState<T>, current: IBlockState<T>): IReactiveState<T> | IReadableClosure<T>;
 }
 
 export interface IBlockStateCloneParams<T> {

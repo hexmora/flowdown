@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@flowdown/core": "workspace:*",
+    "@flowdown/core-presets": "workspace:*",
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",

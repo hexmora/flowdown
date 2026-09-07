@@ -20,6 +20,48 @@ afterEach(async () => {
 });
 
 describe('Flowdown smooth streaming', () => {
+  test('waits for new content before constructing a ticker, including StrictMode replay', async () => {
+    const ticker = createManualTicker();
+
+    const smooth = {
+      enabled: true,
+      ticker: ticker.Ticker,
+      scheduler: createStepScheduler(1),
+    };
+
+    const view = render(
+      <StrictMode>
+        <Flowdown smooth={smooth} text="abc" />
+      </StrictMode>,
+    );
+
+    expect(view.container.textContent).toBe('abc');
+
+    expect(ticker.instances).toHaveLength(0);
+
+    view.rerender(
+      <StrictMode>
+        <Flowdown smooth={smooth} text="abcd" />
+      </StrictMode>,
+    );
+
+    expect(view.container.textContent).toBe('abc');
+
+    expect(ticker.instances).toHaveLength(1);
+
+    await act(async () => ticker.current().tick(16));
+
+    expect(view.container.textContent).toBe('abcd');
+
+    view.unmount();
+
+    await act(async () => {});
+
+    expect(ticker.current().running).toBe(false);
+
+    expect(ticker.current().destroyCalls).toBe(1);
+  });
+
   test('renders immediately by default and when an options object omits enabled', () => {
     const clock = createRafClock();
 
