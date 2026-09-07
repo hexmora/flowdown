@@ -1,43 +1,41 @@
 <!--
-PR title convention:
+Thanks for contributing to Flowdown!
 
-  <conventional commit>
+Use a Conventional Commit PR title that matches the intended squash commit:
+
+  <type>(<scope>): <summary>
+
+Common types: feat, fix, docs, chore, refactor, test, build, ci.
+The scope is optional; use the affected package or area (e.g. core, reactive, react).
+Keep the summary imperative, concise, and focused on the final change.
 
 Examples:
-  feat(core): add streaming markdown parser state
-  fix(react): avoid rerendering stable markdown blocks
-  docs: document package boundaries
+  feat(core): add smooth streaming state closures
+  refactor(reactive): unify state closure construction and ownership
+  docs: add Flowdown brand assets
 
-If an AI agent is preparing a lettered PR sequence at the maintainer's request:
-
-  PR-A: <conventional commit>
+Remove any optional sections that do not apply to this pull request.
 -->
 
-## Summary
+## Description
 
-<!-- What changed and why? Keep this specific and reviewable. -->
+<!-- Describe what this PR changes and why, including relevant before/after behavior. -->
+<!-- If this changes a public API or introduces a breaking change, explain the impact and any migration steps. -->
 
--
+## Related issues
 
-## Test Plan
+<!-- Optional: link related issues or discussions. Use "Fixes #123" if this PR resolves an issue. -->
 
-<!-- Check every item that applies, and add any manual verification steps. -->
+## Testing
 
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `pnpm build:storybook`
-- [ ] Manual verification:
+<!-- Describe how you verified this change. Include the commands or manual steps you ran and their results. If you did not run checks, explain why. -->
+<!-- For visible React or Storybook changes, include screenshots or recordings. -->
 
-## Package Boundary Checklist
+## Checklist
 
-- [ ] `@flowdown/core` remains headless and free of React/rendering dependencies.
-- [ ] `reactive` remains headless and framework-free.
-- [ ] React, Storybook, DOM, hooks, and UI rendering concerns live in `flowdown`.
-- [ ] Type/env declarations are under `src/typings/`.
-- [ ] Generated artifacts are not committed.
+<!-- Check the items that apply. Mark anything not applicable as N/A. -->
 
-## Related
-
-<!-- Link issues, discussions, follow-up PRs, or design notes. -->
+- [ ] I have read the [contributing guidelines](https://github.com/hexmora/flowdown/blob/main/CONTRIBUTING.md).
+- [ ] My PR title follows Conventional Commits.
+- [ ] I have added or updated tests for behavior changes, where applicable.
+- [ ] I have updated the documentation for user-facing changes, where applicable.
