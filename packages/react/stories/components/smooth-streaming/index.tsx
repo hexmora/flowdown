@@ -12,6 +12,12 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
 
   const [playing, setPlaying] = useState(false);
 
+  const [shad, setShad] = useState(true);
+
+  const [shadLength, setShadLength] = useState(2);
+
+  const [maskWidth, setMaskWidth] = useState(15);
+
   const complete = cursor >= initialText.length;
 
   const text = initialText.slice(0, cursor);
@@ -76,6 +82,16 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
           <legend>Randomized chunks</legend>
 
           <span>1–24 characters arrive every 50–350 ms.</span>
+
+          <label>
+            <input
+              aria-label="Shad"
+              checked={shad}
+              onChange={(event) => setShad(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            Shad
+          </label>
         </fieldset>
 
         <div className="playground-actions">
@@ -95,6 +111,34 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
           <button onClick={handleReset} type="button">
             Reset
           </button>
+        </div>
+
+        <div className="playground-transport">
+          <label>
+            Shad length
+            <input
+              aria-label="Shad length"
+              max={12}
+              min={0}
+              onChange={(event) => setShadLength(Number(event.currentTarget.value))}
+              type="range"
+              value={shadLength}
+            />
+            <output>{shadLength} chars</output>
+          </label>
+
+          <label>
+            Mask width
+            <input
+              aria-label="Mask width"
+              max={40}
+              min={0}
+              onChange={(event) => setMaskWidth(Number(event.currentTarget.value))}
+              type="range"
+              value={maskWidth}
+            />
+            <output>{maskWidth} px</output>
+          </label>
         </div>
       </section>
 
@@ -123,7 +167,12 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
           </div>
 
           <div className="playground-preview-content">
-            <Flowdown build={{ repair: true, repairEnding: true }} smooth text={text} />
+            <Flowdown
+              build={{ repair: true, repairEnding: true }}
+              shad={{ enabled: shad, length: shadLength, maskWidth }}
+              smooth
+              text={text}
+            />
           </div>
         </section>
       </div>

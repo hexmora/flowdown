@@ -2,7 +2,7 @@
  * @jsxImportSource reactive
  */
 
-import { type JSXDescriptor, once } from 'reactive';
+import { type JSXDescriptor, once, useCreate } from 'reactive';
 
 import type { SmoothCursorInputs } from './type';
 
@@ -14,11 +14,13 @@ export const SmoothCursor = /*#__PURE__*/ once(function SmoothCursor<T>({
   source,
   ...inputs
 }: SmoothCursorInputs<T>): JSXDescriptor<SmoothPosition> {
+  const lengths = useCreate(<BlockLengths<T> source={source} />);
+
   return (
     <CursorPosition
       {...inputs}
-      lengths={<BlockLengths<T> source={source} />}
-      ticks={<SmoothTicks enabled={inputs.enabled} ticker={inputs.ticker} />}
+      lengths={lengths}
+      ticks={<SmoothTicks enabled={inputs.enabled} lengths={lengths} ticker={inputs.ticker} />}
     />
   );
 });

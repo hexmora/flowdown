@@ -75,6 +75,10 @@ describe('Smooth visibility', () => {
 
     expect(PrimarySmoothTicker.instances).toHaveLength(0);
 
+    expect(SecondarySmoothTicker.instances).toHaveLength(0);
+
+    current.source.next(paragraph('latest content'));
+
     expect(SecondarySmoothTicker.instances).toHaveLength(1);
 
     expect(DoubleStepSmoothScheduler.instances).toHaveLength(1);
@@ -82,7 +86,7 @@ describe('Smooth visibility', () => {
     harness.state.destroy();
   });
 
-  test('shows initial content through stable forks and keeps timing active at the wall', () => {
+  test('shows initial content through stable forks without starting timing work', () => {
     const a = createBlock('a', paragraph('abc'), 0, 2);
 
     const b = createBlock('b', paragraph('def'), 1, 2);
@@ -101,13 +105,9 @@ describe('Smooth visibility', () => {
 
     expect(output.map((block) => block.meta.value.blockCount)).toEqual([2, 2]);
 
-    const ticker = latest(PrimarySmoothTicker.instances);
+    expect(PrimarySmoothTicker.instances).toHaveLength(0);
 
-    expect(latest(StepSmoothScheduler.instances).startCalls).toEqual([{ index: 6, timestamp: 0 }]);
-
-    ticker.tick(16);
-
-    expect(ticker.running).toBe(true);
+    expect(StepSmoothScheduler.instances).toHaveLength(0);
 
     expect(harness.state.value.value).toBe(output);
 
@@ -265,9 +265,9 @@ describe('Smooth visibility', () => {
 
     const fork = firstBlock(harness.state.value.value);
 
-    const ticker = latest(PrimarySmoothTicker.instances);
-
     block.source.next(paragraph('abcd'));
+
+    const ticker = latest(PrimarySmoothTicker.instances);
 
     expect(collectText(fork.value.value)).toBe('ab');
 

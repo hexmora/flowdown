@@ -16,22 +16,30 @@ import {
 const setupTicks = (active = true) => {
   const enabled = MutableState.of(active);
 
+  const lengths = MutableState.of([3]);
+
   const ticker = MutableState.of<SmoothTickerClass>(PrimarySmoothTicker);
 
-  const ticks = render(S([SmoothTicks, { enabled, ticker }]));
+  const ticks = render(S([SmoothTicks, { enabled, lengths, ticker }]));
 
-  return { enabled, ticker, ticks };
+  return { enabled, lengths, ticker, ticks };
 };
 
 beforeEach(resetSmoothTests);
 
 describe('SmoothTicks', () => {
-  test('starts lazily and follows the active ticker timestamps', () => {
-    const { ticks } = setupTicks();
+  test('waits for content growth and follows the active ticker timestamps', () => {
+    const { lengths, ticks } = setupTicks();
 
     expect(PrimarySmoothTicker.instances).toEqual([]);
 
     expectTypeOf(ticks.value.value).toEqualTypeOf<SmoothTick | null>();
+
+    expect(ticks.value.value).toBeNull();
+
+    expect(PrimarySmoothTicker.instances).toEqual([]);
+
+    lengths.next([4]);
 
     const initial = ticks.value.value;
 
@@ -51,9 +59,11 @@ describe('SmoothTicks', () => {
   });
 
   test('replaces owned tickers and releases previous instances', () => {
-    const { ticks, ticker } = setupTicks();
+    const { lengths, ticks, ticker } = setupTicks();
 
     const output = ticks.value;
+
+    lengths.next([4]);
 
     const previous = latest(PrimarySmoothTicker.instances);
 
@@ -86,14 +96,44 @@ describe('SmoothTicks', () => {
     expect(ticker.closed).toBe(false);
   });
 
+  test('ignores equal or shrinking totals and starts when a shortened stream grows again', () => {
+    const { lengths, ticks } = setupTicks();
+
+    expect(ticks.value.value).toBeNull();
+
+    lengths.next([1, 2]);
+
+    lengths.next([1]);
+
+    expect(ticks.value.value).toBeNull();
+
+    expect(PrimarySmoothTicker.instances).toEqual([]);
+
+    lengths.next([2]);
+
+    expect(latest(PrimarySmoothTicker.instances).running).toBe(true);
+
+    lengths.next([1]);
+
+    lengths.next([3]);
+
+    expect(PrimarySmoothTicker.instances).toHaveLength(1);
+
+    ticks.destroy();
+  });
+
   test('creates no disabled ticker and releases active work when disabled again', () => {
-    const { enabled, ticks } = setupTicks(false);
+    const { enabled, lengths, ticks } = setupTicks(false);
 
     expect(ticks.value.value).toBeNull();
 
     expect(PrimarySmoothTicker.instances).toEqual([]);
 
     enabled.next(true);
+
+    expect(ticks.value.value).toBeNull();
+
+    lengths.next([4]);
 
     const ticker = latest(PrimarySmoothTicker.instances);
 
@@ -107,6 +147,10 @@ describe('SmoothTicks', () => {
 
     enabled.next(true);
 
+    expect(ticks.value.value).toBeNull();
+
+    lengths.next([5]);
+
     expect(PrimarySmoothTicker.instances).toHaveLength(2);
 
     ticks.destroy();
@@ -116,12 +160,35 @@ describe('SmoothTicks', () => {
     expect(enabled.closed).toBe(false);
   });
 
+  test('waits for new enabled growth after content changes while disabled', () => {
+    const { enabled, lengths, ticks } = setupTicks(false);
+
+    expect(ticks.value.value).toBeNull();
+
+    lengths.next([4]);
+
+    enabled.next(true);
+
+    expect(ticks.value.value).toBeNull();
+
+    expect(PrimarySmoothTicker.instances).toEqual([]);
+
+    lengths.next([5]);
+
+    expect(latest(PrimarySmoothTicker.instances).running).toBe(true);
+
+    ticks.destroy();
+  });
+
   test('keeps the selected ticker alive after its configuration completes', () => {
+    const lengths = MutableState.of([3]);
+
     const ticks = render(
       S([
         SmoothTicks,
         {
           enabled: ReactiveState.of(true),
+          lengths,
           ticker: ReactiveState.of(PrimarySmoothTicker),
         },
       ]),
@@ -130,6 +197,10 @@ describe('SmoothTicks', () => {
     const complete = vi.fn();
 
     ticks.value.subscribe({ complete });
+
+    lengths.next([4]);
+
+    lengths.complete();
 
     const ticker = latest(PrimarySmoothTicker.instances);
 
@@ -153,11 +224,13 @@ describe('SmoothTicks', () => {
       }
     }
 
-    const { ticks, ticker } = setupTicks();
+    const { lengths, ticks, ticker } = setupTicks();
 
     ticker.next(FinishingTicker);
 
     const output = ticks.value;
+
+    lengths.next([4]);
 
     const current = latest(PrimarySmoothTicker.instances);
 

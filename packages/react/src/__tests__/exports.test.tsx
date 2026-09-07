@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 
+import { PRESET_RENDER_PLUGINS, ShadRenderPlugin } from '@flowdown/react-presets/render';
 import { keys, sortBy } from 'lodash-es';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 
@@ -10,6 +11,10 @@ import * as ReactEntry from '..';
 describe('package exports', () => {
   test('exports Flowdown', () => {
     expect(sortBy(keys(ReactEntry))).toEqual(['Flowdown']);
+  });
+
+  test('exports Shad rendering from the render preset package', () => {
+    expect(PRESET_RENDER_PLUGINS).toContain(ShadRenderPlugin);
   });
 
   test('exposes Flowdown with its public prop contract', () => {
@@ -23,6 +28,8 @@ describe('package exports', () => {
     expectTypeOf<'build' extends keyof PublicProps ? true : false>().toEqualTypeOf<true>();
 
     expectTypeOf<'smooth' extends keyof PublicProps ? true : false>().toEqualTypeOf<true>();
+
+    expectTypeOf<'shad' extends keyof PublicProps ? true : false>().toEqualTypeOf<true>();
 
     expectTypeOf<'config' extends keyof PublicProps ? true : false>().toEqualTypeOf<false>();
   });

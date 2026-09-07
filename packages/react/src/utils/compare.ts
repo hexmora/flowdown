@@ -5,7 +5,7 @@ import { defaultsBy } from '@flowdown/utils';
 import { every, isEqual } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
-import type { FlowdownConfig, FlowdownProps, IPluginItem } from '../types';
+import type { FlowdownConfig, FlowdownProps, IPluginItem, ShadConfig } from '../types';
 
 import { DEFAULT_CONFIG, EL, EO } from '../consts';
 import { isPatchesEqual } from './patches';
@@ -55,6 +55,13 @@ export const isSmoothEqual = (
   return left === right || isEqual(left ?? false, right ?? false);
 };
 
+export const isShadEqual = (
+  left: boolean | ShadConfig | undefined,
+  right: boolean | ShadConfig | undefined,
+): boolean => {
+  return left === right || isEqual(left ?? false, right ?? false);
+};
+
 export const isPropsEqual = (
   left: Readonly<FlowdownProps>,
   right: Readonly<FlowdownProps>,
@@ -68,6 +75,7 @@ export const isPropsEqual = (
       isEqual(left.theme ?? 'light', right.theme ?? 'light'),
       isBuildEqual(left.build, right.build),
       isSmoothEqual(left.smooth, right.smooth),
+      isShadEqual(left.shad, right.shad),
       isPatchesEqual(left.patches ?? EL, right.patches ?? EL),
       isPluginItemsEqual(left.plugins, right.plugins),
     ].every((item) => item)

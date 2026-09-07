@@ -79,6 +79,10 @@ Block content can change while the block and output array keep the same identity
 
 Destroy the core instance when you are done with it. Core releases the state closures and plugin instances it owns; external inputs such as `text` remain under your control and need their own cleanup.
 
+Set `shad: true` or `shad: { length: 2 }` to mark the newly visible tail for shading. Shad runs after Smooth in the default mapper list and defaults to `false`. An options object enables it unless `enabled: false` is supplied; `length` counts visible characters and defaults to `2`. The active tail settles after 200 ms without growth.
+
+Renderers can recognize the `SHAD_TAG_NAME`, `SHAD_DATA_ATTR`, and `SHAD_HOST_VALUE` marker exported by `@flowdown/core-presets/mapper` and render its two child spans as the committed and active parts. React's `flowdown` package includes that renderer and a separate `maskWidth` option.
+
 ## Plugins
 
 Core includes preset Markdown processing plugins. Add to them through `remarks` for Markdown syntax, `rehypes` for HAST transformations, and `repairs` for handling incomplete Markdown. Supply render plugins through `renders` for your renderer to use.

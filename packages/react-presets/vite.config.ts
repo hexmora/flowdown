@@ -41,6 +41,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@flowdown/core',
+        /^@flowdown\/core-presets(?:\/.*)?$/,
         /^reactive(?:\/.*)?$/,
         '@flowdown/types',
         '@flowdown/utils',

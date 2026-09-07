@@ -19,7 +19,7 @@ beforeEach(resetSmoothTests);
 
 describe('Smooth ownership', () => {
   test.each(['ticker start', 'scheduler constructor'] as const)(
-    'releases subscriptions and timers when %s fails during initialization',
+    'destroys owned resources after %s fails on the first content growth',
     (stage) => {
       const failure = new Error('Smooth initialization failed.');
 
@@ -49,15 +49,27 @@ describe('Smooth ownership', () => {
         harness.scheduler.next(FailingScheduler);
       }
 
-      expect(() => harness.state.value).toThrow(failure);
+      const error = vi.fn();
+
+      harness.state.value.subscribe({ error });
+
+      if (stage === 'scheduler constructor') {
+        expect(() => block.source.next(paragraph('ready to stream'))).toThrow(failure);
+      } else {
+        block.source.next(paragraph('ready to stream'));
+
+        expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+
+        expect(PrimarySmoothTicker.instances.every((ticker) => !ticker.running)).toBe(true);
+      }
+
+      harness.state.destroy();
 
       expect(observerCount(block.block.baseLength)).toBe(0);
 
       expect(PrimarySmoothTicker.instances.every((ticker) => !ticker.running)).toBe(true);
 
       expect(block.source.closed).toBe(false);
-
-      harness.state.destroy();
     },
   );
 
@@ -135,8 +147,6 @@ describe('Smooth ownership', () => {
 
     output.subscribe({ complete });
 
-    const ticker = latest(PrimarySmoothTicker.instances);
-
     BatchScheduler.batch(() => {
       if (scenario.change === 'content') {
         first.source.next(paragraph('abc'));
@@ -156,6 +166,8 @@ describe('Smooth ownership', () => {
 
       harness.scheduler.complete();
     });
+
+    const ticker = latest(PrimarySmoothTicker.instances);
 
     expect(visibleText(output.value)).toEqual(['a']);
 
@@ -223,7 +235,7 @@ describe('Smooth ownership', () => {
 
       expect(complete).toHaveBeenCalledOnce();
 
-      expect(PrimarySmoothTicker.instances).toHaveLength(enabled ? 1 : 0);
+      expect(PrimarySmoothTicker.instances).toHaveLength(0);
 
       expect(PrimarySmoothTicker.instances.every((ticker) => !ticker.running)).toBe(true);
 
@@ -296,6 +308,8 @@ describe('Smooth ownership', () => {
 
     const destroySource = vi.spyOn(block.block, 'destroy');
 
+    block.source.next(paragraph('value grows'));
+
     const ticker = latest(PrimarySmoothTicker.instances);
 
     const borrowed = [
@@ -363,6 +377,8 @@ describe('Smooth ownership', () => {
     const error = vi.fn();
 
     const subscription = harness.state.value.subscribe({ error });
+
+    block.source.next(paragraph('value grows'));
 
     const ticker = latest(PrimarySmoothTicker.instances);
 

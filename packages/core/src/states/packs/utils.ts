@@ -1,6 +1,8 @@
 import type {
+  BaseShadConfig,
   BaseSmoothConfig,
   SchedulerType,
+  ShadConfig,
   SmoothConfig,
   SmoothSchedulerClass,
   SmoothTickerClass,
@@ -77,6 +79,15 @@ export const toBaseSmoothConfig = (config: boolean | SmoothConfig): BaseSmoothCo
     enabled,
     ticker: getTickerByType(ticker),
     scheduler: getSchedulerByType(scheduler),
+  };
+};
+
+export const toBaseShadConfig = (config: boolean | ShadConfig): BaseShadConfig => {
+  const { enabled = true, length = 2 } = isBoolean(config) ? { enabled: config } : config;
+
+  return {
+    enabled,
+    length: Number.isFinite(length) ? Math.max(0, Math.floor(length)) : 0,
   };
 };
 

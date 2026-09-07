@@ -1,4 +1,4 @@
-import type { SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
 import type {
   ApplyRepairsRemarkPlugin,
   PatchesRemarkPlugin,
@@ -93,6 +93,12 @@ export type CoreInputs<R, C = {}> = {
    * @default false
    */
   smooth?: IReadableClosure<boolean | SmoothConfig>;
+
+  /**
+   * Configure shading at the tail of newly visible content.
+   * @default false
+   */
+  shad?: IReadableClosure<boolean | ShadConfig>;
 
   /**
    * Plugins used to render compiled content.

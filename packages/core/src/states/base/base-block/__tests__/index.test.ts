@@ -1,6 +1,17 @@
 import type { BaseBlockItemInputs, IBlockMeta, IRangeState } from '@flowdown/types';
 
-import { D, MutableState, ReactiveState, render, S, type StateClosureInputProps } from 'reactive';
+import {
+  D,
+  type IReadableClosure,
+  MutableState,
+  once,
+  ReactiveState,
+  render,
+  S,
+  type StateClosureInputProps,
+  useClearable,
+  useMap,
+} from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
 import { BaseBlockItem } from '../index';
@@ -106,6 +117,56 @@ describe('BaseBlockItem', () => {
 
     expect(mapped.closed).toBe(false);
     expect(getObserverCount(mapped)).toBe(0);
+  });
+
+  test('owns mapper-returned closures independently for each block and fork', () => {
+    const destroyed = vi.fn();
+
+    const Uppercase = once(function Uppercase({ source }: { source: IReadableClosure<string> }) {
+      useClearable(destroyed);
+
+      return useMap(source, (value) => value.toUpperCase());
+    });
+
+    const source = MutableState.of('value');
+
+    const meta = createMeta();
+
+    const range = MutableState.of<IRangeState | null>({ start: 1 });
+
+    const block = renderTextBlock({
+      source,
+      meta,
+      mapper: D((value) => render(S([Uppercase, { source: value }]))),
+    });
+
+    const fork = block.fork({ range });
+
+    expect(block.value.value).toBe('VALUE');
+
+    expect(fork.value.value).toBe('ALUE');
+
+    block.destroy();
+
+    block.destroy();
+
+    expect(destroyed).toHaveBeenCalledOnce();
+
+    source.next('changed');
+
+    expect(fork.value.value).toBe('HANGED');
+
+    range.next({ start: 2, end: 5 });
+
+    expect(fork.value.value).toBe('ANG');
+
+    fork.destroy();
+
+    expect(destroyed).toHaveBeenCalledTimes(2);
+
+    expect([source, meta, range].every((state) => !state.closed)).toBe(true);
+
+    expect([source, meta, range].map(getObserverCount)).toEqual([0, 0, 0]);
   });
 
   test('renders a concrete fork without taking ownership of shared inputs', () => {
