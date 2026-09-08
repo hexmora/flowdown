@@ -1,19 +1,27 @@
+import type { ReactRenderExtraParams } from '@flowdown/react-presets/base';
 import type { ReactNode } from 'react';
 
 import { Core, isPluggablesEqual } from '@flowdown/core';
+import {
+  SlotProvider,
+  useDeferredUnmount,
+  useStateOf,
+  useStatic,
+} from '@flowdown/react-presets/base';
+import { PRESET_RENDER_PLUGINS } from '@flowdown/react-presets/render';
+import { PRESET_SLOT_PLUGINS } from '@flowdown/react-presets/slot';
 import { defaultsBy } from '@flowdown/utils';
 import cn from 'classnames';
 import { forwardRef, memo, useEffect, useImperativeHandle, useState } from 'react';
 import { D, render, S } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
-import type { FlowdownProps, FlowdownRef, ReactRenderExtraParams } from './types';
+import type { FlowdownProps, FlowdownRef } from './types';
 
-import { RootReconciler, SlotProvider } from './components';
+import { RootReconciler } from './components';
 import { DEFAULT_CONFIG, EL, EO } from './consts';
-import { useDeferredUnmount, usePlugins, useStateOf, useStatic } from './hooks';
+import { usePlugins } from './hooks';
 import { ReactRenderer } from './modules';
-import { PRESET_RENDER_PLUGINS, PRESET_SLOT_PLUGINS } from './plugins';
 import styles from './styles/index.module.scss';
 import { useThemeStyles } from './theme';
 import { isPatchesEqual, isPropsEqual, isSmoothEqual } from './utils';

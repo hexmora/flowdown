@@ -1,21 +1,20 @@
-import type { Element } from 'hast';
-import type { ComponentProps, ComponentType } from 'react';
-
-import { render, screen } from '@testing-library/react';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
-
 import type {
   AnySlotPluggable,
   HeadingProps,
   ParagraphProps,
+  RuntimeSlotProps,
   SlotInputProps,
-  SlotProps,
-  SlotType,
-} from '../types';
+  SlotPositionType,
+} from '@flowdown/react-presets/base';
+import type { Element } from 'hast';
+import type { ComponentType } from 'react';
+
+import { createTypeOfSlot, SlotProvider } from '@flowdown/react-presets/base';
+import { PRESET_SLOT_PLUGINS } from '@flowdown/react-presets/slot';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { Flowdown } from '..';
-import { createTypeOfSlot, SlotProvider } from '../components';
-import { PRESET_SLOT_PLUGINS } from '../plugins';
 
 const node: Element = {
   children: [],
@@ -73,29 +72,25 @@ class SecondCodeHeaderPlugin extends FirstCodeHeaderPlugin {
 
 describe('Raw slots', () => {
   test('requires a nullable Raw on every slot component', () => {
-    expectTypeOf<SlotProps[SlotType]>().toExtend<{ Raw: unknown }>();
+    expectTypeOf<RuntimeSlotProps>().toExtend<{ Raw: unknown }>();
 
-    expectTypeOf<null>().toExtend<SlotProps[SlotType]['Raw']>();
+    expectTypeOf<RuntimeSlotProps>().toHaveProperty('Raw').extract<null>().toBeNull();
 
-    expectTypeOf<undefined>().not.toExtend<SlotProps[SlotType]['Raw']>();
+    expectTypeOf<RuntimeSlotProps>().toHaveProperty('Raw').extract<undefined>().toBeNever();
   });
 
   test('retains each slot prop contract while excluding recursive Raw props', () => {
-    type RawParagraph = NonNullable<ParagraphProps['Raw']>;
+    expectTypeOf<ParagraphProps>()
+      .toHaveProperty('Raw')
+      .branded.toEqualTypeOf<SlotPositionType<SlotInputProps<'Paragraph'>>>();
 
-    type RawHeading = NonNullable<HeadingProps['Raw']>;
+    expectTypeOf<HeadingProps>()
+      .toHaveProperty('Raw')
+      .branded.toEqualTypeOf<SlotPositionType<SlotInputProps<'Heading'>>>();
 
-    expectTypeOf<ComponentProps<RawParagraph>>().toMatchTypeOf<Omit<ParagraphProps, 'Raw'>>();
+    expectTypeOf<SlotInputProps<'Heading'>>().toHaveProperty('level').toEqualTypeOf<number>();
 
-    expectTypeOf<Omit<ParagraphProps, 'Raw'>>().toMatchTypeOf<ComponentProps<RawParagraph>>();
-
-    expectTypeOf<ComponentProps<RawHeading>>().toMatchTypeOf<Omit<HeadingProps, 'Raw'>>();
-
-    expectTypeOf<Omit<HeadingProps, 'Raw'>>().toMatchTypeOf<ComponentProps<RawHeading>>();
-
-    expectTypeOf<ComponentProps<RawHeading>>().toHaveProperty('level').toEqualTypeOf<number>();
-
-    expectTypeOf<ComponentProps<RawParagraph>>().not.toHaveProperty('Raw');
+    expectTypeOf<SlotInputProps<'Paragraph'>>().not.toHaveProperty('Raw');
   });
 
   test.each(PRESET_SLOT_PLUGINS)('provides the default renderer to an override of %s', (Preset) => {
@@ -240,7 +235,7 @@ describe('Raw slots', () => {
     { plugins: [], description: 'default Raw' },
     { plugins: [StyledParagraphPlugin], description: 'composed Raw' },
   ])('isolates $description between rendered instances', ({ plugins }) => {
-    const captured = new Set<ParagraphProps['Raw']>();
+    const captured = new Set<SlotPositionType<SlotInputProps<'Paragraph'>>>();
 
     const CapturePlugin = createParagraphPlugin('capture-raw-instance', ({ Raw, ...props }) => {
       captured.add(Raw);

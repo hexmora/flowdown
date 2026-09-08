@@ -1,9 +1,9 @@
+import type { BaseBlockItemInputs, IBlockMeta, IRangeState } from '@flowdown/types';
+
 import { D, MutableState, ReactiveState, render, S, type StateClosureInputProps } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { IRangeState } from '../../../atoms';
-
-import { BaseBlockItem, type BaseBlockItemInputs, type IBlockMeta } from '../index';
+import { BaseBlockItem } from '../index';
 
 class TextBlock extends BaseBlockItem<string> {
   protected slice(value: string, start: number, end: number): string {

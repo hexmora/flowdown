@@ -1,16 +1,15 @@
 import type { IRenderPatchItem } from '@flowdown/core';
+import type { IReactRenderPlugin } from '@flowdown/react-presets/base';
 import type { Root } from 'hast';
 import type { ReactNode } from 'react';
 
 import { BlockItem } from '@flowdown/core';
+import { PatchRenderPlugin } from '@flowdown/react-presets/render';
 import { act, render, screen } from '@testing-library/react';
 import { MutableState, toClosure } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { IReactRenderPlugin } from '../../../types';
-
-import { PatchReconciler } from '../../patch-reconciler';
-import { BlockReconciler } from '../index';
+import { BlockReconciler } from '..';
 
 const createBlock = () =>
   new BlockItem({
@@ -36,11 +35,22 @@ const createPatches = (label: string): IRenderPatchItem<ReactNode>[] => [
   },
 ];
 
+const patchPlugin = new PatchRenderPlugin();
+
 const createPlugin = (label: string): IReactRenderPlugin => ({
   config: {},
   destroy: vi.fn(),
   match: () => true,
-  render: ({ patches }) => <PatchReconciler patchKey="selected" patches={patches} text={label} />,
+  render: (params) =>
+    patchPlugin.render({
+      ...params,
+      node: {
+        type: 'element',
+        tagName: 'span',
+        properties: { dataParserPatch: '1', dataPatchKey: 'selected', dataPatchText: label },
+        children: [],
+      },
+    }),
 });
 
 describe('BlockReconciler', () => {

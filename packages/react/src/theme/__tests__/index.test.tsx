@@ -1,3 +1,4 @@
+import { PREFIX } from '@flowdown/react-presets/base';
 import { render, renderHook } from '@testing-library/react';
 import { createRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -5,9 +6,8 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import type { FlowdownRef, PartialThemeConfig, Theme, ThemeConfig } from '../..';
 
+import { useThemeStyles } from '..';
 import { Flowdown } from '../..';
-import { PREFIX } from '../../consts';
-import { useThemeStyles } from '../hooks';
 import { PRESET_THEME_MAP } from '../presets';
 import { mapTokensToStyles, resolveTheme } from '../utils';
 

@@ -1,4 +1,4 @@
-import type { SmoothConfig } from '@flowdown/core';
+import type { SmoothConfig } from '@flowdown/core-presets/mapper';
 
 import { isPluggablesEqual, isPluginConfigEqual } from '@flowdown/core';
 import { defaultsBy } from '@flowdown/utils';

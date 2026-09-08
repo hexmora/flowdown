@@ -1,3 +1,5 @@
+import type { IBlockMeta, IBlockState } from '@flowdown/types';
+
 import {
   type IReactiveState,
   MutableState,
@@ -6,8 +8,6 @@ import {
   S,
 } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
-
-import type { IBlockMeta, IBlockState } from '../../../states/base';
 
 import {
   BaseRenderPlugin,

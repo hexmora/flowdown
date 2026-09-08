@@ -19,14 +19,24 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        presets: resolve(__dirname, 'src/presets.ts'),
       },
       name: 'Flowdown',
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      external: ['@flowdown/preset-plugins', /^reactive(?:\/.*)?$/],
+      external: [
+        /^@flowdown\/core-presets(?:\/.*)?$/,
+        '@flowdown/types',
+        '@flowdown/utils',
+        'lodash-es',
+        'marked',
+        /^reactive(?:\/.*)?$/,
+        'remark-parse',
+        'remark-rehype',
+        'shallow-equal',
+        'unified',
+      ],
     },
   },
   test: {

@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { FlowdownProps, IPluginItem } from '../../types';
 
-import { isPropsEqual } from '../index';
+import { isPropsEqual } from '..';
 
 class TestPlugin implements IPluginWithConfig {
   static readonly key = 'test-plugin';

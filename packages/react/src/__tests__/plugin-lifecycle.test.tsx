@@ -1,9 +1,11 @@
+import type { IReactRenderPluggable } from '@flowdown/react-presets/base';
+
 import { render, waitFor } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
-import type { IPluginItem, IReactRenderPluggable } from '../types';
+import type { IPluginItem } from '../types';
 
-import { Flowdown } from '../index';
+import { Flowdown } from '..';
 
 interface LifecycleCounts {
   created: number;

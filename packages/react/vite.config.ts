@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@prefix': resolve(__dirname, 'src/styles/_prefix.scss'),
+      '@prefix': resolve(__dirname, '../react-presets/src/styles/_prefix.scss'),
     },
   },
   oxc: {
@@ -37,19 +37,16 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@flowdown/core',
+        /^@flowdown\/react-presets(?:\/.*)?$/,
         /^reactive(?:\/.*)?$/,
         '@flowdown/types',
         '@flowdown/utils',
         'classnames',
-        /^katex(?:\/.*)?$/,
         'lodash-es',
-        /^mathjax-full(?:\/.*)?$/,
         'react',
         'react-dom',
-        'react-error-boundary',
         'react/jsx-runtime',
         'shallow-equal',
-        /^shiki(?:\/.*)?$/,
       ],
       output: {
         globals: {
@@ -60,7 +57,6 @@ export default defineConfig({
           'lodash-es': 'lodashEs',
           react: 'React',
           'react-dom': 'ReactDOM',
-          'react-error-boundary': 'ReactErrorBoundary',
           'react/jsx-runtime': 'jsxRuntime',
           'shallow-equal': 'shallowEqual',
         },

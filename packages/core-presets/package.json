@@ -1,0 +1,108 @@
+{
+  "name": "@flowdown/core-presets",
+  "version": "0.1.0",
+  "description": "Headless preset mapper, remark, rehype, and repair plugins for Flowdown.",
+  "keywords": [
+    "headless",
+    "markdown",
+    "plugins",
+    "rehype",
+    "remark",
+    "unified"
+  ],
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/core-presets#readme",
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexmora/flowdown.git",
+    "directory": "packages/core-presets"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./mapper": "./src/mapper/index.ts",
+    "./rehype": "./src/rehype/index.ts",
+    "./remark": "./src/remark/index.ts",
+    "./repair": "./src/repair/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      "./mapper": {
+        "types": "./dist/mapper/index.d.ts",
+        "import": "./dist/mapper.js",
+        "require": "./dist/mapper.cjs"
+      },
+      "./rehype": {
+        "types": "./dist/rehype/index.d.ts",
+        "import": "./dist/rehype.js",
+        "require": "./dist/rehype.cjs"
+      },
+      "./remark": {
+        "types": "./dist/remark/index.d.ts",
+        "import": "./dist/remark.js",
+        "require": "./dist/remark.cjs"
+      },
+      "./repair": {
+        "types": "./dist/repair/index.d.ts",
+        "import": "./dist/repair.js",
+        "require": "./dist/repair.cjs"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "lint": "oxlint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flowdown/types": "workspace:*",
+    "@flowdown/utils": "workspace:*",
+    "@types/hast": "catalog:",
+    "@types/mdast": "catalog:",
+    "@types/unist": "catalog:",
+    "hast-util-sanitize": "catalog:",
+    "lodash-es": "catalog:",
+    "mdast-util-from-markdown": "catalog:",
+    "mdast-util-gfm-autolink-literal": "catalog:",
+    "mdast-util-gfm-footnote": "catalog:",
+    "mdast-util-gfm-strikethrough": "catalog:",
+    "mdast-util-gfm-table": "catalog:",
+    "mdast-util-gfm-task-list-item": "catalog:",
+    "mdast-util-math": "catalog:",
+    "mdast-util-to-markdown": "catalog:",
+    "micromark-extension-gfm-autolink-literal": "catalog:",
+    "micromark-extension-gfm-footnote": "catalog:",
+    "micromark-extension-gfm-strikethrough": "catalog:",
+    "micromark-extension-gfm-table": "catalog:",
+    "micromark-extension-gfm-task-list-item": "catalog:",
+    "micromark-extension-math": "catalog:",
+    "micromark-util-character": "catalog:",
+    "micromark-util-types": "catalog:",
+    "reactive": "workspace:*",
+    "rehype-raw": "catalog:",
+    "rehype-sanitize": "catalog:",
+    "remark-breaks": "catalog:",
+    "rxjs": "catalog:",
+    "shallow-equal": "catalog:",
+    "unified": "catalog:"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "remark-parse": "catalog:",
+    "remark-rehype": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  }
+}

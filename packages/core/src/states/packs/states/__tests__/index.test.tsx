@@ -9,12 +9,9 @@ import type {
   IRepairPlugin,
 } from '@flowdown/types';
 
-import {
-  ApplyRepairsRemarkPlugin,
-  DanglingFootnoteRepairPlugin,
-  HoistFootnoteRehypePlugin,
-  SyntaxMathRemarkPlugin,
-} from '@flowdown/preset-plugins';
+import { HoistFootnoteRehypePlugin } from '@flowdown/core-presets/rehype';
+import { ApplyRepairsRemarkPlugin, SyntaxMathRemarkPlugin } from '@flowdown/core-presets/remark';
+import { DanglingFootnoteRepairPlugin } from '@flowdown/core-presets/repair';
 import {
   type IReactiveState,
   type IReadableClosure,
@@ -25,9 +22,9 @@ import {
 } from 'reactive';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
+import type { IPatchItem } from '../..';
 import type { IRenderPatchItem } from '../../../../externals';
 import type { BlockCompilerConfig, BlockRemarksConfig } from '../../../hast';
-import type { IPatchItem } from '../../type';
 
 import {
   RawPatchesMapper,
@@ -35,7 +32,7 @@ import {
   RemarkPluggablesMapper,
   RenderPatchesMapper,
   RepairPluggablesMapper,
-} from '../index';
+} from '..';
 
 const DEFAULT_CONFIG: BlockCompilerConfig = {
   repair: false,

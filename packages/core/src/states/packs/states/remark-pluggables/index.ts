@@ -6,12 +6,12 @@ import {
   PRESET_REMARK_PLUGINS,
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
-} from '@flowdown/preset-plugins';
+} from '@flowdown/core-presets/remark';
 import { memoReturns } from 'reactive';
 
 import type { RemarkPluggablesMapperInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base/plugin-builder/utils';
+import { isPluggablesEqual } from '../../../base';
 import { getPluggableClass, getPluggableConfig, mergePluginPluggables } from '../utils';
 
 export * from './type';

@@ -29,7 +29,8 @@ npm install @flowdown/core reactive
 `Core` takes a renderer that determines the output for each block. This small renderer returns the reactive blocks themselves so you can inspect their HAST trees:
 
 ```ts
-import { BaseRenderer, Core, type HastRoot, type IBlockState } from "@flowdown/core";
+import { BaseRenderer, Core, type HastRoot } from "@flowdown/core";
+import type { IBlockState } from "@flowdown/types";
 import type { ElementContent, Parent } from "hast";
 import { D, MutableState, render, S } from "reactive";
 
@@ -82,7 +83,7 @@ Destroy the core instance when you are done with it. Core releases the state clo
 
 Core includes preset Markdown processing plugins. Add to them through `remarks` for Markdown syntax, `rehypes` for HAST transformations, and `repairs` for handling incomplete Markdown. Supply render plugins through `renders` for your renderer to use.
 
-These inputs can be reactive, so you can update plugin configuration alongside the text. For the available preset plugins, see [`@flowdown/preset-plugins`](../preset-plugins).
+These inputs can be reactive, so you can update plugin configuration alongside the text. For the available preset plugins, see [`@flowdown/core-presets`](../core-presets).
 
 ## Contributing
 

@@ -2,7 +2,7 @@ import type { IPatchItem } from '@flowdown/core';
 
 import { describe, expect, test } from 'vitest';
 
-import { isPatchesEqual } from '../index';
+import { isPatchesEqual } from '..';
 
 const renderPatch = () => null;
 

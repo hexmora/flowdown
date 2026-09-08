@@ -1,16 +1,19 @@
 import type { IRenderPatchItem } from '@flowdown/core';
+import type { IReactRenderPlugin } from '@flowdown/react-presets/base';
 import type { Element, ElementContent, Parent, RootContent } from 'hast';
 import type { ReactNode } from 'react';
 import type { IReactiveState } from 'reactive';
 
+import {
+  getReactProps,
+  isHastElement,
+  isHastParent,
+  PATCH_MARKER,
+} from '@flowdown/react-presets/base';
 import { isString } from 'lodash-es';
 import { Fragment } from 'react';
 
-import type { IReactRenderPlugin } from '../../types';
 import type { RenderNodeParams } from './type';
-
-import { PATCH_MARKER } from '../../consts';
-import { getReactProps, isHastElement, isHastParent } from '../../utils';
 
 const isElementContent = (node: RootContent): node is ElementContent =>
   node.type === 'comment' || node.type === 'element' || node.type === 'text';

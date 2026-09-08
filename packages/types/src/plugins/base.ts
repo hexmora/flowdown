@@ -50,6 +50,17 @@ export type PluginClass<T extends IPluginWithConfig, O = void> = Newable<
   readonly key: string;
 };
 
+export type IPluggableConfig<C = unknown> = (unknown extends C
+  ? object | Record<string, unknown>
+  : [C] extends [void]
+    ? {}
+    : C) & {
+  /**
+   * Overrides the plugin priority. Lower values run first; equal values keep declaration order.
+   */
+  priority?: PluginPriority | number;
+};
+
 export type IPluggable<T extends IPluginWithConfig, O = void, P = O> =
   | PluginClass<T>
-  | [PluginClass<T, P>, O];
+  | [PluginClass<T, unknown extends P ? void : P>, IPluggableConfig<O>];

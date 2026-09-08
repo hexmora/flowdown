@@ -1,5 +1,3 @@
-import { afterEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
-
 import type {
   BaseSmoothConfig,
   SchedulerParams,
@@ -8,10 +6,16 @@ import type {
   SmoothTickerClass,
   TickerParams,
   TickerType,
-} from '../type';
+} from '@flowdown/core-presets/mapper';
 
-import { IntervalSmoothTicker, RafSmoothTicker, SpringSmoothScheduler } from '../../../externals';
-import { ALL_SCHEDULERS, ALL_TICKERS } from '../consts';
+import {
+  IntervalSmoothTicker,
+  RafSmoothTicker,
+  SpringSmoothScheduler,
+} from '@flowdown/core-presets/mapper';
+import { afterEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+
+import { ALL_SCHEDULERS, ALL_TICKERS } from '..';
 import { getSchedulerByType, getTickerByType, isEnableRAF, toBaseSmoothConfig } from '../utils';
 
 afterEach(() => {

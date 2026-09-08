@@ -29,7 +29,8 @@ npm install @flowdown/core reactive
 `Core` 接收一个渲染器，由它决定每个内容块的输出。下面的简单渲染器直接返回响应式内容块，便于查看它们的 HAST 树：
 
 ```ts
-import { BaseRenderer, Core, type HastRoot, type IBlockState } from "@flowdown/core";
+import { BaseRenderer, Core, type HastRoot } from "@flowdown/core";
+import type { IBlockState } from "@flowdown/types";
 import type { ElementContent, Parent } from "hast";
 import { D, MutableState, render, S } from "reactive";
 
@@ -82,7 +83,7 @@ text.destroy();
 
 Core 内置预设的 Markdown 处理插件。可以通过 `remarks` 扩展 Markdown 语法，通过 `rehypes` 转换 HAST，以及通过 `repairs` 处理不完整的 Markdown。渲染插件通过 `renders` 传入，供渲染器使用。
 
-这些输入可以是响应式的，因此可以随文本一起更新插件配置。可用的预设插件见 [`@flowdown/preset-plugins`](../../preset-plugins)。
+这些输入可以是响应式的，因此可以随文本一起更新插件配置。可用的预设插件见 [`@flowdown/core-presets`](../../core-presets)。
 
 ## 参与贡献
 

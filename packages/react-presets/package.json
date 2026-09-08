@@ -1,0 +1,96 @@
+{
+  "name": "@flowdown/react-presets",
+  "version": "0.1.0",
+  "description": "Preset render and slot plugins with shared React rendering infrastructure for Flowdown.",
+  "keywords": [
+    "hast",
+    "markdown",
+    "plugins",
+    "react",
+    "renderer",
+    "streaming"
+  ],
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/react-presets#readme",
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexmora/flowdown.git",
+    "directory": "packages/react-presets"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "exports": {
+    "./base": "./src/base/index.ts",
+    "./render": "./src/render/index.ts",
+    "./slot": "./src/slot/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      "./base": {
+        "types": "./dist/base/index.d.ts",
+        "import": "./dist/base.js",
+        "require": "./dist/base.cjs"
+      },
+      "./render": {
+        "types": "./dist/render/index.d.ts",
+        "import": "./dist/render.js",
+        "require": "./dist/render.cjs"
+      },
+      "./slot": {
+        "types": "./dist/slot/index.d.ts",
+        "import": "./dist/slot.js",
+        "require": "./dist/slot.cjs"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "lint": "oxlint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flowdown/core": "workspace:*",
+    "@flowdown/types": "workspace:*",
+    "@flowdown/utils": "workspace:*",
+    "@types/hast": "catalog:",
+    "classnames": "catalog:",
+    "katex": "catalog:",
+    "lodash-es": "catalog:",
+    "mathjax-full": "catalog:",
+    "react": "catalog:",
+    "react-error-boundary": "catalog:",
+    "reactive": "workspace:*",
+    "shallow-equal": "catalog:",
+    "shiki": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/lodash-es": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "oxlint": "catalog:",
+    "react-dom": "catalog:",
+    "sass": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vite-plugin-lib-inject-css": "catalog:",
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
+  }
+}

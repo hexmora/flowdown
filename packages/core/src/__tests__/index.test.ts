@@ -1,17 +1,14 @@
-import { describe, expect, test } from 'vitest';
-
 import {
-  ALL_SCHEDULERS,
-  ALL_TICKERS,
-  BaseRenderer,
-  BaseRenderPlugin,
   BaseSmoothScheduler,
   BaseSmoothTicker,
   IntervalSmoothTicker,
   RafSmoothTicker,
   Smooth,
   SpringSmoothScheduler,
-} from '../index';
+} from '@flowdown/core-presets/mapper';
+import { describe, expect, test } from 'vitest';
+
+import { ALL_SCHEDULERS, ALL_TICKERS, BaseRenderer, BaseRenderPlugin } from '..';
 
 describe('core public exports', () => {
   test('exposes renderer modules and smooth streaming declarations', () => {

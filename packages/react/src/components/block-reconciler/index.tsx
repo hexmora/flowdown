@@ -1,9 +1,9 @@
+import { useStateValue } from '@flowdown/react-presets/base';
 import { memo, useMemo } from 'react';
 import { toState } from 'reactive';
 
 import type { BlockReconcilerProps } from './type';
 
-import { useStateValue } from '../../hooks';
 import { renderParentChildren } from './utils';
 
 export const BlockReconciler = /*#__PURE__*/ memo(function BlockReconciler({

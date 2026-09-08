@@ -6,16 +6,13 @@ export const getPluggableClass = <T extends IPluginWithConfig>(
   pluggable: IPluggable<T, unknown>,
 ): PluginClass<T> => (isArray(pluggable) ? pluggable[0] : pluggable);
 
-export const mergePluginPluggables = <T extends IPluginWithConfig>(
-  presets: readonly IPluggable<T, unknown>[],
-  extras: readonly IPluggable<T, unknown>[],
-): IPluggable<T, unknown>[] => {
+export const mergePluginPluggables = <T>(presets: readonly T[], extras: readonly T[]): T[] => {
   const pluggables = [...presets];
 
   for (const extra of extras) {
-    const Plugin = getPluggableClass(extra);
+    const Plugin = isArray(extra) ? extra[0] : extra;
 
-    const index = pluggables.findIndex((item) => getPluggableClass(item) === Plugin);
+    const index = pluggables.findIndex((item) => (isArray(item) ? item[0] : item) === Plugin);
 
     if (index === -1) {
       pluggables.push(extra);

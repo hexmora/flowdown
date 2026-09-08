@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
 
+import { PREFIX } from '@flowdown/react-presets/base';
 import { forOwn, isArray, isObject, isString, merge, replace, toLower, toString } from 'lodash-es';
 
 import type { PartialThemeConfig, PresetKeys, Theme, ThemeConfig, ThemeTokens } from '../types';
 
-import { PREFIX } from '../consts';
 import { PRESET_THEME_MAP } from './presets';
 
 const isThemeTuple = (theme: Theme): theme is [PresetKeys, PartialThemeConfig] => isArray(theme);

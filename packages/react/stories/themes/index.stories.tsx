@@ -1,7 +1,10 @@
 import type { PluginConfigs } from '@flowdown/core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { SyntaxHtmlAllowedRemarkPlugin, SyntaxPolicyRemarkPlugin } from '@flowdown/core/presets';
+import {
+  SyntaxHtmlAllowedRemarkPlugin,
+  SyntaxPolicyRemarkPlugin,
+} from '@flowdown/core-presets/remark';
 
 import { Flowdown } from '../../src';
 import { THEME_MARKDOWN } from './consts';

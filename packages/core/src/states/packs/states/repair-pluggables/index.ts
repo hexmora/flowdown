@@ -1,11 +1,11 @@
 import type { IPluggable, IRepairPlugin } from '@flowdown/types';
 
-import { DanglingFootnoteRepairPlugin, PRESET_REPAIR_PLUGINS } from '@flowdown/preset-plugins';
+import { DanglingFootnoteRepairPlugin, PRESET_REPAIR_PLUGINS } from '@flowdown/core-presets/repair';
 import { memoReturns } from 'reactive';
 
 import type { RepairPluggablesMapperInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base/plugin-builder/utils';
+import { isPluggablesEqual } from '../../../base';
 import { mergePluginPluggables } from '../utils';
 
 export * from './type';

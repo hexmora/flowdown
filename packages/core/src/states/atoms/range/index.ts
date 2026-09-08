@@ -1,10 +1,8 @@
+import type { IRangeState } from '@flowdown/types';
+
 import { compute } from '@flowdown/utils';
 import { isUndefined } from 'lodash-es';
 import { BaseStateClosure } from 'reactive';
-
-import type { IRangeState } from './type';
-
-export * from './type';
 
 export class Range extends BaseStateClosure<IRangeState | null> {
   protected render() {

@@ -1,23 +1,23 @@
+import type { SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { IBlockState } from '@flowdown/types';
 import type { ElementContent, Parent, RootContent } from 'hast';
 import type { Plugin } from 'unified';
 
-import { BaseRehypePlugin } from '@flowdown/preset-plugins';
+import { BaseRehypePlugin } from '@flowdown/core-presets/rehype';
 import { assert } from '@flowdown/utils';
 import { first, last } from 'lodash-es';
 import { D, type IReadableClosure, MutableState, ReactiveState, render, S } from 'reactive';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockState } from '../../base';
-import type { SmoothConfig } from '../type';
 
-import { BaseRenderer } from '../../../externals';
+import { Core } from '..';
 import {
   DoubleStepSmoothScheduler,
+  FakeSmoothTicker,
   StepSmoothScheduler,
-} from '../../../externals/smooth-scheduler/__tests__/utils';
-import { FakeSmoothTicker } from '../../../externals/smooth-ticker/__tests__/utils';
-import { Core } from '../index';
+} from '../../../__tests__/utils/smooth';
+import { BaseRenderer } from '../../../externals';
 
 type Block = IBlockState<HastRoot>;
 

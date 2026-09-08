@@ -1,7 +1,7 @@
+import type { IBlockState } from '@flowdown/types';
+
 import { cacheDiffMap } from '@flowdown/utils';
 import { shallowEqual } from 'shallow-equal';
-
-import type { IBlockState } from '../../states/base';
 
 export const mapRendererItems = <T, P, R>(
   [currentSource, currentPlugins]: [IBlockState<T>[], P[]],

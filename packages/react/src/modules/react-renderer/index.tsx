@@ -1,12 +1,11 @@
-import type { IBlockState } from '@flowdown/core';
+import type { ReactRenderExtraParams } from '@flowdown/react-presets/base';
+import type { IBlockState } from '@flowdown/types';
 import type { ElementContent, Parent, Root } from 'hast';
 import type { ReactNode } from 'react';
 
 import { BaseRenderer } from '@flowdown/core';
 
-import type { ReactRenderExtraParams } from '../../types';
-
-import { BlockReconciler } from '../../components/block-reconciler';
+import { BlockReconciler } from '../../components';
 
 export class ReactRenderer extends BaseRenderer<
   Root,

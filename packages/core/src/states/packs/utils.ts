@@ -1,20 +1,18 @@
-import type { IRawPatchItem } from '@flowdown/types';
-
-import { assert } from '@flowdown/utils';
-import { isArray, isBoolean, isEqual, isFunction, isString } from 'lodash-es';
-
-import type { IRenderPatchItem } from '../../externals';
-import type { MapperPluggable } from '../base';
 import type {
   BaseSmoothConfig,
-  CoreMappers,
-  IPatchItem,
   SchedulerType,
   SmoothConfig,
   SmoothSchedulerClass,
   SmoothTickerClass,
   TickerType,
-} from './type';
+} from '@flowdown/core-presets/mapper';
+import type { IRawPatchItem } from '@flowdown/types';
+
+import { assert } from '@flowdown/utils';
+import { isBoolean, isEqual, isFunction, isString } from 'lodash-es';
+
+import type { IRenderPatchItem } from '../../externals';
+import type { IPatchItem } from './type';
 
 import { ALL_SCHEDULERS, ALL_TICKERS } from './consts';
 
@@ -80,10 +78,6 @@ export const toBaseSmoothConfig = (config: boolean | SmoothConfig): BaseSmoothCo
     ticker: getTickerByType(ticker),
     scheduler: getSchedulerByType(scheduler),
   };
-};
-
-export const patchMappers = (prev: MapperPluggable[], items: CoreMappers): MapperPluggable[] => {
-  return isArray(items) ? [...prev, ...items] : items([...prev]);
 };
 
 export const splitPatches = <R>(patches: IPatchItem<R>[]) => {
