@@ -1,15 +1,22 @@
 import type { Element } from 'hast';
 
+import { SlotProvider } from '@flowdown/react-presets/base';
+import {
+  CodeBlockSlotPlugin,
+  HeadingSlotPlugin,
+  ImageSlotPlugin,
+  LinkSlotPlugin,
+  PRESET_SLOT_PLUGINS,
+} from '@flowdown/react-presets/slot';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, test } from 'vitest';
 
-import { SlotProvider } from '../components/slot-provider';
-import { Flowdown } from '../index';
-import { PRESET_SLOT_PLUGINS } from '../plugins';
-import { CodeBlockRenderer } from '../plugins/slot/code-block/renderer';
-import { HeadingRenderer } from '../plugins/slot/heading/renderer';
-import { ImageRenderer } from '../plugins/slot/image/renderer';
-import { LinkRenderer } from '../plugins/slot/link/renderer';
+import { Flowdown } from '..';
+
+const CodeBlockRenderer = new CodeBlockSlotPlugin().Component;
+const HeadingRenderer = new HeadingSlotPlugin().Component;
+const ImageRenderer = new ImageSlotPlugin().Component;
+const LinkRenderer = new LinkSlotPlugin().Component;
 
 const node: Element = {
   type: 'element',

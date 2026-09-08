@@ -29,8 +29,7 @@
   "module": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./presets": "./src/presets.ts"
+    ".": "./src/index.ts"
   },
   "publishConfig": {
     "main": "./dist/index.cjs",
@@ -41,11 +40,6 @@
         "types": "./dist/index.d.ts",
         "import": "./dist/index.js",
         "require": "./dist/index.cjs"
-      },
-      "./presets": {
-        "types": "./dist/presets.d.ts",
-        "import": "./dist/presets.js",
-        "require": "./dist/presets.cjs"
       }
     },
     "access": "public"
@@ -57,7 +51,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@flowdown/preset-plugins": "workspace:*",
+    "@flowdown/core-presets": "workspace:*",
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",

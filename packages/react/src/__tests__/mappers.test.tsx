@@ -16,7 +16,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import type { FlowdownRef, IPluginItem } from '../types';
 
-import { Flowdown } from '../index';
+import { Flowdown } from '..';
 import { createManualTicker, createStepScheduler } from './utils/smooth';
 
 const Reverse = once(({ source }: MapperInputs) =>

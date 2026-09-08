@@ -2,14 +2,16 @@
  * @jsxImportSource reactive
  */
 
-import { first, isArray, tail } from 'lodash-es';
+import type { IBlockState } from '@flowdown/types';
+
+import { PluginPriority } from '@flowdown/types';
+import { first, isArray, sortBy, tail } from 'lodash-es';
 import { D, type IReadableClosure, type JSXDescriptor, once, useMap, useSwitchMap } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockState } from '../base-block';
 import type { Mapper, MapperComposerInputs, MapperPluggable } from './type';
 
-import { isPluggableEqual } from '../plugin-builder';
+import { isPluggableEqual, isPluggablesEqual } from '../plugin-builder';
 
 export * from './type';
 
@@ -31,9 +33,18 @@ const MapperItem = /*#__PURE__*/ once(function MapperItem({
 });
 
 export const MapperComposer = /*#__PURE__*/ once(function MapperComposer({
-  mappers,
+  mappers: _mappers,
   source,
 }: MapperComposerInputs): IReadableClosure<IBlockState<HastRoot>[]> {
+  const mappers = useMap(
+    _mappers,
+    (items) =>
+      sortBy(items, (item) =>
+        isArray(item) ? (item[1].priority ?? PluginPriority.Default) : PluginPriority.Default,
+      ),
+    isPluggablesEqual,
+  );
+
   const current = useMap(mappers, (items) => first(items), isPluggableEqual);
 
   return useSwitchMap(current, (pluggable) => {

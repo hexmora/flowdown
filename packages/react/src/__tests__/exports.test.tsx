@@ -5,18 +5,18 @@ import { describe, expect, expectTypeOf, test } from 'vitest';
 
 import type { FlowdownProps } from '../types';
 
-import * as ReactEntry from '../index';
+import * as ReactEntry from '..';
 
 describe('package exports', () => {
-  test('exports Flowdown and runtime values from the public types', () => {
-    expect(sortBy(keys(ReactEntry))).toEqual(['CodeHeaderInnerActionKey', 'Flowdown']);
+  test('exports Flowdown', () => {
+    expect(sortBy(keys(ReactEntry))).toEqual(['Flowdown']);
   });
 
   test('exposes Flowdown with its public prop contract', () => {
     type RootExport = keyof typeof ReactEntry;
     type PublicProps = ComponentProps<typeof ReactEntry.Flowdown>;
 
-    expectTypeOf<RootExport>().toEqualTypeOf<'Flowdown' | 'CodeHeaderInnerActionKey'>();
+    expectTypeOf<RootExport>().toEqualTypeOf<'Flowdown'>();
     expectTypeOf<PublicProps>().toMatchTypeOf<FlowdownProps>();
     expectTypeOf<FlowdownProps>().toMatchTypeOf<PublicProps>();
 

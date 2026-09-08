@@ -1,3 +1,4 @@
+import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
 import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
 
 import { PluginPriority } from '@flowdown/types';
@@ -6,9 +7,9 @@ import { type ComponentType, createRef, type ReactNode, StrictMode } from 'react
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 
-import type { AnySlotPluggable, FlowdownRef, IReactRenderPluggable } from '../types';
+import type { FlowdownRef } from '../types';
 
-import { Flowdown } from '../index';
+import { Flowdown } from '..';
 
 type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 

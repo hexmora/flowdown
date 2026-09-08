@@ -3,14 +3,13 @@ import type {
   IPatchItem,
   MapperPluggable,
   PluginConfigs,
-  SmoothConfig,
 } from '@flowdown/core';
+import type { SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
 import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { CSSProperties, ReactNode } from 'react';
 import type { IReadableClosure } from 'reactive';
 
-import type { IReactRenderPluggable } from './plugin';
-import type { AnySlotPluggable } from './slots';
 import type { Theme } from './theme';
 
 export interface IPluginItem {

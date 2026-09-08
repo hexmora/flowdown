@@ -1,13 +1,14 @@
 import type { MapperInputs } from '@flowdown/core';
+import type { IReactRenderPluggable } from '@flowdown/react-presets/base';
 import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
 
 import { renderHook } from '@testing-library/react';
 import { once } from 'reactive';
 import { describe, expect, test } from 'vitest';
 
-import type { IPluginItem, IReactRenderPluggable } from '../../types';
+import type { IPluginItem } from '../../types';
 
-import { usePlugins } from '../index';
+import { usePlugins } from '..';
 
 type RemarkItem = IPluggable<IRemarkPlugin, unknown>;
 

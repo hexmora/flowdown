@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import type { FlowdownRef } from '../types';
 
-import { Flowdown } from '../index';
+import { Flowdown } from '..';
 import { createRafClock } from './utils/raf';
 import { createManualTicker, createStepScheduler } from './utils/smooth';
 

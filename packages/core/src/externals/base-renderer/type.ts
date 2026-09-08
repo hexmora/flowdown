@@ -1,7 +1,7 @@
+import type { IBlockState } from '@flowdown/types';
 import type { IReadableClosure, Newable } from 'reactive';
 
 import type { BaseRenderer } from '.';
-import type { IBlockState } from '../../states/base';
 import type { IRenderPlugin } from '../base-render-plugin';
 
 export type IRenderPatchRender<R> = (text?: string) => R;

@@ -77,7 +77,17 @@ export function buildPluggables<T extends IPluginWithConfig>(
     if (isArray(item)) {
       const [clazz, config] = item;
 
-      return new clazz(config);
+      const instance = new clazz(config);
+
+      if (config?.priority !== undefined) {
+        Object.defineProperty(instance, 'config', {
+          configurable: true,
+          enumerable: true,
+          value: { ...instance.config, priority: config.priority },
+        });
+      }
+
+      return instance;
     }
 
     return new item();

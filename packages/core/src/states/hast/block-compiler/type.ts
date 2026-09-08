@@ -1,10 +1,14 @@
-import type { IRawPatchItem, IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
+import type {
+  IBlockRawMeta,
+  IBlockState,
+  IRawPatchItem,
+  IRehypePlugin,
+  IRemarkPlugin,
+} from '@flowdown/types';
 import type { IReadableClosure } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockRawMeta, IBlockSection, IBlockState } from '../../base';
-
-export type { IBlockSection, IRawPatchItem };
+import type { IBlockSection } from '../../base';
 
 export interface IBlockCompiler extends IReadableClosure<IBlockState<HastRoot>[]> {}
 

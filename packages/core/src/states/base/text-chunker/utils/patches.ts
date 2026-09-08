@@ -1,8 +1,6 @@
-import type { IRawPatchRange } from '@flowdown/types';
+import type { IRawPatchItem, IRawPatchRange } from '@flowdown/types';
 
 import { isSafeInteger, last, sortBy } from 'lodash-es';
-
-import type { IRawPatchItem } from '../type';
 
 type TextRange = {
   start: number;

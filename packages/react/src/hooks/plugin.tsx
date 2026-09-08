@@ -1,16 +1,12 @@
 import type { MapperPluggable, PluginConfigs } from '@flowdown/core';
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
 
-import { isPluggablesEqual, PluginBuilder } from '@flowdown/core';
-import { get, has, isArray, set } from 'lodash-es';
+import { get, has, isArray } from 'lodash-es';
 import { useMemo } from 'react';
-import { render, S } from 'reactive';
 
-import type { AnySlotPluggable, AnySlotPlugin, IPluginItem, Slots } from '../types';
+import type { IPluginItem } from '../types';
 
 import { EL } from '../consts';
-import { useDeferredUnmount, useStatic } from './base';
-import { useStateOf, useStateValue } from './reactive';
 
 type PluginChannel = Exclude<keyof IPluginItem, 'config'>;
 
@@ -52,39 +48,3 @@ export function usePlugins(
     [defaults, items, type],
   );
 }
-
-export const useSlots = (pluggables: readonly AnySlotPluggable[]): Partial<Slots> => {
-  const plugins = useStateOf<AnySlotPluggable[]>([...pluggables], isPluggablesEqual);
-
-  const builder = useStatic(() =>
-    render(
-      S([
-        PluginBuilder<AnySlotPlugin>,
-        {
-          plugins,
-          sort: false,
-        },
-      ]),
-    ),
-  );
-
-  const instances = useStateValue(builder.value);
-
-  useDeferredUnmount(() => builder.destroy());
-
-  return useMemo(() => {
-    const slots: Partial<Slots> = {};
-
-    for (const instance of instances) {
-      if (!instance.Component) {
-        continue;
-      }
-
-      const current = slots[instance.type] ?? [];
-
-      set(slots, [instance.type], [...current, instance]);
-    }
-
-    return slots;
-  }, [instances]);
-};

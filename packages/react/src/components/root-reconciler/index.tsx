@@ -1,9 +1,9 @@
+import { useStateValue } from '@flowdown/react-presets/base';
 import cn from 'classnames';
 import { Fragment, isValidElement, memo } from 'react';
 
 import type { RootReconcilerProps } from './type';
 
-import { useStateValue } from '../../hooks';
 import { ROOT_CLASS_NAME } from './consts';
 import styles from './index.module.less';
 

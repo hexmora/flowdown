@@ -1,11 +1,11 @@
 import type { IPluggable, IRehypePlugin } from '@flowdown/types';
 
-import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@flowdown/preset-plugins';
+import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@flowdown/core-presets/rehype';
 import { memoReturns } from 'reactive';
 
 import type { RehypePluggablesMapperInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base/plugin-builder/utils';
+import { isPluggablesEqual } from '../../../base';
 import { mergePluginPluggables } from '../utils';
 
 export * from './type';

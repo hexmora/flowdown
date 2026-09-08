@@ -2,6 +2,9 @@
  * @jsxImportSource reactive
  */
 
+import type { IBlockState } from '@flowdown/types';
+
+import { PluginPriority } from '@flowdown/types';
 import { reverse, sortBy } from 'lodash-es';
 import {
   BatchScheduler,
@@ -17,13 +20,12 @@ import {
 } from 'reactive';
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
+import type { MapperInputs, MapperPluggable } from '..';
 import type { HastRoot } from '../../../../typings';
-import type { IBlockState } from '../../base-block';
-import type { MapperInputs, MapperPluggable } from '../type';
 
-import { isPluggablesEqual } from '../../plugin-builder';
-import { createBlock, observerCount, paragraph } from '../../smooth/__tests__/utils';
-import { MapperComposer } from '../index';
+import { MapperComposer } from '..';
+import { isPluggablesEqual } from '../..';
+import { createBlock, observerCount, paragraph } from '../../../../__tests__/smooth/utils';
 
 const setup = (initialMappers: MapperPluggable[]) => {
   const first = createBlock('first', paragraph('first'));
@@ -86,6 +88,25 @@ describe('MapperComposer', () => {
     source.next([second, first]);
 
     expect(closure.value.value).toEqual([first]);
+
+    destroy();
+  });
+
+  test('orders tuples by priority and preserves declaration order for equal priorities', () => {
+    const { closure, mappers, first, second, destroy } = setup([
+      Reverse,
+      [Take, { count: 1, priority: PluginPriority.High }],
+    ]);
+
+    expect(closure.value.value).toEqual([first]);
+
+    mappers.next([Reverse, [Take, { count: 1, priority: PluginPriority.Default }]]);
+
+    expect(closure.value.value).toEqual([second]);
+
+    mappers.next([[Take, { count: 1, priority: 10 }], Reverse]);
+
+    expect(closure.value.value).toEqual([second]);
 
     destroy();
   });
@@ -415,7 +436,9 @@ const typecheckMappers = () => {
     return <WrongOutput source={source} />;
   });
 
-  const configured = [Take, { count: 1 }] satisfies MapperPluggable<{ count: number }>;
+  const configured = [Take, { count: 1, priority: PluginPriority.High }] satisfies MapperPluggable<{
+    count: number;
+  }>;
 
   const configuredJSX = [TakeJSX, { count: 1 }] satisfies MapperPluggable<{ count: number }>;
 
@@ -458,6 +481,9 @@ const typecheckMappers = () => {
   // @ts-expect-error Explicit configuration types validate tuple config values.
   const config: MapperPluggable<{ count: number }> = [Take, { count: 'one' }];
 
+  // @ts-expect-error Tuple priority must use the shared numeric priority type.
+  const priority: MapperPluggable = [Take, { count: 1, priority: 'high' }];
+
   // @ts-expect-error Explicit configuration types also validate JSX mapper tuples.
   const jsxConfig: MapperPluggable<{ count: number }> = [TakeJSX, { count: 'one' }];
 
@@ -473,6 +499,7 @@ const typecheckMappers = () => {
     bareJSXOutput,
     plain,
     config,
+    priority,
     jsxConfig,
   };
 };

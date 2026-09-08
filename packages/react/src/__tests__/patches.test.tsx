@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { IPluginItem } from '../types';
 
-import { Flowdown } from '../index';
+import { Flowdown } from '..';
 
 type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 

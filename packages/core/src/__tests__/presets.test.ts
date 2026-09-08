@@ -1,25 +1,37 @@
-import * as presetExports from '@flowdown/core/presets';
-import * as pluginExports from '@flowdown/preset-plugins';
+import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+
+import { Smooth } from '@flowdown/core-presets/mapper';
+import { PRESET_REHYPE_PLUGINS } from '@flowdown/core-presets/rehype';
+import { PRESET_REMARK_PLUGINS, SyntaxMathRemarkPlugin } from '@flowdown/core-presets/remark';
+import { PRESET_REPAIR_PLUGINS } from '@flowdown/core-presets/repair';
 import { describe, expect, test } from 'vitest';
 
 import { mergePluginPluggables } from '../states/packs/states/utils';
 
-describe('core preset exports', () => {
-  test('re-exports the complete preset package without changing plugin identities', () => {
-    const presets = { ...presetExports };
-    const plugins = { ...pluginExports };
+describe('core preset imports', () => {
+  test('resolves plugins through their public type entry points', () => {
+    expect(Smooth).toBeTypeOf('function');
 
-    expect(Object.keys(presets)).toEqual(Object.keys(plugins));
+    expect(PRESET_REHYPE_PLUGINS.length).toBeGreaterThan(0);
 
-    for (const key of Object.keys(plugins) as (keyof typeof plugins)[]) {
-      expect(presets[key]).toBe(plugins[key]);
-    }
+    expect(PRESET_REMARK_PLUGINS).toContain(SyntaxMathRemarkPlugin);
+
+    expect(PRESET_REPAIR_PLUGINS.length).toBeGreaterThan(0);
   });
 
-  test('replaces an internal preset when the override comes from the public subpath', () => {
-    const override = presetExports.SyntaxMathRemarkPlugin;
-    const merged = mergePluginPluggables([pluginExports.SyntaxMathRemarkPlugin], [override]);
+  test('replaces an internal preset when the override comes from the public entry point', () => {
+    const override: IPluggable<IRemarkPlugin, { repairEnding: boolean }> = [
+      SyntaxMathRemarkPlugin,
+      { repairEnding: true },
+    ];
 
-    expect(merged).toEqual([override]);
+    const merged = mergePluginPluggables<IPluggable<IRemarkPlugin, unknown>>(
+      PRESET_REMARK_PLUGINS,
+      [override],
+    );
+
+    expect(merged.filter((item) => item === SyntaxMathRemarkPlugin)).toEqual([]);
+
+    expect(merged).toContain(override);
   });
 });

@@ -5,15 +5,16 @@
 import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
+import { Smooth } from '@flowdown/core-presets/mapper';
 import { type JSXDescriptor, once, useDefaults, useFlatten, useMap } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { IRenderPlugin } from '../../externals';
 import type { HastRoot } from '../../typings';
 import type { MapperPluggable } from '../base';
-import type { CoreInputs, CoreMappers } from './type';
+import type { CoreInputs } from './type';
 
-import { isPluggablesEqual, MapperComposer, PluginBuilder, Smooth, TextChunker } from '../base';
+import { isPluggablesEqual, MapperComposer, PluginBuilder, TextChunker } from '../base';
 import { BlockCompiler } from '../hast';
 import {
   RawPatchesMapper,
@@ -22,7 +23,8 @@ import {
   RenderPatchesMapper,
   RepairPluggablesMapper,
 } from './states';
-import { patchMappers, toBaseSmoothConfig } from './utils';
+import { mergePluginPluggables } from './states/utils';
+import { toBaseSmoothConfig } from './utils';
 
 export * from './consts';
 export * from './states';
@@ -55,8 +57,8 @@ export const Core = /*#__PURE__*/ once(function Core<R, C = {}>({
   const DefaultMappers: MapperPluggable[] = [[Smooth<HastRoot>, flattenConfig]];
 
   const mappers = useMap(
-    useDefaults<CoreMappers>(_mappers, []),
-    (items) => patchMappers(DefaultMappers, items),
+    useDefaults(_mappers, []),
+    (items) => mergePluginPluggables(DefaultMappers, items),
     isPluggablesEqual,
   );
 

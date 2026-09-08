@@ -1,7 +1,7 @@
+import type { IBlockState, IPluggableConfig } from '@flowdown/types';
 import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockState } from '../base-block';
 
 export interface MapperInputs {
   source: IReadableClosure<IBlockState<HastRoot>[]>;
@@ -24,7 +24,7 @@ type ConfiguredMapper = OnceFunction<
 
 export type MapperPluggable<C extends object = never> =
   | Mapper
-  | ([C] extends [never] ? [ConfiguredMapper, object] : [Mapper<C>, C]);
+  | ([C] extends [never] ? [ConfiguredMapper, IPluggableConfig] : [Mapper<C>, IPluggableConfig<C>]);
 
 export interface MapperComposerInputs extends MapperInputs {
   mappers: IReadableClosure<MapperPluggable[]>;

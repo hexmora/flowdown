@@ -1,4 +1,10 @@
-import type { IRawPatchRange, IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
+import type {
+  IBlockMeta,
+  IRawPatchItem,
+  IRawPatchRange,
+  IRehypePlugin,
+  IRemarkPlugin,
+} from '@flowdown/types';
 import type { RootContent } from 'hast';
 
 import { isEqual, last, times, uniq } from 'lodash-es';
@@ -17,15 +23,9 @@ import {
 import { describe, expect, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../../typings';
-import type { IBlockMeta } from '../../../base';
+import type { IBlockSection } from '../../../base';
 
-import {
-  BlockCompiler,
-  type BlockCompilerConfig,
-  type BlockRemarksConfig,
-  type IBlockSection,
-  type IRawPatchItem,
-} from '../index';
+import { BlockCompiler, type BlockCompilerConfig, type BlockRemarksConfig } from '../index';
 
 type SourceInputs<T> = {
   source: IReadableClosure<T>;

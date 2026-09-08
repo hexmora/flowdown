@@ -49,17 +49,15 @@
   },
   "dependencies": {
     "@flowdown/core": "workspace:*",
+    "@flowdown/core-presets": "workspace:*",
+    "@flowdown/react-presets": "workspace:*",
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "classnames": "catalog:",
-    "katex": "catalog:",
     "lodash-es": "catalog:",
-    "mathjax-full": "catalog:",
-    "react-error-boundary": "catalog:",
     "reactive": "workspace:*",
-    "shallow-equal": "catalog:",
-    "shiki": "catalog:"
+    "shallow-equal": "catalog:"
   },
   "devDependencies": {
     "@storybook/addon-docs": "catalog:",

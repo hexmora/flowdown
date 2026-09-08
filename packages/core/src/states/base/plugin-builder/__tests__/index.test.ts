@@ -5,13 +5,13 @@ import type {
   PluginClass,
 } from '@flowdown/types';
 
+import { PluginPriority } from '@flowdown/types';
 import { isArray } from 'lodash-es';
 import { D, type IReactiveState, render, S, toReactiveState } from 'reactive';
 import { BehaviorSubject } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
 
-import { isPluggableEqual, PluginBuilder } from '../index';
-import { buildPluggables } from '../utils';
+import { buildPluggables, isPluggableEqual, PluginBuilder } from '..';
 
 interface TestPluginConfig extends IBasePluginConfig {
   label?: string;
@@ -277,6 +277,95 @@ describe('PluginBuilder', () => {
     );
 
     expect(closure.value.value.map((plugin) => plugin.key)).toEqual(['low', 'high']);
+  });
+
+  test('tuple priorities override class metadata without changing shared configuration', () => {
+    const config = Object.freeze({ priority: PluginPriority.High, label: 'metadata' });
+
+    class ConfiguredPlugin implements TestPlugin {
+      static readonly key = 'configured';
+
+      readonly key = ConfiguredPlugin.key;
+
+      readonly config = config;
+
+      readonly destroy = vi.fn();
+
+      constructor(readonly options: { label: string }) {}
+    }
+
+    const options = { label: 'options', priority: PluginPriority.Default };
+
+    const pluggable: IPluggable<ConfiguredPlugin, { label: string }> = [ConfiguredPlugin, options];
+
+    const Middle = createPluginClass('middle', vi.fn());
+
+    const { closure, pluginsSubject } = setupBuilder([pluggable, Middle]);
+
+    const [instance] = closure.value.value;
+
+    expect(instance?.config).toEqual({ priority: PluginPriority.Default, label: 'metadata' });
+
+    expect((instance as ConfiguredPlugin).options).toBe(options);
+
+    expect(config.priority).toBe(PluginPriority.High);
+
+    pluginsSubject.next([
+      [ConfiguredPlugin, { label: 'options', priority: PluginPriority.Low }],
+      Middle,
+    ]);
+
+    expect(closure.value.value.map((plugin) => plugin.key)).toEqual(['middle', 'configured']);
+
+    expect(instance?.destroy).toHaveBeenCalledOnce();
+
+    pluginsSubject.next([[ConfiguredPlugin, { label: 'options', priority: undefined }], Middle]);
+
+    expect(closure.value.value.map((plugin) => plugin.key)).toEqual(['configured', 'middle']);
+
+    expect(closure.value.value[0]?.config).toBe(config);
+
+    closure.destroy();
+  });
+
+  test('overrides getter metadata for the configured instance and preserves other instances', () => {
+    const config = Object.freeze({ priority: PluginPriority.Low, label: 'getter' });
+
+    class GetterPlugin implements TestPlugin {
+      static readonly key = 'getter';
+
+      readonly key = GetterPlugin.key;
+
+      readonly destroy = vi.fn();
+
+      get config() {
+        return config;
+      }
+    }
+
+    const Middle = createPluginClass('middle', vi.fn());
+
+    const { closure } = setupBuilder([
+      GetterPlugin,
+      [GetterPlugin, { priority: PluginPriority.High }],
+      Middle,
+    ]);
+
+    const [configured, middle, original] = closure.value.value;
+
+    expect(configured?.config).toEqual({ priority: PluginPriority.High, label: 'getter' });
+
+    expect(middle?.key).toBe('middle');
+
+    expect(original?.config).toBe(config);
+
+    expect(configured).not.toBe(original);
+
+    closure.destroy();
+
+    expect(configured?.destroy).toHaveBeenCalledOnce();
+
+    expect(original?.destroy).toHaveBeenCalledOnce();
   });
 
   test('replaces changed classes and retires removed/current instances once', () => {

@@ -1,21 +1,26 @@
+import type { IBlockState } from '@flowdown/types';
 import type { Element, ElementContent, Parent, RootContent } from 'hast';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
 import {
-  ApplyRepairsRemarkPlugin,
   BaseRehypePlugin,
+  HoistFootnoteRehypePlugin,
+  PRESET_REHYPE_PLUGINS,
+} from '@flowdown/core-presets/rehype';
+import {
+  ApplyRepairsRemarkPlugin,
   BaseRemarkPlugin,
+  PatchesRemarkPlugin,
+  PRESET_REMARK_PLUGINS,
+  SyntaxMathRemarkPlugin,
+} from '@flowdown/core-presets/remark';
+import {
   BaseRepairPlugin,
   DanglingFootnoteRepairPlugin,
-  HoistFootnoteRehypePlugin,
   IncompleteImageRepairPlugin,
-  PatchesRemarkPlugin,
-  PRESET_REHYPE_PLUGINS,
-  PRESET_REMARK_PLUGINS,
   PRESET_REPAIR_PLUGINS,
-  SyntaxMathRemarkPlugin,
-} from '@flowdown/preset-plugins';
+} from '@flowdown/core-presets/repair';
 import {
   type IBasePluginConfig,
   type IPluggable,
@@ -39,9 +44,9 @@ import {
 import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
-import type { IBlockState } from '../../base';
 import type { BlockCompilerConfig } from '../../hast';
 
+import { Core, type IPatchItem } from '..';
 import {
   BaseRenderer,
   BaseRenderPlugin,
@@ -49,7 +54,6 @@ import {
   type IRenderPluggable,
   type IRenderPlugin,
 } from '../../../externals';
-import { Core, type IPatchItem } from '../index';
 
 interface AppendRemarkPluginConfig {
   suffix?: string;

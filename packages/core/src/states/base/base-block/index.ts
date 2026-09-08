@@ -1,17 +1,14 @@
-import type { IReactiveState, IReadableClosure } from 'reactive';
-
-import { BaseStateClosure, toClosure } from 'reactive';
-
-import type { IRangeState } from '../../atoms';
 import type {
   BaseBlockItemInputs,
   BlockItemClass,
   IBlockMeta,
   IBlockState,
   IBlockStateCloneParams,
-} from './type';
+  IRangeState,
+} from '@flowdown/types';
+import type { IReactiveState, IReadableClosure } from 'reactive';
 
-export * from './type';
+import { BaseStateClosure, toClosure } from 'reactive';
 
 export abstract class BaseBlockItem<T>
   extends BaseStateClosure<T, BaseBlockItemInputs<T>>

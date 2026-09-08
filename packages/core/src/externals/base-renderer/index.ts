@@ -1,7 +1,8 @@
+import type { IBlockState } from '@flowdown/types';
+
 import { BaseStateClosure } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
-import type { IBlockState } from '../../states/base';
 import type { BaseRendererInputs } from './type';
 
 import { mapRendererItems } from './utils';
