@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -6,6 +8,12 @@ import { BaseReactRenderPlugin, createTypeOfSlot } from '../../base';
 import { getHeadingLevel, isHeadingNode } from './utils';
 
 const Heading = /*#__PURE__*/ createTypeOfSlot('Heading');
+
+declare global {
+  interface RenderConfigs {
+    'render-heading'?: IPluggableConfig<void>;
+  }
+}
 
 export class HeadingRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-heading';

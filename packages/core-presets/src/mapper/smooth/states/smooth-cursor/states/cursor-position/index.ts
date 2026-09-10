@@ -9,12 +9,14 @@ import { Completed } from '../../../completed';
 
 export * from './type';
 
-export const CursorPosition = /*#__PURE__*/ once(function CursorPosition(
-  inputs: CursorPositionInputs,
-) {
-  const { lengths, ticks } = inputs;
-
-  const configuration = useCombine(lengths, inputs.enabled, inputs.ticker, inputs.scheduler);
+export const CursorPosition = /*#__PURE__*/ once(function CursorPosition({
+  lengths,
+  ticks,
+  enabled: _enabled,
+  ticker,
+  scheduler: _scheduler,
+}: CursorPositionInputs) {
+  const configuration = useCombine(lengths, _enabled, ticker, _scheduler);
 
   const completion = useCreate(S([Completed, { source: configuration }]));
 

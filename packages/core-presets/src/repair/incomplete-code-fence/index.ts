@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { last } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-incomplete-code-fence'?: IPluggableConfig<void>;
+  }
+}
 
 export class IncompleteCodeFenceRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-incomplete-code-fence';

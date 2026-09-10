@@ -1,7 +1,8 @@
 import type { MapperInputs } from '@flowdown/core';
 import type { IReactRenderPluggable } from '@flowdown/react-presets/base';
-import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+import type { IPluggable, IPluggableConfig, IRemarkPlugin } from '@flowdown/types';
 
+import { SyntaxPolicyRemarkPlugin } from '@flowdown/core-presets/remark';
 import { renderHook } from '@testing-library/react';
 import { once } from 'reactive';
 import { describe, expect, test } from 'vitest';
@@ -11,6 +12,14 @@ import type { IPluginItem } from '../../types';
 import { usePlugins } from '..';
 
 type RemarkItem = IPluggable<IRemarkPlugin, unknown>;
+
+declare global {
+  interface RemarkConfigs {
+    'configured-remark'?: IPluggableConfig<{ nested: { enabled: boolean }; suffix: string }>;
+
+    'explicitly-configured-remark'?: IPluggableConfig<{ source: string }>;
+  }
+}
 
 interface PluginOrderProps {
   defaults: RemarkItem[];
@@ -22,7 +31,7 @@ const asRemark = (name: string) => ({ name }) as unknown as RemarkItem;
 
 const asRender = (name: string) => ({ name }) as unknown as IReactRenderPluggable;
 
-const createPluginClass = (key: string) => {
+const createPluginClass = <const K extends string>(key: K) => {
   return Object.assign(function TestPlugin() {}, { key });
 };
 
@@ -59,6 +68,18 @@ describe('usePlugins', () => {
     const { result } = renderHook(() => usePlugins(packs, 'remarks', [presetA, presetB]));
 
     expect(result.current).toEqual([presetA, presetB, extraA, extraB]);
+  });
+
+  test('preserves compiler presets before matching configured packed plugins', () => {
+    const tuple: RemarkItem = [SyntaxPolicyRemarkPlugin, { indentedCode: false }];
+
+    const packs: IPluginItem[] = [{ remarks: [tuple] }];
+
+    const { result } = renderHook(() => usePlugins(packs, 'remarks', [SyntaxPolicyRemarkPlugin]));
+
+    expect(result.current).toEqual([SyntaxPolicyRemarkPlugin, tuple]);
+
+    expect(result.current[1]).toBe(tuple);
   });
 
   test('reflects pack and default order changes', () => {
@@ -126,7 +147,7 @@ describe('usePlugins', () => {
     expect(pack).toEqual({ config: originalConfig, remarks: originalRemarks });
   });
 
-  test('keeps explicit tuple options instead of replacing them with pack config', () => {
+  test('overrides explicit tuple options with pack config', () => {
     const ConfiguredRemarkPlugin = createPluginClass('explicitly-configured-remark');
 
     const tuple = [ConfiguredRemarkPlugin, { source: 'tuple' }] as unknown as RemarkItem;
@@ -143,24 +164,26 @@ describe('usePlugins', () => {
       ),
     );
 
-    expect(result.current).toEqual([tuple]);
+    expect(result.current).toEqual([[ConfiguredRemarkPlugin, { source: 'pack' }]]);
 
-    expect(result.current[0]).toBe(tuple);
+    expect(tuple).toEqual([ConfiguredRemarkPlugin, { source: 'tuple' }]);
   });
 
-  test('preserves mapper closures and tuple fields when flattening plugin packs', () => {
-    const Identity = once(({ source }: MapperInputs) => source);
+  test('preserves repeated mapper entries and their tuple fields', () => {
+    const Identity = once(function Identity({ source }: MapperInputs) {
+      return source;
+    });
 
     const config = { nested: { enabled: true } };
 
     const pack: IPluginItem = {
-      config: { unrelated: { enabled: false } },
+      config: { 'remark-syntax-policy': { indentedCode: false } },
       mappers: [Identity, [Identity, config]],
     };
 
     const { result } = renderHook(() => usePlugins([pack], 'mappers'));
 
-    expect(result.current).toEqual(pack.mappers);
+    expect(result.current).toEqual([Identity, [Identity, config]]);
 
     expect(result.current[0]).toBe(Identity);
 
@@ -168,15 +191,17 @@ describe('usePlugins', () => {
   });
 
   test.each(['mappers', 'remarks', 'rehypes', 'repairs', 'renders', 'slots'] as const)(
-    'supports the %s plugin channel',
+    'preserves default and repeated pack entries in the %s plugin channel',
     (type) => {
       const plugin = { type } as never;
 
-      const packs = [{ [type]: [plugin] }] as IPluginItem[];
+      const other = { type, name: 'other' } as never;
 
-      const { result } = renderHook(() => usePlugins(packs, type));
+      const packs = [{ [type]: [plugin, other] }, { [type]: [plugin] }] as IPluginItem[];
 
-      expect(result.current).toEqual([plugin]);
+      const { result } = renderHook(() => usePlugins(packs, type, [plugin]));
+
+      expect(result.current).toEqual([plugin, plugin, other, plugin]);
     },
   );
 });

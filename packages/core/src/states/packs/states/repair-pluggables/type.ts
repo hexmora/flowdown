@@ -1,9 +1,9 @@
-import type { IPluggable, IRepairPlugin } from '@flowdown/types';
+import type { IPluggable, IRepairPlugin, PluginSet } from '@flowdown/types';
 
 import type { BlockCompilerConfig } from '../../../hast';
 
-export type RepairPluggablesMapperInputs = {
+export type RepairPluggablesInputs = {
   config: BlockCompilerConfig;
 
-  extras: readonly IPluggable<IRepairPlugin, unknown>[];
+  extras: PluginSet<IPluggable<IRepairPlugin, unknown>, RepairConfigs>;
 };

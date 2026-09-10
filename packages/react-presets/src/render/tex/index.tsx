@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -6,6 +8,12 @@ import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../..
 import { getTex, getTexMode } from './utils';
 
 const Tex = /*#__PURE__*/ createTypeOfSlot('Tex');
+
+declare global {
+  interface RenderConfigs {
+    'render-tex'?: IPluggableConfig<void>;
+  }
+}
 
 export class TexRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-tex';

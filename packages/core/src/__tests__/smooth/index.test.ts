@@ -17,15 +17,15 @@ test('Smooth exposes closure inputs and reactive HAST blocks', () => {
     .toHaveProperty('source')
     .toEqualTypeOf<IReadableClosure<IBlockState<HastRoot>[]>>();
 
-  expectTypeOf<SmoothInputs<HastRoot>>()
+  expectTypeOf<Required<SmoothInputs<HastRoot>>>()
     .toHaveProperty('enabled')
     .toEqualTypeOf<IReadableClosure<boolean>>();
 
-  expectTypeOf<SmoothInputs<HastRoot>>()
+  expectTypeOf<Required<SmoothInputs<HastRoot>>>()
     .toHaveProperty('ticker')
     .toEqualTypeOf<IReadableClosure<SmoothTickerClass>>();
 
-  expectTypeOf<SmoothInputs<HastRoot>>()
+  expectTypeOf<Required<SmoothInputs<HastRoot>>>()
     .toHaveProperty('scheduler')
     .toEqualTypeOf<IReadableClosure<SmoothSchedulerClass>>();
 

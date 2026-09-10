@@ -12,9 +12,13 @@ import { type SmoothTick, TickerFrames } from './states';
 
 export * from './type';
 
-export const SmoothTicks = /*#__PURE__*/ once(function SmoothTicks(inputs: SmoothTicksInputs) {
+export const SmoothTicks = /*#__PURE__*/ once(function SmoothTicks({
+  enabled: _enabled,
+  ticker: _ticker,
+  lengths: _lengths,
+}: SmoothTicksInputs) {
   const active = useCombineMap(
-    [inputs.enabled, inputs.ticker, inputs.lengths],
+    [_enabled, _ticker, _lengths],
     ([enabled, Ticker, lengths], previous): SmoothTickerClass | null => {
       if (!previous) {
         return null;

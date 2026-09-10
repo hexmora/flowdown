@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 import { isString } from 'lodash-es';
 
@@ -6,6 +8,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../../base';
 
 const Image = /*#__PURE__*/ createTypeOfSlot('Image');
+
+declare global {
+  interface RenderConfigs {
+    'render-image'?: IPluggableConfig<void>;
+  }
+}
 
 export class ImageRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-image';

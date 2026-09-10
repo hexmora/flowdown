@@ -3,20 +3,18 @@ import type { IPluggable, IRehypePlugin } from '@flowdown/types';
 import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@flowdown/core-presets/rehype';
 import { memoReturns } from 'reactive';
 
-import type { RehypePluggablesMapperInputs } from './type';
+import type { RehypePluggablesInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base';
-import { mergePluginPluggables } from '../utils';
+import { isPluggablesEqual, toPluggable } from '../../../base';
+import { getPluggableClass } from '../utils';
 
 export * from './type';
 
-export const RehypePluggablesMapper = /*#__PURE__*/ memoReturns(function RehypePluggablesMapper({
+export const RehypePluggables = /*#__PURE__*/ memoReturns(function RehypePluggables({
   config,
   extras,
-}: RehypePluggablesMapperInputs): IPluggable<IRehypePlugin, unknown>[] {
-  const presets = PRESET_REHYPE_PLUGINS.filter(
-    (Plugin) => Plugin !== HoistFootnoteRehypePlugin || config.footnote,
+}: RehypePluggablesInputs): IPluggable<IRehypePlugin, unknown>[] {
+  return toPluggable(extras, PRESET_REHYPE_PLUGINS).filter(
+    (pluggable) => getPluggableClass(pluggable) !== HoistFootnoteRehypePlugin || config.footnote,
   );
-
-  return mergePluginPluggables(presets, extras);
 }, isPluggablesEqual);

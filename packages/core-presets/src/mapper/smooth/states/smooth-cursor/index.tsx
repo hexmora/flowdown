@@ -12,15 +12,19 @@ export * from './type';
 
 export const SmoothCursor = /*#__PURE__*/ once(function SmoothCursor<T>({
   source,
-  ...inputs
+  enabled,
+  ticker,
+  scheduler,
 }: SmoothCursorInputs<T>): JSXDescriptor<SmoothPosition> {
   const lengths = useCreate(<BlockLengths<T> source={source} />);
 
   return (
     <CursorPosition
-      {...inputs}
+      enabled={enabled}
+      ticker={ticker}
+      scheduler={scheduler}
       lengths={lengths}
-      ticks={<SmoothTicks enabled={inputs.enabled} lengths={lengths} ticker={inputs.ticker} />}
+      ticks={<SmoothTicks enabled={enabled} lengths={lengths} ticker={ticker} />}
     />
   );
 });

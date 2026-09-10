@@ -1,5 +1,22 @@
 import type { Newable } from '@flowdown/utils';
 
+declare global {
+  interface MapperConfigs {}
+
+  interface RemarkConfigs {}
+
+  interface RehypeConfigs {}
+
+  interface RepairConfigs {}
+
+  interface RenderConfigs {}
+
+  interface SlotConfigs {}
+}
+
+/** A plugin list, preset configuration, or a list with configuration overrides. */
+export type PluginSet<T, C> = [T[], C] | C | T[];
+
 /**
  * Priority buckets used to order plugins.
  */

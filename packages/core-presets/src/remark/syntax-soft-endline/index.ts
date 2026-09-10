@@ -1,10 +1,16 @@
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import remarkBreaks from 'remark-breaks';
 
 import { BaseRemarkPlugin } from '../base';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-soft-endline'?: IPluggableConfig<void>;
+  }
+}
 
 export class SyntaxSoftEndlineRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-soft-endline';

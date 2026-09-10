@@ -2,7 +2,7 @@ import type { IRepairPlugin } from '@flowdown/types';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 
 import { processRepairByPlugins } from '../../utils';
 import { BaseRemarkPlugin } from '../base';
@@ -14,6 +14,12 @@ export interface ApplyRepairsRemarkPluginConfig {
 }
 
 type ApplyRepairsRemarkPluginInnerConfig = Required<ApplyRepairsRemarkPluginConfig>;
+
+declare global {
+  interface RemarkConfigs {
+    'remark-apply-repairs'?: IPluggableConfig<Pick<ApplyRepairsRemarkPluginConfig, 'safe'>>;
+  }
+}
 
 export class ApplyRepairsRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-apply-repairs';

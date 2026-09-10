@@ -7,8 +7,10 @@ import type {
   IRehypePlugin,
   IRemarkPlugin,
   IRepairPlugin,
+  PluginSet,
 } from '@flowdown/types';
 
+import { Shad, Smooth } from '@flowdown/core-presets/mapper';
 import { HoistFootnoteRehypePlugin } from '@flowdown/core-presets/rehype';
 import { ApplyRepairsRemarkPlugin, SyntaxMathRemarkPlugin } from '@flowdown/core-presets/remark';
 import { DanglingFootnoteRepairPlugin } from '@flowdown/core-presets/repair';
@@ -23,16 +25,36 @@ import {
 import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import type { IPatchItem } from '../..';
-import type { IRenderPatchItem } from '../../../../externals';
+import type {
+  IRenderPatchItem,
+  IRenderPlugin,
+  IRenderPluginRenderParams,
+} from '../../../../externals';
+import type { MapperPluggable } from '../../../base';
 import type { BlockCompilerConfig, BlockRemarksConfig } from '../../../hast';
 
 import {
+  MapperPluggables,
   RawPatchesMapper,
-  RehypePluggablesMapper,
-  RemarkPluggablesMapper,
+  RehypePluggables,
+  RemarkPluggables,
   RenderPatchesMapper,
-  RepairPluggablesMapper,
+  RenderPluggables,
+  RepairPluggables,
 } from '..';
+import { BaseRenderPlugin } from '../../../../externals';
+
+class TextRenderPlugin extends BaseRenderPlugin<string, string, string> {
+  static readonly key = 'text';
+
+  match() {
+    return true;
+  }
+
+  render({ node }: IRenderPluginRenderParams<string, string, string>) {
+    return node;
+  }
+}
 
 const DEFAULT_CONFIG: BlockCompilerConfig = {
   repair: false,
@@ -46,17 +68,89 @@ const getPluggableClass = <T extends IPluginWithConfig>(pluggable: IPluggable<T,
 };
 
 describe('pack state mappers', () => {
+  test('combines mapper configurations reactively and reuses equivalent outputs', () => {
+    const extras = MutableState.of<PluginSet<MapperPluggable, MapperConfigs>>([]);
+
+    const state = render(S([MapperPluggables, { extras }]));
+
+    const initial = state.value.value;
+
+    const next = vi.fn();
+
+    state.value.subscribe(next);
+
+    next.mockClear();
+
+    expect(initial).toEqual([Smooth, Shad]);
+
+    extras.next([Shad]);
+
+    expect(state.value.value).toBe(initial);
+
+    expect(next).not.toHaveBeenCalled();
+
+    const enabled = render(true);
+
+    extras.next([[], { shad: { enabled } }]);
+
+    expect(state.value.value).toEqual([Smooth, [Shad, { enabled }]]);
+
+    expect(next).toHaveBeenCalledOnce();
+
+    state.destroy();
+
+    expect(extras.closed).toBe(false);
+
+    extras.destroy();
+
+    enabled.destroy();
+  });
+
+  test('combines render configurations reactively without constructing plugin instances', () => {
+    const extras = MutableState.of<
+      PluginSet<IPluggable<IRenderPlugin<string, string, string>, unknown>, RenderConfigs>
+    >([[TextRenderPlugin, { priority: 1 }]]);
+
+    const state = render(S([RenderPluggables<string, string, string>, { extras }]));
+
+    const initial = state.value.value;
+
+    const next = vi.fn();
+
+    state.value.subscribe(next);
+
+    next.mockClear();
+
+    extras.next([[TextRenderPlugin, { priority: 1 }]]);
+
+    expect(state.value.value).toBe(initial);
+
+    expect(next).not.toHaveBeenCalled();
+
+    extras.next([[TextRenderPlugin, { priority: 2 }]]);
+
+    expect(state.value.value).toEqual([[TextRenderPlugin, { priority: 2 }]]);
+
+    expect(next).toHaveBeenCalledOnce();
+
+    state.destroy();
+
+    expect(extras.closed).toBe(false);
+
+    extras.destroy();
+  });
+
   test.each(['rehype', 'repair'] as const)(
     'preserves equal %s outputs when unrelated configuration changes',
     (mapper) => {
       const config = MutableState.of(DEFAULT_CONFIG);
 
-      const extras = MutableState.of([]);
+      const extras = MutableState.of({});
 
       const state =
         mapper === 'rehype'
-          ? render(S([RehypePluggablesMapper, { config, extras }]))
-          : render(S([RepairPluggablesMapper, { config, extras }]));
+          ? render(S([RehypePluggables, { config, extras }]))
+          : render(S([RepairPluggables, { config, extras }]));
 
       const initial = state.value.value;
 
@@ -136,29 +230,35 @@ describe('pack state mappers', () => {
       patches: [],
     });
 
-    const rehypeExtras = MutableState.of<IPluggable<IRehypePlugin, unknown>[]>([]);
+    const rehypeExtras = MutableState.of<
+      PluginSet<IPluggable<IRehypePlugin, unknown>, RehypeConfigs>
+    >({});
 
-    const remarkExtras = MutableState.of<IPluggable<IRemarkPlugin, unknown>[]>([]);
+    const remarkExtras = MutableState.of<
+      PluginSet<IPluggable<IRemarkPlugin, unknown>, RemarkConfigs>
+    >({});
 
-    const repairExtras = MutableState.of<IPluggable<IRepairPlugin, unknown>[]>([]);
+    const repairExtras = MutableState.of<
+      PluginSet<IPluggable<IRepairPlugin, unknown>, RepairConfigs>
+    >({});
 
     const repairs = MutableState.of<IRepairPlugin[]>([]);
 
     const rehypes = render<IPluggable<IRehypePlugin, unknown>[]>(
       S<IPluggable<IRehypePlugin, unknown>[]>(
-        <RehypePluggablesMapper config={config} extras={rehypeExtras} />,
+        <RehypePluggables config={config} extras={rehypeExtras} />,
       ),
     );
 
     const remarks = render<IPluggable<IRemarkPlugin, unknown>[]>(
       S<IPluggable<IRemarkPlugin, unknown>[]>(
-        <RemarkPluggablesMapper config={remarksConfig} extras={remarkExtras} repairs={repairs} />,
+        <RemarkPluggables config={remarksConfig} extras={remarkExtras} repairs={repairs} />,
       ),
     );
 
     const repairPluggables = render<IPluggable<IRepairPlugin, unknown>[]>(
       S<IPluggable<IRepairPlugin, unknown>[]>(
-        <RepairPluggablesMapper config={config} extras={repairExtras} />,
+        <RepairPluggables config={config} extras={repairExtras} />,
       ),
     );
 
@@ -240,3 +340,27 @@ const typecheckPackStateMappers = <R,>(patches: IReactiveState<IPatchItem<R>[]>)
 };
 
 void typecheckPackStateMappers;
+
+const typecheckRenderPluggables = <E, P, R, C>(
+  extras: IReactiveState<PluginSet<IPluggable<IRenderPlugin<E, P, R, C>, unknown>, RenderConfigs>>,
+) => {
+  const descriptor = S<IPluggable<IRenderPlugin<E, P, R, C>, unknown>[]>(
+    <RenderPluggables<E, P, R, C> extras={extras} />,
+  );
+
+  expectTypeOf<ReturnType<typeof RenderPluggables<E, P, R, C>>>().toEqualTypeOf<
+    IPluggable<IRenderPlugin<E, P, R, C>, unknown>[]
+  >();
+
+  expectTypeOf(render(descriptor)).toEqualTypeOf<
+    IReadableClosure<IPluggable<IRenderPlugin<E, P, R, C>, unknown>[]>
+  >();
+
+  // @ts-expect-error RenderPluggables retains the render plugin output type.
+  const mismatched: IReadableClosure<IPluggable<IRenderPlugin<E, P, string, C>, unknown>[]> =
+    render(descriptor);
+
+  void mismatched;
+};
+
+void typecheckRenderPluggables;

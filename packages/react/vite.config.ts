@@ -11,6 +11,7 @@ export default defineConfig({
     svgr(),
     libInjectCss(),
     dts({
+      clearPureImport: false,
       entryRoot: 'src',
       tsconfigPath: './tsconfig.build.json',
     }),
@@ -37,6 +38,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         '@flowdown/core',
+        /^@flowdown\/core-presets(?:\/.*)?$/,
         /^@flowdown\/react-presets(?:\/.*)?$/,
         /^reactive(?:\/.*)?$/,
         '@flowdown/types',

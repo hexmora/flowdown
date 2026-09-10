@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 import { isString } from 'lodash-es';
 import { createElement } from 'react';
@@ -5,6 +7,12 @@ import { createElement } from 'react';
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 
 import { BaseReactRenderPlugin, isElementWithTag } from '../../base';
+
+declare global {
+  interface RenderConfigs {
+    'render-table-cell'?: IPluggableConfig<void>;
+  }
+}
 
 export class TableCellRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-table-cell';

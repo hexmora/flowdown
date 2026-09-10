@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { isMdastParent } from '@flowdown/utils';
 
 import { BaseRepairPlugin } from '../base';
 import { getIncompleteTagStart } from './utils';
+
+declare global {
+  interface RepairConfigs {
+    'repair-incomplete-html-tag'?: IPluggableConfig<void>;
+  }
+}
 
 export class IncompleteHtmlTagRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-incomplete-html-tag';

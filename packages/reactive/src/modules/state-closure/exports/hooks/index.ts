@@ -1,4 +1,4 @@
-import { mapValues } from 'lodash-es';
+import { forEach } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
 import type { DestructibleTarget } from '../../../destructible';
@@ -10,7 +10,7 @@ import type {
   StateValue,
   StateValues,
 } from '../../../reactive-state';
-import type { IReadableClosure, StateClosureSource } from '../../type';
+import type { FlattenedState, IReadableClosure, StateClosureSource } from '../../type';
 import type {
   BuiltClosure,
   StateClosureDescriptor,
@@ -18,11 +18,11 @@ import type {
   StateClosureResultNode,
   StateClosureResultValue,
 } from '../render';
-import type { FlattenedState, StateClosureRef } from './type';
+import type { StateClosureRef } from './type';
 
-import { toState } from '../../../reactive-state';
 import {
   combineMapClosure,
+  flattenClosure,
   mapClosure,
   mapEachClosure,
   switchMapClosure,
@@ -73,13 +73,15 @@ export function useSwitchMap<S, R>(
 export const useFlatten = <T extends object>(
   source: IReadableClosure<T> | IReactiveState<T>,
 ): FlattenedState<T> => {
-  getCurrentStateClosureHookRuntime('useFlatten', 'once');
+  const { owner } = getCurrentStateClosureHookRuntime('useFlatten', 'once');
 
-  const state = toState(source);
+  const fields = flattenClosure(source);
 
-  return mapValues(state.value, (_, key) =>
-    useMap(state, (value) => value[key as keyof T]),
-  ) as FlattenedState<T>;
+  forEach(fields, (field) => {
+    ownReadableClosure(getReadableClosureScope(owner), field);
+  });
+
+  return fields;
 };
 
 export const useMapEach = <T, R>(

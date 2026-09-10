@@ -1,16 +1,21 @@
-import type {
-  BlockCompilerConfig,
-  IPatchItem,
-  MapperPluggable,
-  PluginConfigs,
-} from '@flowdown/core';
-import type { ShadConfig as CoreShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
+import '@flowdown/react-presets/render';
+import '@flowdown/react-presets/slot';
+
+import type { BlockCompilerConfig, IPatchItem, MapperPluggable } from '@flowdown/core';
+import type { ShadConfig as _ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
 import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
 import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
 import type { CSSProperties, ReactNode } from 'react';
 import type { IReadableClosure } from 'reactive';
 
 import type { Theme } from './theme';
+
+export type PluginConfigs = MapperConfigs &
+  RemarkConfigs &
+  RehypeConfigs &
+  RepairConfigs &
+  RenderConfigs &
+  SlotConfigs;
 
 export interface IPluginItem {
   config?: PluginConfigs;
@@ -30,7 +35,7 @@ export interface IPluginItem {
 
 export type FlowdownConfig = Partial<BlockCompilerConfig>;
 
-export interface ShadConfig extends CoreShadConfig {
+export interface ShadConfig extends _ShadConfig {
   /**
    * Width of the trailing mask in pixels. Set to 0 to hide it.
    * @default 15

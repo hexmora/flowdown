@@ -1,4 +1,4 @@
-import { isArray, isPlainObject, max, values } from 'lodash-es';
+import { isArray, isPlainObject, mapValues, max, values } from 'lodash-es';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { shallowEqual } from 'shallow-equal';
 
@@ -11,7 +11,7 @@ import type {
   StateValue,
   StateValues,
 } from '../../reactive-state';
-import type { IReadableClosure, ListEntry, StateClosureSource } from '../type';
+import type { FlattenedState, IReadableClosure, ListEntry, StateClosureSource } from '../type';
 import type {
   BuiltClosure,
   StateClosureDescriptor,
@@ -68,6 +68,17 @@ export const mapClosure = <S, R>(
       distinctor,
     ),
   );
+};
+
+/** Derive field closures from the initial value without taking ownership of the source. */
+export const flattenClosure = <T extends object>(
+  source: IReadableClosure<T> | IReactiveState<T>,
+): FlattenedState<T> => {
+  const state = toState(source);
+
+  return mapValues(state.value, (_, key) =>
+    mapClosure(state, (value) => value[key as keyof T]),
+  ) as FlattenedState<T>;
 };
 
 /**

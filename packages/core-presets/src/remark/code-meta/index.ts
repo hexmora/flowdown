@@ -1,10 +1,16 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { processMdast } from '@flowdown/utils';
 
 import { BaseRemarkPlugin } from '../base';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-code-meta'?: IPluggableConfig<void>;
+  }
+}
 
 export class CodeMetaRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-code-meta';

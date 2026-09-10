@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -6,6 +8,12 @@ import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../..
 import { hasClassName } from './utils';
 
 const List = /*#__PURE__*/ createTypeOfSlot('List');
+
+declare global {
+  interface RenderConfigs {
+    'render-list'?: IPluggableConfig<void>;
+  }
+}
 
 export class ListRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-list';

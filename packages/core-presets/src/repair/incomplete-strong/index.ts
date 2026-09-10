@@ -1,11 +1,17 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { PhrasingContent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { first, last, nth } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-incomplete-strong'?: IPluggableConfig<void>;
+  }
+}
 
 export class IncompleteStrongRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-incomplete-strong';

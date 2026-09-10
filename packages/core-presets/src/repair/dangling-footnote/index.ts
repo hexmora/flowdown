@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
 import { isStructuralTail, removeCompleteReferences, removeIncompleteReference } from './utils';
+
+declare global {
+  interface RepairConfigs {
+    'repair-dangling-footnote'?: IPluggableConfig<void>;
+  }
+}
 
 export class DanglingFootnoteRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-dangling-footnote';

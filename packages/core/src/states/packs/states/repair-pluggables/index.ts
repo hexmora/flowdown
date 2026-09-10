@@ -3,24 +3,22 @@ import type { IPluggable, IRepairPlugin } from '@flowdown/types';
 import { DanglingFootnoteRepairPlugin, PRESET_REPAIR_PLUGINS } from '@flowdown/core-presets/repair';
 import { memoReturns } from 'reactive';
 
-import type { RepairPluggablesMapperInputs } from './type';
+import type { RepairPluggablesInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base';
-import { mergePluginPluggables } from '../utils';
+import { isPluggablesEqual, toPluggable } from '../../../base';
+import { getPluggableClass } from '../utils';
 
 export * from './type';
 
-export const RepairPluggablesMapper = /*#__PURE__*/ memoReturns(function RepairPluggablesMapper({
+export const RepairPluggables = /*#__PURE__*/ memoReturns(function RepairPluggables({
   config,
   extras,
-}: RepairPluggablesMapperInputs): IPluggable<IRepairPlugin, unknown>[] {
+}: RepairPluggablesInputs): IPluggable<IRepairPlugin, unknown>[] {
   if (!config.repair) {
     return [];
   }
 
-  const presets = PRESET_REPAIR_PLUGINS.filter(
-    (Plugin) => Plugin !== DanglingFootnoteRepairPlugin || config.footnote,
+  return toPluggable(extras, PRESET_REPAIR_PLUGINS).filter(
+    (pluggable) => getPluggableClass(pluggable) !== DanglingFootnoteRepairPlugin || config.footnote,
   );
-
-  return mergePluginPluggables(presets, extras);
 }, isPluggablesEqual);

@@ -1,15 +1,26 @@
-import type { SmoothConfig } from '@flowdown/core-presets/mapper';
-import type { IBlockState } from '@flowdown/types';
+import type { BaseSmoothConfig } from '@flowdown/core-presets/mapper';
+import type { IBlockState, PluginSet } from '@flowdown/types';
 import type { ElementContent, Parent, RootContent } from 'hast';
 import type { Plugin } from 'unified';
 
 import { BaseRehypePlugin } from '@flowdown/core-presets/rehype';
 import { assert } from '@flowdown/utils';
 import { first, last } from 'lodash-es';
-import { D, type IReadableClosure, MutableState, ReactiveState, render, S } from 'reactive';
+import {
+  D,
+  type IReadableClosure,
+  MutableState,
+  once,
+  ReactiveState,
+  render,
+  S,
+  useFlatten,
+} from 'reactive';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
+import type { MapperPluggable } from '../../base';
+import type { CoreInputs } from '../type';
 
 import { Core } from '..';
 import {
@@ -53,11 +64,28 @@ class ObserveCompilation extends BaseRehypePlugin {
 
 const build = { repair: false, repairEnding: false, footnote: false, tex: false };
 
-const enabled: SmoothConfig = {
+const enabled: BaseSmoothConfig = {
   enabled: true,
   ticker: ManualTicker,
   scheduler: StepSmoothScheduler,
 };
+
+const ConfiguredCore = once(
+  ({ smooth, ...inputs }: CoreInputs<Block> & { smooth?: IReadableClosure<BaseSmoothConfig> }) => {
+    return S([
+      Core<Block>,
+      {
+        ...inputs,
+        Renderer: D(inputs.Renderer),
+        mappers: smooth
+          ? ReactiveState.of<PluginSet<MapperPluggable, MapperConfigs>>({
+              smooth: useFlatten(smooth),
+            })
+          : undefined,
+      },
+    ]);
+  },
+);
 
 const closures = new Set<IReadableClosure<Block[]>>();
 
@@ -69,14 +97,14 @@ const collectText = (node: HastRoot | RootContent): string => {
       : '';
 };
 
-const setup = (initialText = '', initialSmooth?: boolean | SmoothConfig) => {
+const setup = (initialText = '', initialSmooth?: BaseSmoothConfig) => {
   const text = MutableState.of(initialText);
 
-  const smooth = MutableState.of(initialSmooth ?? false);
+  const smooth = MutableState.of(initialSmooth ?? { ...enabled, enabled: false });
 
   const core = render(
     S([
-      Core<Block>,
+      ConfiguredCore,
       {
         Renderer: D(BlockRenderer),
         text,
@@ -123,7 +151,7 @@ afterEach(() => {
 });
 
 describe('Core smooth pipeline', () => {
-  test.each([undefined, false, { ticker: ManualTicker, scheduler: StepSmoothScheduler }])(
+  test.each([undefined, { ...enabled, enabled: false }])(
     'renders updates synchronously when smooth is %j',
     (smooth) => {
       const requestFrame = vi.fn();
@@ -185,7 +213,7 @@ describe('Core smooth pipeline', () => {
 
     const previousTicker = last(ManualTicker.instances)!;
 
-    view.smooth.next(false);
+    view.smooth.next({ ...enabled, enabled: false });
 
     expect(view.read()).toEqual(['abc']);
 
@@ -283,7 +311,7 @@ describe('Core smooth pipeline', () => {
   test('renders a static smooth document completely and closes the output', () => {
     const core = render(
       S([
-        Core<Block>,
+        ConfiguredCore,
         {
           Renderer: D(BlockRenderer),
           text: ReactiveState.of('**ready**'),

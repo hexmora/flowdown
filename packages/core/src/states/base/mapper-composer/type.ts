@@ -1,19 +1,15 @@
-import type { IBlockState, IPluggableConfig } from '@flowdown/types';
+import type { IBlockState, IPluggableConfig, MapperInputs } from '@flowdown/types';
 import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
 
-export interface MapperInputs {
-  source: IReadableClosure<IBlockState<HastRoot>[]>;
-}
+export type { MapperInputs } from '@flowdown/types';
 
 export type MapperResult =
   | IReadableClosure<IBlockState<HastRoot>[]>
   | JSXDescriptor<IBlockState<HastRoot>[]>;
 
-export type Mapper<C extends object = {}> = OnceFunction<
-  (inputs: MapperInputs & C) => MapperResult
->;
+export type Mapper<C extends object = {}> = OnceFunction<(inputs: MapperInputs<C>) => MapperResult>;
 
 /** Keeps the source contract while accepting configured closures in heterogeneous lists. */
 type ConfiguredMapper = OnceFunction<

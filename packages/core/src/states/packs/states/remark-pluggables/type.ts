@@ -1,11 +1,11 @@
-import type { IPluggable, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin, IRepairPlugin, PluginSet } from '@flowdown/types';
 
 import type { BlockRemarksConfig } from '../../../hast';
 
-export type RemarkPluggablesMapperInputs = {
+export type RemarkPluggablesInputs = {
   config: BlockRemarksConfig;
 
-  extras: readonly IPluggable<IRemarkPlugin, unknown>[];
+  extras: PluginSet<IPluggable<IRemarkPlugin, unknown>, RemarkConfigs>;
 
   repairs: IRepairPlugin[];
 };

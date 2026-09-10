@@ -1,15 +1,26 @@
-import { type IPluggable, type IPluginWithConfig, PluginPriority } from '@flowdown/types';
+import {
+  type IPluggable,
+  type IPluginWithConfig,
+  PluginPriority,
+  type PluginSet,
+} from '@flowdown/types';
 import { assert } from '@flowdown/utils';
 import {
   every,
   first,
+  get,
+  has,
   isArray,
   isEqualWith,
   isFunction,
   isObject,
+  isObjectLike,
   isPlainObject,
   sortBy,
 } from 'lodash-es';
+import { isOnceFunction } from 'reactive';
+
+import type { AnyPluggable, PluggableOf } from './type';
 
 const isOpaqueConfigValue = (value: unknown) => {
   return (
@@ -55,6 +66,83 @@ export const isPluggablesEqual = <T>(
       }))
   );
 };
+
+export const mergePluginPluggables = <T>(presets: readonly T[], extras: readonly T[]): T[] => {
+  const pluggables = [...presets];
+
+  for (const extra of extras) {
+    const Plugin = isArray(extra) ? extra[0] : extra;
+
+    const index = pluggables.findIndex((item) => (isArray(item) ? item[0] : item) === Plugin);
+
+    if (index === -1) {
+      pluggables.push(extra);
+
+      continue;
+    }
+
+    pluggables[index] = extra;
+  }
+
+  return pluggables;
+};
+
+export const isPluginSetTuple = <T, C extends object>(
+  pluginSet: PluginSet<T, C>,
+): pluginSet is [T[], C] => {
+  return (
+    isArray(pluginSet) &&
+    pluginSet.length === 2 &&
+    isArray(pluginSet[0]) &&
+    !isArray(pluginSet[1]) &&
+    isObjectLike(pluginSet[1])
+  );
+};
+
+export const isPluginSetEqual = <T, C extends object>(
+  left: PluginSet<T, C>,
+  right: PluginSet<T, C>,
+): boolean => {
+  return isPluginConfigEqual(left, right);
+};
+
+export function toPluggable<T extends AnyPluggable, C extends object>(
+  pluginSet: PluginSet<T, C>,
+  defaultPlugins?: readonly T[],
+): PluggableOf<T>[];
+
+export function toPluggable(
+  pluginSet: PluginSet<AnyPluggable, object>,
+  defaultPlugins: readonly AnyPluggable[] = [],
+): AnyPluggable[] {
+  const [plugins, configs] = isPluginSetTuple(pluginSet)
+    ? pluginSet
+    : isArray(pluginSet)
+      ? [pluginSet, {}]
+      : [[], pluginSet];
+
+  const pluggables = defaultPlugins.length
+    ? mergePluginPluggables(defaultPlugins, plugins)
+    : plugins;
+
+  return pluggables.map((pluggable): AnyPluggable => {
+    const Plugin = isArray(pluggable) ? pluggable[0] : pluggable;
+
+    const key = isOnceFunction(Plugin) ? Plugin.name.toLowerCase() : Plugin.key;
+
+    if (!has(configs, [key])) {
+      return pluggable;
+    }
+
+    const config: unknown = get(configs, [key]);
+
+    if (!isObject(config)) {
+      return pluggable;
+    }
+
+    return [Plugin, { ...(isArray(pluggable) ? pluggable[1] : {}), ...config }];
+  });
+}
 
 export function buildPluggables<T extends IPluginWithConfig>(): T[];
 
