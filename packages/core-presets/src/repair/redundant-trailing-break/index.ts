@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { isMdastParent } from '@flowdown/utils';
 
 import { BaseRepairPlugin } from '../base';
 import { INLINE_PARENT_TYPES, removeTrailingBreaks } from './utils';
+
+declare global {
+  interface RepairConfigs {
+    'repair-redundant-trailing-break'?: IPluggableConfig<void>;
+  }
+}
 
 export class RedundantTrailingBreakRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-redundant-trailing-break';

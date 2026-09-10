@@ -1,7 +1,7 @@
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import {
   gfmStrikethroughFromMarkdown,
   gfmStrikethroughToMarkdown,
@@ -13,6 +13,12 @@ import { BaseRemarkPlugin } from '../base';
 
 export interface SyntaxStrikethroughRemarkPluginConfig {
   singleTilde?: boolean | null;
+}
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-strikethrough'?: IPluggableConfig<SyntaxStrikethroughRemarkPluginConfig>;
+  }
 }
 
 export class SyntaxStrikethroughRemarkPlugin extends BaseRemarkPlugin {

@@ -1,7 +1,7 @@
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import {
   gfmTaskListItemFromMarkdown,
   gfmTaskListItemToMarkdown,
@@ -10,6 +10,12 @@ import { gfmTaskListItem } from 'micromark-extension-gfm-task-list-item';
 
 import { appendRemarkExtensions } from '../../utils';
 import { BaseRemarkPlugin } from '../base';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-task-list'?: IPluggableConfig<void>;
+  }
+}
 
 export class SyntaxTaskListRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-task-list';

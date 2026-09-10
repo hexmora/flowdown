@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { cloneDeep } from 'lodash-es';
 
 import type { PatchesRemarkPluginConfig } from './type';
@@ -11,6 +11,12 @@ import { applyPatches } from './utils';
 
 export type { PatchesRemarkPluginConfig } from './type';
 export type { ParserPatch, ParserPatchData, ParserPatchProperties } from '../../typings';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-patches'?: IPluggableConfig<void>;
+  }
+}
 
 export class PatchesRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-patches';

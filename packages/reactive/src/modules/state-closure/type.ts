@@ -16,6 +16,10 @@ export interface IReadableClosure<T> extends IDestructible {
   readonly value: IReactiveState<T>;
 }
 
+export type FlattenedState<T> = {
+  [K in keyof T]: IReadableClosure<T[K]>;
+};
+
 export type ListEntry<T, R> = {
   input: MutableState<T>;
   closure: IReadableClosure<R>;

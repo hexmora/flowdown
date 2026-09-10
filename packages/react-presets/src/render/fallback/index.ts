@@ -1,9 +1,17 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { createElement } from 'react';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 
 import { BaseReactRenderPlugin, isSafeTagName } from '../../base';
 import { VOID_TAG_NAMES } from './consts';
+
+declare global {
+  interface RenderConfigs {
+    'render-fallback'?: IPluggableConfig<void>;
+  }
+}
 
 export class FallbackRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-fallback';

@@ -9,19 +9,21 @@ import {
 } from '@flowdown/core-presets/remark';
 import { memoReturns } from 'reactive';
 
-import type { RemarkPluggablesMapperInputs } from './type';
+import type { RemarkPluggablesInputs } from './type';
 
-import { isPluggablesEqual } from '../../../base';
-import { getPluggableClass, getPluggableConfig, mergePluginPluggables } from '../utils';
+import { isPluggablesEqual, toPluggable } from '../../../base';
+import { getPluggableClass, getPluggableConfig } from '../utils';
 
 export * from './type';
 
-export const RemarkPluggablesMapper = /*#__PURE__*/ memoReturns(function RemarkPluggablesMapper({
+export const RemarkPluggables = /*#__PURE__*/ memoReturns(function RemarkPluggables({
   config,
   extras,
   repairs,
-}: RemarkPluggablesMapperInputs): IPluggable<IRemarkPlugin, unknown>[] {
-  const presets = PRESET_REMARK_PLUGINS.filter((Plugin) => {
+}: RemarkPluggablesInputs): IPluggable<IRemarkPlugin, unknown>[] {
+  const pluggables = toPluggable(extras, PRESET_REMARK_PLUGINS).filter((pluggable) => {
+    const Plugin = getPluggableClass(pluggable);
+
     if (Plugin === SyntaxFootnoteRemarkPlugin) {
       return config.footnote;
     }
@@ -36,8 +38,6 @@ export const RemarkPluggablesMapper = /*#__PURE__*/ memoReturns(function RemarkP
 
     return true;
   });
-
-  const pluggables = mergePluginPluggables(presets, extras);
 
   return pluggables.map((pluggable) => {
     const Plugin = getPluggableClass(pluggable);

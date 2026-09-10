@@ -15,8 +15,8 @@ import {
 } from '@flowdown/core-presets/mapper';
 import { afterEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
 
-import { ALL_SCHEDULERS, ALL_TICKERS } from '..';
-import { getSchedulerByType, getTickerByType, isEnableRAF, toBaseSmoothConfig } from '../utils';
+import { getSchedulerByType, getTickerByType, isEnableRAF, toSmoothConfig } from '..';
+import { ALL_SCHEDULERS, ALL_TICKERS } from '../../consts';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -82,7 +82,7 @@ describe('smooth configuration', () => {
       expect(isEnableRAF()).toBe(request && cancel);
 
       for (const enabled of [true, false]) {
-        expect(toBaseSmoothConfig(enabled)).toEqual({
+        expect(toSmoothConfig(enabled)).toEqual({
           enabled,
           ticker,
           scheduler: SpringSmoothScheduler,
@@ -96,7 +96,7 @@ describe('smooth configuration', () => {
 
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
 
-    const result = toBaseSmoothConfig({ enabled: true, ticker: 'interval', scheduler: 'spring' });
+    const result = toSmoothConfig({ enabled: true, ticker: 'interval', scheduler: 'spring' });
 
     expect(result).toEqual({
       enabled: true,
@@ -106,6 +106,6 @@ describe('smooth configuration', () => {
 
     expectTypeOf(result).toEqualTypeOf<BaseSmoothConfig>();
 
-    expect(toBaseSmoothConfig({ ticker: 'raf', scheduler: 'spring' }).enabled).toBe(false);
+    expect(toSmoothConfig({ ticker: 'raf', scheduler: 'spring' }).enabled).toBe(false);
   });
 });

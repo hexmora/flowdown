@@ -1,4 +1,9 @@
-import type { IPluggable, IPluginWithConfig, IRemarkPlugin } from '@flowdown/types';
+import type {
+  IPluggable,
+  IPluggableConfig,
+  IPluginWithConfig,
+  IRemarkPlugin,
+} from '@flowdown/types';
 import type { ReactNode } from 'react';
 
 import { isPluggablesEqual } from '@flowdown/core';
@@ -8,6 +13,12 @@ import { describe, expect, test } from 'vitest';
 import type { FlowdownProps, IPluginItem } from '../../types';
 
 import { isPropsEqual } from '..';
+
+declare global {
+  interface RemarkConfigs {
+    'test-plugin'?: IPluggableConfig<{ nested: { enabled: boolean } }>;
+  }
+}
 
 class TestPlugin implements IPluginWithConfig {
   static readonly key = 'test-plugin';

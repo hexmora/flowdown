@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -5,6 +7,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../../base';
 
 const Emphasis = /*#__PURE__*/ createTypeOfSlot('Emphasis');
+
+declare global {
+  interface RenderConfigs {
+    'render-emphasis'?: IPluggableConfig<void>;
+  }
+}
 
 export class EmphasisRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-emphasis';

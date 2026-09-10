@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -6,6 +8,12 @@ import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../..
 import { getCode, getCodeElement, getLanguage, getMeta } from './utils';
 
 const CodeBlock = /*#__PURE__*/ createTypeOfSlot('CodeBlock');
+
+declare global {
+  interface RenderConfigs {
+    'render-code'?: IPluggableConfig<void>;
+  }
+}
 
 export class CodeRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-code';

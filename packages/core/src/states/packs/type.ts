@@ -1,17 +1,10 @@
-import type { ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
 import type {
-  ApplyRepairsRemarkPlugin,
-  PatchesRemarkPlugin,
-  SyntaxMathRemarkPlugin,
-} from '@flowdown/core-presets/remark';
-import type {
-  IBasePluginConfig,
   IPluggable,
-  IPluggableConfig,
   IRawPatchRange,
   IRehypePlugin,
   IRemarkPlugin,
   IRepairPlugin,
+  PluginSet,
 } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 import type { IReadableClosure } from 'reactive';
@@ -20,35 +13,6 @@ import type { IRenderPatchRender, IRenderPlugin, RendererClass } from '../../ext
 import type { HastRoot } from '../../typings';
 import type { MapperPluggable } from '../base';
 import type { BlockCompilerConfig } from '../hast';
-
-type PluginConstructor = (abstract new (...args: never[]) => {
-  config: IBasePluginConfig;
-}) & {
-  readonly key: string;
-};
-
-type PluginConstructorConfig<C extends PluginConstructor> =
-  ConstructorParameters<C> extends []
-    ? never
-    : Exclude<ConstructorParameters<C>[0], undefined | void>;
-
-type CorePluginConfig<C extends PluginConstructor> = C extends
-  | typeof PatchesRemarkPlugin
-  | typeof SyntaxMathRemarkPlugin
-  ? never
-  : C extends typeof ApplyRepairsRemarkPlugin
-    ? Omit<PluginConstructorConfig<C>, 'plugins' | 'ending'>
-    : PluginConstructorConfig<C>;
-
-export type PluginConfigs<C extends PluginConstructor = never> = [C] extends [never]
-  ? Record<string, IPluggableConfig>
-  : CorePluginConfig<C> extends never
-    ? never
-    : Partial<{
-        [P in C as CorePluginConfig<P> extends never ? never : P['key']]: IPluggableConfig<
-          CorePluginConfig<P>
-        >;
-      }>;
 
 export interface IPatchItem<R> {
   /**
@@ -89,39 +53,29 @@ export type CoreInputs<R, C = {}> = {
   build: IReadableClosure<BlockCompilerConfig>;
 
   /**
-   * Configure progressive rendering of compiled content.
-   * @default false
-   */
-  smooth?: IReadableClosure<boolean | SmoothConfig>;
-
-  /**
-   * Configure shading at the tail of newly visible content.
-   * @default false
-   */
-  shad?: IReadableClosure<boolean | ShadConfig>;
-
-  /**
    * Plugins used to render compiled content.
    */
-  renders: IReadableClosure<IPluggable<IRenderPlugin<ElementContent, Parent, R, C>, unknown>[]>;
+  renders: IReadableClosure<
+    PluginSet<IPluggable<IRenderPlugin<ElementContent, Parent, R, C>, unknown>, RenderConfigs>
+  >;
 
   /**
-   * Additional Markdown tree plugins.
+   * Additional Markdown tree plugins or configuration overrides for the presets.
    */
-  remarks?: IReadableClosure<IPluggable<IRemarkPlugin, unknown>[]>;
+  remarks?: IReadableClosure<PluginSet<IPluggable<IRemarkPlugin, unknown>, RemarkConfigs>>;
 
   /**
-   * Additional HAST plugins.
+   * Additional HAST plugins or configuration overrides for the presets.
    */
-  rehypes?: IReadableClosure<IPluggable<IRehypePlugin, unknown>[]>;
+  rehypes?: IReadableClosure<PluginSet<IPluggable<IRehypePlugin, unknown>, RehypeConfigs>>;
 
   /**
-   * Additional streaming Markdown repair plugins.
+   * Additional streaming Markdown repair plugins or configuration overrides for the presets.
    */
-  repairs?: IReadableClosure<IPluggable<IRepairPlugin, unknown>[]>;
+  repairs?: IReadableClosure<PluginSet<IPluggable<IRepairPlugin, unknown>, RepairConfigs>>;
 
   /**
-   * Additional block mappers. Tuples replace presets with the same mapper.
+   * Additional block mappers or configuration overrides for the default mappers.
    */
-  mappers?: IReadableClosure<MapperPluggable[]>;
+  mappers?: IReadableClosure<PluginSet<MapperPluggable, MapperConfigs>>;
 };

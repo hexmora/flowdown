@@ -2,7 +2,7 @@ import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 
 import { appendMicromarkExtension } from '../../utils';
 import { BaseRemarkPlugin } from '../base';
@@ -14,6 +14,12 @@ export interface SyntaxPolicyRemarkPluginConfig {
 }
 
 type SyntaxPolicyRemarkPluginInnerConfig = Required<SyntaxPolicyRemarkPluginConfig>;
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-policy'?: IPluggableConfig<SyntaxPolicyRemarkPluginConfig>;
+  }
+}
 
 export class SyntaxPolicyRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-policy';

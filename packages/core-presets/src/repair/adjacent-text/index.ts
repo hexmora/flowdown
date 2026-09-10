@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { RootContent, Text } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { isMdastParent } from '@flowdown/utils';
 
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-adjacent-text'?: IPluggableConfig<void>;
+  }
+}
 
 export class AdjacentTextRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-adjacent-text';

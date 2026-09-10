@@ -6,7 +6,7 @@ import { PRESET_REMARK_PLUGINS, SyntaxMathRemarkPlugin } from '@flowdown/core-pr
 import { PRESET_REPAIR_PLUGINS } from '@flowdown/core-presets/repair';
 import { describe, expect, test } from 'vitest';
 
-import { mergePluginPluggables } from '../states/packs/states/utils';
+import { mergePluginPluggables } from '../states/base';
 
 describe('core preset imports', () => {
   test('resolves plugins through their public type entry points', () => {

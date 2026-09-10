@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { isMdastParent, processMdast } from '@flowdown/utils';
 import { cloneDeep } from 'lodash-es';
 
@@ -11,6 +11,12 @@ import { BaseRemarkPlugin } from '../base';
 import { getTagName, isEnabledTag } from './utils';
 
 export type { SyntaxHtmlAllowedRemarkPluginConfig } from './type';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-html-allowed'?: IPluggableConfig<SyntaxHtmlAllowedRemarkPluginConfig>;
+  }
+}
 
 export class SyntaxHtmlAllowedRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-html-allowed';

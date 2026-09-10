@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -5,6 +7,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../../base';
 
 const BreakLine = /*#__PURE__*/ createTypeOfSlot('BreakLine');
+
+declare global {
+  interface RenderConfigs {
+    'render-break-line'?: IPluggableConfig<void>;
+  }
+}
 
 export class BreakLineRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-break-line';

@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -5,6 +7,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin, getTextContent, isElementWithTag } from '../../base';
 import { ShadRenderer } from './renderer';
 import { isShadNode } from './utils';
+
+declare global {
+  interface RenderConfigs {
+    'render-shad'?: IPluggableConfig<void>;
+  }
+}
 
 export class ShadRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-shad';

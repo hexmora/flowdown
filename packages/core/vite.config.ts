@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [
     dts({
+      copyDtsFiles: true,
       entryRoot: 'src',
       tsconfigPath: './tsconfig.build.json',
     }),

@@ -1,4 +1,3 @@
-import type { PluginConfigs } from '@flowdown/core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
@@ -19,9 +18,7 @@ const meta = {
           [SyntaxHtmlAllowedRemarkPlugin.key]: {
             enabledTags: ['img', 'sub', 'sup', 'kbd', 'mark', 'details', 'summary'],
           },
-        } satisfies PluginConfigs<
-          typeof SyntaxHtmlAllowedRemarkPlugin | typeof SyntaxPolicyRemarkPlugin
-        >,
+        },
         remarks: [SyntaxPolicyRemarkPlugin, SyntaxHtmlAllowedRemarkPlugin],
       },
     ],

@@ -1,11 +1,17 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { Heading, Parent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { last } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-trailing-empty-heading'?: IPluggableConfig<void>;
+  }
+}
 
 export class TrailingEmptyHeadingRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-trailing-empty-heading';

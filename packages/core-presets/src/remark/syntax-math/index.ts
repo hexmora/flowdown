@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { mathFromMarkdown, mathToMarkdown } from 'mdast-util-math';
 import { math } from 'micromark-extension-math';
 
@@ -14,6 +14,12 @@ import { transformMath } from './utils';
 export type { PandocMathData, PandocMathMode } from '../../typings';
 
 export type { SyntaxMathRemarkPluginConfig } from './type';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-math'?: IPluggableConfig<void>;
+  }
+}
 
 export class SyntaxMathRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-math';

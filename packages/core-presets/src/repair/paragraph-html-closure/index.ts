@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
 import { closeParagraphTags, isRightmostNode } from './utils';
+
+declare global {
+  interface RepairConfigs {
+    'repair-paragraph-html-closure'?: IPluggableConfig<void>;
+  }
+}
 
 export class ParagraphHtmlClosureRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-paragraph-html-closure';

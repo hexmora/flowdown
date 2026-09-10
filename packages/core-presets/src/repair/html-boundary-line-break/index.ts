@@ -1,10 +1,16 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { Html } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { nth } from 'lodash-es';
 
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-html-boundary-line-break'?: IPluggableConfig<void>;
+  }
+}
 
 export class HtmlBoundaryLineBreakRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-html-boundary-line-break';

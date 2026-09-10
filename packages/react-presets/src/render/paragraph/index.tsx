@@ -1,3 +1,5 @@
+import type { IPluggableConfig } from '@flowdown/types';
+
 import { assert } from '@flowdown/utils';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
@@ -5,6 +7,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin, createTypeOfSlot, isElementWithTag } from '../../base';
 
 const Paragraph = /*#__PURE__*/ createTypeOfSlot('Paragraph');
+
+declare global {
+  interface RenderConfigs {
+    'render-paragraph'?: IPluggableConfig<void>;
+  }
+}
 
 export class ParagraphRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-paragraph';

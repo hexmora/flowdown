@@ -1,7 +1,7 @@
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import {
   gfmAutolinkLiteralFromMarkdown,
   gfmAutolinkLiteralToMarkdown,
@@ -10,6 +10,12 @@ import { gfmAutolinkLiteral } from 'micromark-extension-gfm-autolink-literal';
 
 import { appendRemarkExtensions } from '../../utils';
 import { BaseRemarkPlugin } from '../base';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-autolink'?: IPluggableConfig<void>;
+  }
+}
 
 export class SyntaxAutolinkRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-autolink';

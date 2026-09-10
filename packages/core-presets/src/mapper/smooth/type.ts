@@ -1,9 +1,26 @@
-import type { Newable } from 'reactive';
+import type { IBlockState, MapperInputs } from '@flowdown/types';
+import type { IReadableClosure, Newable } from 'reactive';
 
 import type { IScheduler, ITicker } from './modules';
-import type { SmoothCursorInputs } from './states';
 
-export interface SmoothInputs<T> extends SmoothCursorInputs<T> {}
+export interface SmoothBaseInputs {
+  /**
+   * Whether newly appended content advances on ticker events.
+   */
+  enabled?: IReadableClosure<boolean>;
+
+  /**
+   * Constructor used to supply animation timestamps.
+   */
+  ticker?: IReadableClosure<SmoothTickerClass>;
+
+  /**
+   * Constructor used to determine visible progress per tick.
+   */
+  scheduler?: IReadableClosure<SmoothSchedulerClass>;
+}
+
+export type SmoothInputs<T> = MapperInputs<SmoothBaseInputs, IBlockState<T>[]>;
 
 export type TickerParams = [interval?: number];
 

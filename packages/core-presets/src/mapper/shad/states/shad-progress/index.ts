@@ -18,9 +18,9 @@ export * from './type';
 
 export const ShadProgress = /*#__PURE__*/ once(function ShadProgress({
   source,
-  enabled: enabledSource,
-  length: lengthSource,
-}: ShadInputs) {
+  enabled: _enabled,
+  length: _length,
+}: Required<ShadInputs>) {
   const tailLength = useSwitchMap(source, (blocks) => last(blocks)?.length ?? ReactiveState.of(0));
 
   const visibleLength = useCombineMap([source, tailLength], ([blocks]) =>
@@ -28,7 +28,7 @@ export const ShadProgress = /*#__PURE__*/ once(function ShadProgress({
   );
 
   const configuration = useCombineMap(
-    [visibleLength, enabledSource, lengthSource],
+    [visibleLength, _enabled, _length],
     ([total, enabled, length]) => ({
       total,
       length: enabled && Number.isFinite(length) ? Math.max(0, Math.floor(length)) : 0,

@@ -1,12 +1,17 @@
-import type { MapperPluggable, PluginConfigs } from '@flowdown/core';
+import type { MapperPluggable } from '@flowdown/core';
 import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
+import type { FlattenedState } from 'reactive';
 
-import { get, has, isArray } from 'lodash-es';
+import { toPluggable } from '@flowdown/core';
+import { useDeferredUnmount, useStateOf, useStatic } from '@flowdown/react-presets/base';
+import { forEach } from 'lodash-es';
 import { useMemo } from 'react';
+import { flattenClosure } from 'reactive';
+import { shallowEqual } from 'shallow-equal';
 
-import type { IPluginItem } from '../types';
+import type { IPluginItem, PluginConfigs } from '../types';
 
-import { EL } from '../consts';
+import { EL, EO } from '../consts';
 
 type PluginChannel = Exclude<keyof IPluginItem, 'config'>;
 
@@ -14,15 +19,14 @@ type PluginList<T extends PluginChannel> = NonNullable<IPluginItem[T]>;
 
 type PackPluggable = IPluggable<IPluginWithConfig, unknown> | MapperPluggable;
 
-const configurePluggable = (
-  pluggable: PackPluggable,
-  config: PluginConfigs | undefined,
-): PackPluggable => {
-  if (isArray(pluggable) || !('key' in pluggable) || !config || !has(config, [pluggable.key])) {
-    return pluggable;
-  }
+export const usePluginConfig = <T extends object>(config: T): FlattenedState<T> => {
+  const source = useStateOf(config, shallowEqual);
 
-  return [pluggable, get(config, [pluggable.key])];
+  const fields = useStatic(() => flattenClosure(source));
+
+  useDeferredUnmount(() => forEach(fields, (field) => field.destroy()));
+
+  return fields;
 };
 
 export function usePlugins<T extends PluginChannel>(
@@ -39,11 +43,9 @@ export function usePlugins(
   return useMemo(
     () => [
       ...defaults,
-      ...items.flatMap((item) => {
-        const pluggables = item[type] ?? EL;
-
-        return pluggables.map((pluggable) => configurePluggable(pluggable, item.config));
-      }),
+      ...items.flatMap((item) =>
+        toPluggable<PackPluggable, PluginConfigs>([item[type] ?? EL, item.config ?? EO]),
+      ),
     ],
     [defaults, items, type],
   );

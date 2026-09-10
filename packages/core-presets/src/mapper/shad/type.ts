@@ -1,20 +1,20 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState, MapperInputs } from '@flowdown/types';
 import type { Root as HastRoot } from 'hast';
 import type { IReadableClosure } from 'reactive';
 
-export interface ShadInputs {
-  source: IReadableClosure<IBlockState<HastRoot>[]>;
-
+export interface ShadBaseInputs {
   /**
    * Whether newly visible text receives the tail shading.
    */
-  enabled: IReadableClosure<boolean>;
+  enabled?: IReadableClosure<boolean>;
 
   /**
    * Maximum number of visible characters in the shaded tail.
    */
-  length: IReadableClosure<number>;
+  length?: IReadableClosure<number>;
 }
+
+export type ShadInputs = MapperInputs<ShadBaseInputs, IBlockState<HastRoot>[]>;
 
 export interface BaseShadConfig {
   enabled: boolean;

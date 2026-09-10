@@ -1,7 +1,9 @@
+import type { MapperPluggable } from '@flowdown/core';
 import type { ReactRenderExtraParams } from '@flowdown/react-presets/base';
+import type { PluginSet } from '@flowdown/types';
 import type { ReactNode } from 'react';
 
-import { Core, isPluggablesEqual } from '@flowdown/core';
+import { Core, isPluggablesEqual, isPluginSetEqual } from '@flowdown/core';
 import {
   SlotProvider,
   useDeferredUnmount,
@@ -20,11 +22,11 @@ import type { FlowdownProps, FlowdownRef } from './types';
 
 import { RootReconciler } from './components';
 import { DEFAULT_CONFIG, EL, EO } from './consts';
-import { usePlugins, useShadStyles } from './hooks';
+import { usePluginConfig, usePlugins, useShadStyles } from './hooks';
 import { ReactRenderer } from './modules';
 import styles from './styles/index.module.scss';
 import { useThemeStyles } from './theme';
-import { isPatchesEqual, isPropsEqual, isShadEqual, isSmoothEqual } from './utils';
+import { isPatchesEqual, isPropsEqual, toShadConfig, toSmoothConfig } from './utils';
 
 export * from './types';
 
@@ -49,9 +51,9 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     const build = useStateOf(defaultsBy(_build, DEFAULT_CONFIG), shallowEqual);
 
-    const smooth = useStateOf(_smooth, isSmoothEqual);
+    const smooth = usePluginConfig(toSmoothConfig(_smooth));
 
-    const shad = useStateOf(_shad, isShadEqual);
+    const shad = usePluginConfig(toShadConfig(_shad));
 
     const patches = useStateOf(_patches, isPatchesEqual);
 
@@ -75,7 +77,10 @@ export const Flowdown = /*#__PURE__*/ memo(
 
     const repairs = useStateOf(_repairs, isPluggablesEqual);
 
-    const mappers = useStateOf(_mappers, isPluggablesEqual);
+    const mappers = useStateOf<PluginSet<MapperPluggable, MapperConfigs>>(
+      [_mappers, { smooth, shad }],
+      isPluginSetEqual,
+    );
 
     const renders = useStateOf(_renders, isPluggablesEqual);
 
@@ -92,8 +97,6 @@ export const Flowdown = /*#__PURE__*/ memo(
             renders,
             repairs,
             mappers,
-            smooth,
-            shad,
             text,
           },
         ]),

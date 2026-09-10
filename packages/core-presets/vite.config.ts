@@ -28,6 +28,9 @@ export default defineConfig({
       fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
+      output: {
+        keepNames: true,
+      },
       external: [
         '@flowdown/types',
         '@flowdown/utils',

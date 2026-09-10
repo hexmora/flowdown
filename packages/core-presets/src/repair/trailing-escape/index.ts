@@ -1,11 +1,17 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { Parent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { last, nth } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-trailing-escape'?: IPluggableConfig<void>;
+  }
+}
 
 export class TrailingEscapeRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-trailing-escape';

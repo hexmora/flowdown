@@ -1,5 +1,7 @@
 import type { MapperInputs, MapperPluggable } from '@flowdown/core';
+import type { IPluggableConfig } from '@flowdown/types';
 
+import { Shad, Smooth } from '@flowdown/core-presets/mapper';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { first, reverse } from 'lodash-es';
 import { createRef, StrictMode } from 'react';
@@ -7,6 +9,7 @@ import {
   type IReadableClosure,
   MutableState,
   once,
+  ReactiveState,
   useClearable,
   useCombineMap,
   useDefaults,
@@ -17,7 +20,14 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import type { FlowdownRef, IPluginItem } from '../types';
 
 import { Flowdown } from '..';
+import styles from '../../../react-presets/src/render/shad/renderer/index.module.scss';
 import { createManualTicker, createStepScheduler } from './utils/smooth';
+
+declare global {
+  interface MapperConfigs {
+    configured?: IPluggableConfig<{ count?: IReadableClosure<number> }>;
+  }
+}
 
 const Reverse = once(({ source }: MapperInputs) =>
   useMap(source, (blocks) => reverse([...blocks])),
@@ -36,6 +46,36 @@ afterEach(async () => {
 });
 
 describe('Flowdown mapper plugins', () => {
+  test('overrides mapper tuples with the top-level Smooth and Shad configuration', () => {
+    const ticker = createManualTicker();
+
+    const scheduler = createStepScheduler(1);
+
+    const mappers: MapperPluggable[] = [
+      [
+        Smooth,
+        {
+          enabled: ReactiveState.of(true),
+          ticker: ReactiveState.of(ticker.Ticker),
+          scheduler: ReactiveState.of(scheduler),
+        },
+      ],
+      [Shad, { enabled: ReactiveState.of(true), length: ReactiveState.of(2) }],
+    ];
+
+    const content = (text: string) => <Flowdown text={text} plugins={[{ mappers }]} />;
+
+    const view = render(content('a'));
+
+    view.rerender(content('abc'));
+
+    expect(view.container.textContent).toBe('abc');
+
+    expect(view.container.querySelector(`.${styles.active}`)).toBeNull();
+
+    expect(ticker.instances).toHaveLength(0);
+  });
+
   test('applies keyed pack config and rebinds distinct readable config values', async () => {
     const state = MutableState.of(1);
 
@@ -47,21 +87,21 @@ describe('Flowdown mapper plugins', () => {
 
     const received = vi.fn();
 
-    const Configured = Object.assign(
-      once(({ source, count }: MapperInputs & { count?: IReadableClosure<number> }) => {
-        received(count);
+    const Configured = once(function Configured({
+      source,
+      count,
+    }: MapperInputs & { count?: IReadableClosure<number> }) {
+      received(count);
 
-        const limit = useDefaults(count, 1);
+      const limit = useDefaults(count, 1);
 
-        return useCombineMap([source, limit], ([blocks, size]) => blocks.slice(0, size));
-      }),
-      { key: 'configured-mapper' },
-    );
+      return useCombineMap([source, limit], ([blocks, size]) => blocks.slice(0, size));
+    });
 
     const content = (count: IReadableClosure<number>) => (
       <Flowdown
         text={'first\n\nsecond'}
-        plugins={[{ config: { [Configured.key]: { count } }, mappers: [Configured] }]}
+        plugins={[{ config: { configured: { count } }, mappers: [Configured] }]}
       />
     );
 

@@ -1,5 +1,5 @@
 import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
-import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+import type { IPluggable, IPluggableConfig, IRemarkPlugin } from '@flowdown/types';
 
 import { PluginPriority } from '@flowdown/types';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -12,6 +12,12 @@ import type { FlowdownRef } from '../types';
 import { Flowdown } from '..';
 
 type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
+
+declare global {
+  interface RemarkConfigs {
+    'test-configured-remark'?: IPluggableConfig<{ suffix?: string }>;
+  }
+}
 
 interface ParagraphSlotProps {
   Raw: ComponentType<Omit<ParagraphSlotProps, 'Raw'>> | null;

@@ -1,9 +1,9 @@
-import type { IPluggable, IRehypePlugin } from '@flowdown/types';
+import type { IPluggable, IRehypePlugin, PluginSet } from '@flowdown/types';
 
 import type { BlockCompilerConfig } from '../../../hast';
 
-export type RehypePluggablesMapperInputs = {
+export type RehypePluggablesInputs = {
   config: BlockCompilerConfig;
 
-  extras: readonly IPluggable<IRehypePlugin, unknown>[];
+  extras: PluginSet<IPluggable<IRehypePlugin, unknown>, RehypeConfigs>;
 };

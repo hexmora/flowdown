@@ -1,5 +1,4 @@
-import type { SmoothConfig } from '@flowdown/core-presets/mapper';
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState, PluginSet } from '@flowdown/types';
 import type { ElementContent, Parent, RootContent } from 'hast';
 
 import { Smooth } from '@flowdown/core-presets/mapper';
@@ -54,11 +53,14 @@ const TakeFirst = once(function TakeFirst({ source }: MapperInputs): IReadableCl
 
 const build = { repair: false, repairEnding: false, footnote: false, tex: false };
 
-const enabled: SmoothConfig = {
-  enabled: true,
-  ticker: ManualTicker,
-  scheduler: StepSmoothScheduler,
-};
+const enabled: MapperPluggable = [
+  Smooth,
+  {
+    enabled: ReactiveState.of(true),
+    ticker: ReactiveState.of(ManualTicker),
+    scheduler: ReactiveState.of(StepSmoothScheduler),
+  },
+];
 
 const closures = new Set<IReadableClosure<Block[]>>();
 
@@ -70,11 +72,7 @@ const collectText = (node: HastRoot | RootContent): string => {
       : '';
 };
 
-const setup = (
-  initialText: string,
-  initialMappers: MapperPluggable[],
-  smooth: boolean | SmoothConfig = false,
-) => {
+const setup = (initialText: string, initialMappers: PluginSet<MapperPluggable, MapperConfigs>) => {
   const text = MutableState.of(initialText);
 
   const mappers = MutableState.of(initialMappers);
@@ -87,7 +85,6 @@ const setup = (
         text,
         mappers,
         build,
-        smooth: ReactiveState.of(smooth),
         patches: [],
         renders: [],
       },
@@ -123,20 +120,16 @@ afterEach(() => {
 
 describe('Core mapper pipeline', () => {
   test('replaces the default Smooth configuration with an explicit tuple', () => {
-    const view = setup(
-      'start',
+    const view = setup('start', [
       [
-        [
-          Smooth,
-          {
-            enabled: ReactiveState.of(false),
-            ticker: ReactiveState.of(ManualTicker),
-            scheduler: ReactiveState.of(StepSmoothScheduler),
-          },
-        ],
+        Smooth,
+        {
+          enabled: ReactiveState.of(false),
+          ticker: ReactiveState.of(ManualTicker),
+          scheduler: ReactiveState.of(StepSmoothScheduler),
+        },
       ],
-      enabled,
-    );
+    ]);
 
     expect(view.read()).toEqual(['start']);
 
@@ -147,8 +140,42 @@ describe('Core mapper pipeline', () => {
     expect(ManualTicker.instances).toHaveLength(0);
   });
 
-  test('appends array mappers after Smooth and receives its progressive output', () => {
-    const view = setup('first\n\nsecond', [Reverse], enabled);
+  test('configures default Smooth with empty mapper extras and preserves its progress', () => {
+    const configs: MapperConfigs = {
+      smooth: {
+        enabled: render(true),
+        ticker: render(ReactiveState.of(ManualTicker)),
+        scheduler: render(ReactiveState.of(StepSmoothScheduler)),
+      },
+    };
+
+    const view = setup('', [[], configs]);
+
+    expect(view.read()).toEqual([]);
+
+    view.text.next('abc');
+
+    expect(view.read()).toEqual(['']);
+
+    view.tick(16);
+
+    expect(view.read()).toEqual(['a']);
+
+    const ticker = last(ManualTicker.instances);
+
+    view.mappers.next([[Reverse], configs]);
+
+    view.mappers.next([[], configs]);
+
+    expect(ManualTicker.instances).toEqual([ticker]);
+
+    view.tick(32);
+
+    expect(view.read()).toEqual(['ab']);
+  });
+
+  test('passes progressive Smooth output to subsequent mappers', () => {
+    const view = setup('first\n\nsecond', [enabled, Reverse]);
 
     expect(view.read()).toEqual(['second', 'first']);
 
@@ -161,7 +188,7 @@ describe('Core mapper pipeline', () => {
     expect(view.read()).toEqual(['second!', 'first']);
   });
 
-  test('replaces matching mapper entries and preserves equivalent configurations', () => {
+  test('preserves equivalent configurations and replaces changed mapper options', () => {
     const construct = vi.fn();
 
     const Take = once(({ source, count }: MapperInputs & { count: number }) => {
@@ -185,6 +212,12 @@ describe('Core mapper pipeline', () => {
     expect(view.read()).toEqual(['second', 'first']);
 
     expect(construct).toHaveBeenCalledOnce();
+
+    view.mappers.next([[Take, { count: 1 }], Reverse]);
+
+    expect(view.read()).toEqual(['first']);
+
+    expect(construct).toHaveBeenCalledTimes(2);
   });
 
   test('orders mapper tuples by priority and follows list and source updates', () => {
@@ -224,7 +257,7 @@ describe('Core mapper pipeline', () => {
 
     const observe: MapperPluggable = [Observe, { priority: PluginPriority.High }];
 
-    const view = setup('', [observe], enabled);
+    const view = setup('', [enabled, observe]);
 
     expect(view.read()).toEqual([]);
 
@@ -240,7 +273,7 @@ describe('Core mapper pipeline', () => {
 
     const ticker = last(ManualTicker.instances)!;
 
-    view.mappers.next([observe, Reverse]);
+    view.mappers.next([enabled, observe, Reverse]);
 
     expect(view.read()).toEqual(['a']);
 

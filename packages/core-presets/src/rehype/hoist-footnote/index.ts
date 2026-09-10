@@ -1,11 +1,17 @@
 import type { Root as HastRoot } from 'hast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { isHastElement } from '@flowdown/utils';
 import { has, last } from 'lodash-es';
 
 import { BaseRehypePlugin } from '../base';
+
+declare global {
+  interface RehypeConfigs {
+    'rehype-hoist-footnote'?: IPluggableConfig<void>;
+  }
+}
 
 export class HoistFootnoteRehypePlugin extends BaseRehypePlugin {
   static readonly key = 'rehype-hoist-footnote';

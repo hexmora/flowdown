@@ -1,9 +1,15 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { last } from 'lodash-es';
 
 import { BaseRepairPlugin } from '../base';
+
+declare global {
+  interface RepairConfigs {
+    'repair-incomplete-list-marker'?: IPluggableConfig<void>;
+  }
+}
 
 export class IncompleteListMarkerRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-incomplete-list-marker';

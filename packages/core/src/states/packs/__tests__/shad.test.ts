@@ -1,15 +1,26 @@
-import type { ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
-import type { IBlockState } from '@flowdown/types';
+import type { BaseShadConfig, BaseSmoothConfig } from '@flowdown/core-presets/mapper';
+import type { IBlockState, PluginSet } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 
 import { Shad } from '@flowdown/core-presets/mapper';
 import { assert } from '@flowdown/utils';
 import { last } from 'lodash-es';
-import { D, type IReadableClosure, MutableState, ReactiveState, render, S } from 'reactive';
+import {
+  D,
+  type IReadableClosure,
+  MutableState,
+  once,
+  ReactiveState,
+  render,
+  S,
+  useFlatten,
+  useMap,
+} from 'reactive';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { HastRoot } from '../../../typings';
 import type { MapperPluggable } from '../../base';
+import type { CoreInputs } from '../type';
 
 import { readParts } from '../../../__tests__/shad/utils';
 import { collectText, firstBlock } from '../../../__tests__/smooth/utils';
@@ -37,35 +48,67 @@ class ManualTicker extends FakeSmoothTicker {
 
 const build = { repair: false, repairEnding: false, footnote: false, tex: false };
 
-const smooth: SmoothConfig = {
+const smooth: BaseSmoothConfig = {
   enabled: true,
   ticker: ManualTicker,
   scheduler: StepSmoothScheduler,
 };
 
+const enabled: BaseShadConfig = { enabled: true, length: 2 };
+
+const disabled: BaseShadConfig = { ...enabled, enabled: false };
+
+type ConfiguredCoreInputs = Omit<CoreInputs<Block>, 'mappers'> & {
+  shad?: IReadableClosure<BaseShadConfig>;
+
+  smooth?: IReadableClosure<BaseSmoothConfig>;
+
+  mappers?: IReadableClosure<MapperPluggable[] | undefined>;
+};
+
+const ConfiguredCore = once(
+  ({ shad, smooth: smoothSource, mappers, ...inputs }: ConfiguredCoreInputs) => {
+    const configs: MapperConfigs = {
+      shad: shad ? useFlatten(shad) : undefined,
+      smooth: smoothSource ? useFlatten(smoothSource) : undefined,
+    };
+
+    return S([
+      Core<Block>,
+      {
+        ...inputs,
+        Renderer: D(inputs.Renderer),
+        mappers: mappers
+          ? useMap(mappers, (items): PluginSet<MapperPluggable, MapperConfigs> => items ?? configs)
+          : ReactiveState.of<PluginSet<MapperPluggable, MapperConfigs>>(configs),
+      },
+    ]);
+  },
+);
+
 const closures = new Set<IReadableClosure<Block[]>>();
 
 const setup = (
   initialText: string,
-  initialShad?: boolean | ShadConfig,
-  initialSmooth: boolean | SmoothConfig = false,
+  initialShad?: BaseShadConfig,
+  initialSmooth?: BaseSmoothConfig,
 ) => {
   const text = MutableState.of(initialText);
 
-  const shad = MutableState.of(initialShad ?? false);
+  const shad = MutableState.of(initialShad ?? disabled);
 
-  const mappers = MutableState.of<MapperPluggable[]>([]);
+  const mappers = MutableState.of<MapperPluggable[] | undefined>(undefined);
 
   const core = render(
     S([
-      Core<Block>,
+      ConfiguredCore,
       {
         Renderer: D(BlockRenderer),
         text,
         build,
         shad: initialShad === undefined ? undefined : shad,
         mappers,
-        smooth: ReactiveState.of(initialSmooth),
+        smooth: initialSmooth === undefined ? undefined : ReactiveState.of(initialSmooth),
         patches: [],
         renders: [],
       },
@@ -104,8 +147,30 @@ afterEach(() => {
 });
 
 describe('Core shad pipeline', () => {
+  test('keeps a bare Shad disabled and defaults its configured tail length to two', () => {
+    const view = setup('abcd');
+
+    view.mappers.next([Shad]);
+
+    expect(readParts(firstBlock(view.core.value.value).value.value)).toBeUndefined();
+
+    view.mappers.next([[Shad, { enabled: ReactiveState.of(true) }]]);
+
+    expect(readParts(firstBlock(view.core.value.value).value.value)).toEqual({
+      leading: 'cd',
+      active: '',
+    });
+
+    view.text.next('abcde');
+
+    expect(readParts(firstBlock(view.core.value.value).value.value)).toEqual({
+      leading: 'd',
+      active: 'e',
+    });
+  });
+
   test('overrides the Shad preset through a public mapper tuple and restores its configuration', () => {
-    const view = setup('abcd', true);
+    const view = setup('abcd', enabled);
 
     view.mappers.next([[Shad, { enabled: ReactiveState.of(false), length: ReactiveState.of(4) }]]);
 
@@ -115,7 +180,7 @@ describe('Core shad pipeline', () => {
 
     expect(readParts(firstBlock(view.core.value.value).value.value)).toBeUndefined();
 
-    view.mappers.next([]);
+    view.mappers.next(undefined);
 
     expect(readParts(firstBlock(view.core.value.value).value.value)).toEqual({
       leading: 'de',
@@ -127,7 +192,7 @@ describe('Core shad pipeline', () => {
     expect(readParts(firstBlock(view.core.value.value).value.value)?.active).toBe('f');
   });
 
-  test.each([undefined, false, { enabled: false, length: 4 }])(
+  test.each([undefined, disabled, { enabled: false, length: 4 }])(
     'keeps shading disabled for %j',
     (config) => {
       const view = setup('abcd', config);
@@ -146,39 +211,36 @@ describe('Core shad pipeline', () => {
     },
   );
 
-  test.each([true, {}])(
-    'uses the default tail length for %j and applies live configuration',
-    (config) => {
-      const view = setup('abcd', config);
+  test('uses the default tail length and applies live configuration', () => {
+    const view = setup('abcd', enabled);
 
-      const fork = firstBlock(view.core.value.value);
+    const fork = firstBlock(view.core.value.value);
 
-      expect(readParts(fork.value.value)).toEqual({ leading: 'cd', active: '' });
+    expect(readParts(fork.value.value)).toEqual({ leading: 'cd', active: '' });
 
-      view.text.next('abcde');
+    view.text.next('abcde');
 
-      expect(readParts(fork.value.value)).toEqual({ leading: 'd', active: 'e' });
+    expect(readParts(fork.value.value)).toEqual({ leading: 'd', active: 'e' });
 
-      view.shad.next({ length: 4 });
+    view.shad.next({ ...enabled, length: 4 });
 
-      expect(readParts(fork.value.value)).toEqual({ leading: 'bcd', active: 'e' });
+    expect(readParts(fork.value.value)).toEqual({ leading: 'bcd', active: 'e' });
 
-      view.shad.next(false);
+    view.shad.next(disabled);
 
-      expect(view.read()).toEqual(['abcde']);
+    expect(view.read()).toEqual(['abcde']);
 
-      expect(readParts(fork.value.value)).toBeUndefined();
+    expect(readParts(fork.value.value)).toBeUndefined();
 
-      view.shad.next(true);
+    view.shad.next(enabled);
 
-      expect(firstBlock(view.core.value.value)).toBe(fork);
+    expect(firstBlock(view.core.value.value)).toBe(fork);
 
-      expect(readParts(fork.value.value)).toEqual({ leading: 'de', active: '' });
-    },
-  );
+    expect(readParts(fork.value.value)).toEqual({ leading: 'de', active: '' });
+  });
 
   test('shades newly visible Smooth output only after its ticks and keeps lengths consistent', () => {
-    const view = setup('', true, smooth);
+    const view = setup('', enabled, smooth);
 
     expect(view.read()).toEqual([]);
 
@@ -223,12 +285,12 @@ describe('Core shad pipeline', () => {
     expect(readParts(fork.value.value)).toEqual({ leading: '', active: 'cd' });
   });
 
-  test.each([false, true, { length: 3 }])(
+  test.each([disabled, enabled, { ...enabled, length: 3 }])(
     'completes a static document for shad %j without a timer',
     (shad) => {
       const core = render(
         S([
-          Core<Block>,
+          ConfiguredCore,
           {
             Renderer: D(BlockRenderer),
             text: ReactiveState.of('ready'),
@@ -248,7 +310,7 @@ describe('Core shad pipeline', () => {
       expect(collectText(block.value.value)).toBe('ready');
 
       expect(readParts(block.value.value)).toEqual(
-        shad === false ? undefined : { leading: shad === true ? 'dy' : 'ady', active: '' },
+        shad.enabled ? { leading: shad.length === 2 ? 'dy' : 'ady', active: '' } : undefined,
       );
 
       expect(core.value.closed).toBe(true);
@@ -258,7 +320,7 @@ describe('Core shad pipeline', () => {
   );
 
   test('finishes the final tail after the stream completes and clears resources on destroy', () => {
-    const view = setup('abc', true);
+    const view = setup('abc', enabled);
 
     const fork = firstBlock(view.core.value.value);
 

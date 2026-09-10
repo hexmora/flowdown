@@ -1,4 +1,4 @@
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { assert } from '@flowdown/utils';
 import { isString } from 'lodash-es';
 
@@ -7,6 +7,12 @@ import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';
 import { BaseReactRenderPlugin } from '../../base';
 import { PatchReconciler } from './components/patch-reconciler';
 import { isPatchNode } from './utils';
+
+declare global {
+  interface RenderConfigs {
+    'render-patch'?: IPluggableConfig<void>;
+  }
+}
 
 export class PatchRenderPlugin extends BaseReactRenderPlugin {
   static readonly key = 'render-patch';

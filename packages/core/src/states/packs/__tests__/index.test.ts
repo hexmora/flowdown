@@ -18,7 +18,6 @@ import {
 import {
   BaseRepairPlugin,
   DanglingFootnoteRepairPlugin,
-  IncompleteImageRepairPlugin,
   PRESET_REPAIR_PLUGINS,
 } from '@flowdown/core-presets/repair';
 import {
@@ -28,6 +27,7 @@ import {
   type IRemarkPlugin,
   type IRepairPlugin,
   PluginPriority,
+  type PluginSet,
   type RepairPluginRunner,
   type RepairPluginSystemConfig,
 } from '@flowdown/types';
@@ -285,11 +285,15 @@ const setupCore = (initialText = 'base') => {
   const patches = MutableState.of<IPatchItem<RenderedBlock>[]>([]);
 
   const build = MutableState.of(DEFAULT_CONFIG);
-  const remarks = MutableState.of<IPluggable<IRemarkPlugin, unknown>[]>([
+  const remarks = MutableState.of<PluginSet<IPluggable<IRemarkPlugin, unknown>, RemarkConfigs>>([
     [AppendRemarkPlugin, { suffix: '|remark' }] as unknown as IPluggable<IRemarkPlugin, unknown>,
   ]);
-  const rehypes = MutableState.of<IPluggable<IRehypePlugin, unknown>[]>([AppendRehypePlugin]);
-  const repairs = MutableState.of<IPluggable<IRepairPlugin, unknown>[]>([EndingMarkerRepairPlugin]);
+  const rehypes = MutableState.of<PluginSet<IPluggable<IRehypePlugin, unknown>, RehypeConfigs>>([
+    AppendRehypePlugin,
+  ]);
+  const repairs = MutableState.of<PluginSet<IPluggable<IRepairPlugin, unknown>, RepairConfigs>>([
+    EndingMarkerRepairPlugin,
+  ]);
   const renders = MutableState.of<
     IRenderPluggable<ElementContent, Parent, RenderedBlock, {}, unknown>[]
   >([]);
@@ -365,6 +369,84 @@ describe('Core', () => {
     state.destroy();
   });
 
+  test('configures the default syntax policy through a live remark map', () => {
+    const remarks = MutableState.of<PluginSet<IPluggable<IRemarkPlugin, unknown>, RemarkConfigs>>({
+      'remark-syntax-policy': { indentedCode: true },
+    });
+
+    const state = render(
+      S([
+        Core<RenderedBlock>,
+        {
+          Renderer: D(TestRenderer),
+          text: ReactiveState.of('    code'),
+          patches: [],
+          build: DEFAULT_CONFIG,
+          renders: [],
+          remarks,
+        },
+      ]),
+    );
+
+    const initial = first(state.value.value);
+
+    expect(
+      findElement(getFirstBlockTree(state), (element) => element.tagName === 'pre'),
+    ).toBeDefined();
+
+    remarks.next({ 'remark-syntax-policy': { indentedCode: false } });
+
+    expect(first(state.value.value)).toBe(initial);
+
+    expect(
+      findElement(getFirstBlockTree(state), (element) => element.tagName === 'pre'),
+    ).toBeUndefined();
+
+    remarks.next([]);
+
+    expect(
+      findElement(getFirstBlockTree(state), (element) => element.tagName === 'pre'),
+    ).toBeUndefined();
+
+    state.destroy();
+
+    remarks.destroy();
+  });
+
+  test('configures the default sanitizer through a live rehype map', () => {
+    const rehypes = MutableState.of<PluginSet<IPluggable<IRehypePlugin, unknown>, RehypeConfigs>>({
+      'rehype-sanitizer': { allowedProtocols: ['custom'] },
+    });
+
+    const state = render(
+      S([
+        Core<RenderedBlock>,
+        {
+          Renderer: D(TestRenderer),
+          text: ReactiveState.of('[link](custom:example)'),
+          patches: [],
+          build: DEFAULT_CONFIG,
+          renders: [],
+          rehypes,
+        },
+      ]),
+    );
+
+    expect(
+      findElement(getFirstBlockTree(state), (element) => element.tagName === 'a')?.properties.href,
+    ).toBe('custom:example');
+
+    rehypes.next({});
+
+    expect(
+      findElement(getFirstBlockTree(state), (element) => element.tagName === 'a')?.properties.href,
+    ).toBeUndefined();
+
+    state.destroy();
+
+    rehypes.destroy();
+  });
+
   test('uses the injected renderer and reacts to render plugin changes', () => {
     const harness = setupCore();
     const initial = first(harness.state.value.value);
@@ -401,8 +483,8 @@ describe('Core', () => {
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledOnce();
     expect(AppendRehypePlugin.destroyed).not.toHaveBeenCalled();
 
-    harness.remarks.next([]);
-    harness.rehypes.next([]);
+    harness.remarks.next({});
+    harness.rehypes.next({});
 
     const withoutExtras = first(harness.state.value.value);
 
@@ -415,9 +497,9 @@ describe('Core', () => {
   test('gates math and dangling-footnote behavior through build options', () => {
     const math = setupCore('$x$');
 
-    math.remarks.next([]);
-    math.rehypes.next([]);
-    math.repairs.next([]);
+    math.remarks.next({});
+    math.rehypes.next({});
+    math.repairs.next({});
 
     expect(
       findElement(getFirstBlockTree(math.state), (element) => {
@@ -435,9 +517,9 @@ describe('Core', () => {
 
     const footnote = setupCore('first[^12');
 
-    footnote.remarks.next([]);
-    footnote.rehypes.next([]);
-    footnote.repairs.next([]);
+    footnote.remarks.next({});
+    footnote.rehypes.next({});
+    footnote.repairs.next({});
 
     footnote.build.next({
       ...DEFAULT_CONFIG,
@@ -466,7 +548,7 @@ describe('Core', () => {
         { patches: [{ key: 'ignored', range: [0, 0] }] },
       ] as unknown as IPluggable<IRemarkPlugin, unknown>,
     ]);
-    harness.rehypes.next([]);
+    harness.rehypes.next({});
     harness.patches.next([{ key: 'actual', range: [1, 1], render: renderPatch }]);
 
     const patchTree = getFirstBlockTree(harness.state);
@@ -504,8 +586,8 @@ describe('Core', () => {
         unknown
       >,
     ]);
-    math.rehypes.next([]);
-    math.repairs.next([]);
+    math.rehypes.next({});
+    math.repairs.next({});
 
     math.build.next({ ...DEFAULT_CONFIG, tex: true, repairEnding: true });
 
@@ -543,7 +625,7 @@ describe('Core', () => {
         unknown
       >,
     ]);
-    ending.rehypes.next([]);
+    ending.rehypes.next({});
 
     ending.build.next({ ...DEFAULT_CONFIG, repair: true, repairEnding: true });
 
@@ -555,8 +637,8 @@ describe('Core', () => {
   test('reacts to enabled repair extras, their configs, and list changes', () => {
     const harness = setupCore('base');
 
-    harness.remarks.next([]);
-    harness.rehypes.next([]);
+    harness.remarks.next({});
+    harness.rehypes.next({});
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base');
 
@@ -584,17 +666,14 @@ describe('Core', () => {
     expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
   });
 
-  test('uses an extra configured tuple for a preset class without appending a duplicate', () => {
+  test('configures default repair plugins through a live configuration map', () => {
     const harness = setupCore('prefix ![tail');
 
-    harness.remarks.next([]);
-    harness.rehypes.next([]);
-    harness.repairs.next([
-      [IncompleteImageRepairPlugin, { strategy: 'discard' }] as unknown as IPluggable<
-        IRepairPlugin,
-        unknown
-      >,
-    ]);
+    harness.remarks.next({});
+    harness.rehypes.next({});
+    harness.repairs.next({
+      'repair-incomplete-image': { strategy: 'discard' },
+    });
 
     harness.build.next({
       ...DEFAULT_CONFIG,
@@ -606,6 +685,14 @@ describe('Core', () => {
 
     expect(findElement(tree, (element) => element.tagName === 'img')).toBeUndefined();
     expect(collectText(tree)).toBe('prefix ');
+
+    harness.repairs.next({ 'repair-incomplete-image': { strategy: 'placeholder' } });
+
+    expect(
+      findElement(getFirstBlockTree(harness.state), (element) => element.tagName === 'img'),
+    ).toMatchObject({ properties: { alt: 'tail' } });
+
+    harness.state.destroy();
   });
 
   test('keeps the compiled block graph reactive without taking ownership of inputs', () => {
@@ -684,8 +771,8 @@ describe('Core', () => {
   test('releases per-block repair plugins as blocks leave the graph', () => {
     const harness = setupCore('first\n\nsecond');
 
-    harness.remarks.next([]);
-    harness.rehypes.next([]);
+    harness.remarks.next({});
+    harness.rehypes.next({});
 
     harness.build.next({
       ...DEFAULT_CONFIG,

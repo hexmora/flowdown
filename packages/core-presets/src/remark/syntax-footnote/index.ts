@@ -1,12 +1,18 @@
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { gfmFootnoteFromMarkdown, gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote';
 import { gfmFootnote } from 'micromark-extension-gfm-footnote';
 
 import { appendRemarkExtensions } from '../../utils';
 import { BaseRemarkPlugin } from '../base';
+
+declare global {
+  interface RemarkConfigs {
+    'remark-syntax-footnote'?: IPluggableConfig<void>;
+  }
+}
 
 export class SyntaxFootnoteRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-syntax-footnote';

@@ -1,7 +1,7 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { PhrasingContent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
 import { last } from 'lodash-es';
 
 import { BaseRepairPlugin } from '../base';
@@ -11,6 +11,12 @@ export type IncompleteImageRepairPluginConfig = {
 };
 
 type IncompleteImageRepairPluginInnerConfig = Required<IncompleteImageRepairPluginConfig>;
+
+declare global {
+  interface RepairConfigs {
+    'repair-incomplete-image'?: IPluggableConfig<IncompleteImageRepairPluginConfig>;
+  }
+}
 
 export class IncompleteImageRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-incomplete-image';
