@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 import type { ComponentProps, ComponentType } from 'react';
 
 import { render, screen } from '@testing-library/react';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
 import type { ParagraphProps, SlotInputProps } from '..';
 
@@ -57,7 +57,7 @@ describe('createTypeOfSlot', () => {
   });
 
   test('requires a provider when the typed slot is rendered', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     window.addEventListener('error', preventExpectedError);
 
@@ -87,7 +87,7 @@ describe('createTypeOfSlot', () => {
   });
 
   test('injects Raw without invalidating memoized equivalent input props', () => {
-    const capture = vi.fn();
+    const capture = jest.fn();
 
     class CapturingParagraphPlugin extends BaseSlotPlugin<'Paragraph'> {
       static readonly key = 'test-memoized-paragraph';
@@ -116,7 +116,8 @@ describe('createTypeOfSlot', () => {
 
     const { rerender } = render(view('red'));
 
-    expect(capture).toHaveBeenCalledExactlyOnceWith(null);
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(capture).toHaveBeenCalledWith(null);
 
     rerender(view('red'));
 

@@ -1,7 +1,5 @@
 import type { Paragraph, PhrasingContent, PhrasingContentMap, Root, Text } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxHtmlAllowedRemarkPlugin } from '..';
 import { RawParserRehypePlugin, SanitizerRehypePlugin } from '../../rehype';
 import { findHastElement, markdownToHast, parseMarkdown, runRemarkPlugin } from './utils';

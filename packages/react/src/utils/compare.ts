@@ -1,11 +1,11 @@
-import type { SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { SmoothConfig } from '@fluxdown/core-presets/mapper';
 
-import { isPluggablesEqual, isPluginConfigEqual } from '@flowdown/core';
-import { defaultsBy } from '@flowdown/utils';
+import { isPluggablesEqual, isPluginConfigEqual } from '@fluxdown/core';
+import { defaultsBy } from '@fluxdown/utils';
 import { every, isEqual } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
-import type { FlowdownConfig, FlowdownProps, IPluginItem, ShadConfig } from '../types';
+import type { FluxdownConfig, FluxdownProps, IPluginItem, ShadConfig } from '../types';
 
 import { DEFAULT_CONFIG, EL, EO } from '../consts';
 import { isPatchesEqual } from './patches';
@@ -39,8 +39,8 @@ const isPluginItemsEqual = (
 };
 
 const isBuildEqual = (
-  left: FlowdownConfig | undefined,
-  right: FlowdownConfig | undefined,
+  left: FluxdownConfig | undefined,
+  right: FluxdownConfig | undefined,
 ): boolean => {
   return (
     left === right ||
@@ -63,8 +63,8 @@ export const isShadEqual = (
 };
 
 export const isPropsEqual = (
-  left: Readonly<FlowdownProps>,
-  right: Readonly<FlowdownProps>,
+  left: Readonly<FluxdownProps>,
+  right: Readonly<FluxdownProps>,
 ): boolean => {
   return (
     left === right ||

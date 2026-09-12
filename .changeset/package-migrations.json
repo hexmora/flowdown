@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "migrations": [
+    {
+      "from": {
+        "name": "@flowdown/utils",
+        "directory": "packages/utils"
+      },
+      "to": {
+        "name": "@fluxdown/utils",
+        "directory": "packages/utils"
+      }
+    },
+    {
+      "from": {
+        "name": "reactive",
+        "directory": "packages/reactive"
+      },
+      "to": {
+        "name": "functive",
+        "directory": "packages/functive"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/types",
+        "directory": "packages/types"
+      },
+      "to": {
+        "name": "@fluxdown/types",
+        "directory": "packages/types"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/core-presets",
+        "directory": "packages/core-presets"
+      },
+      "to": {
+        "name": "@fluxdown/core-presets",
+        "directory": "packages/core-presets"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/core",
+        "directory": "packages/core"
+      },
+      "to": {
+        "name": "@fluxdown/core",
+        "directory": "packages/core"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/react-presets",
+        "directory": "packages/react-presets"
+      },
+      "to": {
+        "name": "@fluxdown/react-presets",
+        "directory": "packages/react-presets"
+      }
+    },
+    {
+      "from": {
+        "name": "flowdown",
+        "directory": "packages/react"
+      },
+      "to": {
+        "name": "fluxdown",
+        "directory": "packages/react"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/hast",
+        "directory": "packages/hast"
+      },
+      "to": {
+        "name": "@fluxdown/hast",
+        "directory": "packages/hast"
+      }
+    },
+    {
+      "from": {
+        "name": "@flowdown/mdast",
+        "directory": "packages/mdast"
+      },
+      "to": {
+        "name": "@fluxdown/mdast",
+        "directory": "packages/mdast"
+      }
+    }
+  ]
+}

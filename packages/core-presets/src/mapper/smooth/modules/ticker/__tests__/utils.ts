@@ -1,6 +1,5 @@
-import { vi } from 'vitest';
-
 import { BaseSmoothTicker } from '..';
+import { stubGlobal } from '../../../../../../../../scripts/testing/globals';
 
 export class FakeSmoothTicker extends BaseSmoothTicker {
   destroyCalls = 0;
@@ -79,7 +78,7 @@ export const mockAnimationFrames = () => {
 
   let nextId = 0;
 
-  const request = vi.fn((callback: (timestamp: number) => void) => {
+  const request = jest.fn((callback: (timestamp: number) => void) => {
     const id = ++nextId;
 
     callbacks.set(id, callback);
@@ -87,7 +86,7 @@ export const mockAnimationFrames = () => {
     return id;
   });
 
-  const cancel = vi.fn((id: number) => callbacks.delete(id));
+  const cancel = jest.fn((id: number) => callbacks.delete(id));
 
   const frame = (id: number) => {
     const callback = callbacks.get(id);
@@ -99,9 +98,9 @@ export const mockAnimationFrames = () => {
     return callback;
   };
 
-  vi.stubGlobal('requestAnimationFrame', request);
+  stubGlobal('requestAnimationFrame', request);
 
-  vi.stubGlobal('cancelAnimationFrame', cancel);
+  stubGlobal('cancelAnimationFrame', cancel);
 
   return { cancel, frame, request };
 };

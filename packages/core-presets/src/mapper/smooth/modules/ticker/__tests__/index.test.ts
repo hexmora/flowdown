@@ -1,31 +1,30 @@
-import { afterEach, describe, expect, test, vi } from 'vitest';
-
 import { getNow, IntervalSmoothTicker, RafSmoothTicker } from '..';
+import { restoreGlobals, stubGlobal } from '../../../../../../../../scripts/testing/globals';
 import { FakeSmoothTicker, mockAnimationFrames } from './utils';
 
 afterEach(() => {
-  vi.useRealTimers();
+  jest.useRealTimers();
 
-  vi.restoreAllMocks();
+  jest.restoreAllMocks();
 
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('ticker timestamps', () => {
   test('uses performance.now when available', () => {
-    const now = vi.fn(() => 42);
+    const now = jest.fn(() => 42);
 
-    vi.stubGlobal('performance', { now });
+    stubGlobal('performance', { now });
 
     expect(getNow()).toBe(42);
 
-    expect(now).toHaveBeenCalledOnce();
+    expect(now).toHaveBeenCalledTimes(1);
   });
 
   test('uses Date.now when performance is unavailable', () => {
-    vi.stubGlobal('performance', undefined);
+    stubGlobal('performance', undefined);
 
-    vi.spyOn(Date, 'now').mockReturnValue(42);
+    jest.spyOn(Date, 'now').mockReturnValue(42);
 
     expect(getNow()).toBe(42);
   });
@@ -37,7 +36,7 @@ describe('RafSmoothTicker', () => {
 
     const ticker = new RafSmoothTicker();
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 
@@ -47,11 +46,12 @@ describe('RafSmoothTicker', () => {
 
     expect(ticker.running).toBe(true);
 
-    expect(frames.request).toHaveBeenCalledOnce();
+    expect(frames.request).toHaveBeenCalledTimes(1);
 
     frames.frame(1)(10);
 
-    expect(next).toHaveBeenCalledExactlyOnceWith(10);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(10);
 
     expect(frames.request).toHaveBeenCalledTimes(2);
 
@@ -61,11 +61,12 @@ describe('RafSmoothTicker', () => {
 
     expect(ticker.running).toBe(false);
 
-    expect(frames.cancel).toHaveBeenCalledExactlyOnceWith(2);
+    expect(frames.cancel).toHaveBeenCalledTimes(1);
+    expect(frames.cancel).toHaveBeenCalledWith(2);
 
     pending(20);
 
-    expect(next).toHaveBeenCalledOnce();
+    expect(next).toHaveBeenCalledTimes(1);
 
     expect(frames.request).toHaveBeenCalledTimes(2);
 
@@ -77,7 +78,7 @@ describe('RafSmoothTicker', () => {
 
     const ticker = new RafSmoothTicker();
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 
@@ -97,7 +98,8 @@ describe('RafSmoothTicker', () => {
 
     frames.frame(2)(20);
 
-    expect(next).toHaveBeenCalledExactlyOnceWith(20);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(20);
 
     expect(frames.request).toHaveBeenCalledTimes(3);
 
@@ -117,7 +119,7 @@ describe('RafSmoothTicker', () => {
 
     expect(ticker.running).toBe(false);
 
-    expect(frames.request).toHaveBeenCalledOnce();
+    expect(frames.request).toHaveBeenCalledTimes(1);
 
     ticker.destroy();
   });
@@ -125,9 +127,9 @@ describe('RafSmoothTicker', () => {
   test('starts with the Date timestamp when performance is unavailable', () => {
     mockAnimationFrames();
 
-    vi.stubGlobal('performance', undefined);
+    stubGlobal('performance', undefined);
 
-    vi.spyOn(Date, 'now').mockReturnValue(42);
+    jest.spyOn(Date, 'now').mockReturnValue(42);
 
     const ticker = new RafSmoothTicker();
 
@@ -139,11 +141,11 @@ describe('RafSmoothTicker', () => {
 
 describe('IntervalSmoothTicker', () => {
   test('emits on the configured interval and stops future emissions', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
     const ticker = new IntervalSmoothTicker(20);
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 
@@ -151,7 +153,7 @@ describe('IntervalSmoothTicker', () => {
 
     expect(ticker.running).toBe(true);
 
-    vi.advanceTimersByTime(45);
+    jest.advanceTimersByTime(45);
 
     expect(next).toHaveBeenCalledTimes(2);
 
@@ -159,29 +161,29 @@ describe('IntervalSmoothTicker', () => {
 
     ticker.stop();
 
-    vi.advanceTimersByTime(60);
+    jest.advanceTimersByTime(60);
 
     expect(ticker.running).toBe(false);
 
     expect(next).toHaveBeenCalledTimes(2);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     ticker.destroy();
   });
 
   test('defaults to approximately sixty frames per second', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
     const ticker = new IntervalSmoothTicker();
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 
     ticker.start();
 
-    vi.advanceTimersByTime(50);
+    jest.advanceTimersByTime(50);
 
     expect(next).toHaveBeenCalledTimes(3);
 
@@ -189,27 +191,27 @@ describe('IntervalSmoothTicker', () => {
   });
 
   test('can restart after stop without duplicating the interval', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
     const ticker = new IntervalSmoothTicker(10);
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 
     ticker.start();
 
-    vi.advanceTimersByTime(10);
+    jest.advanceTimersByTime(10);
 
     ticker.stop();
 
     ticker.start();
 
-    vi.advanceTimersByTime(10);
+    jest.advanceTimersByTime(10);
 
     expect(next).toHaveBeenCalledTimes(2);
 
-    expect(vi.getTimerCount()).toBe(1);
+    expect(jest.getTimerCount()).toBe(1);
 
     ticker.destroy();
   });
@@ -217,7 +219,7 @@ describe('IntervalSmoothTicker', () => {
 
 describe.each([RafSmoothTicker, IntervalSmoothTicker])('$name lifecycle', (Ticker) => {
   test('rejects repeated starts and stops', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
     mockAnimationFrames();
 
@@ -237,13 +239,13 @@ describe.each([RafSmoothTicker, IntervalSmoothTicker])('$name lifecycle', (Ticke
   });
 
   test.each([false, true])('destroy completes once when running=%s', (running) => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
     const frames = mockAnimationFrames();
 
     const ticker = new Ticker();
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     const subscription = ticker.value.subscribe({ complete });
 
@@ -259,9 +261,9 @@ describe.each([RafSmoothTicker, IntervalSmoothTicker])('$name lifecycle', (Ticke
 
     expect(subscription.closed).toBe(true);
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     expect(frames.cancel).toHaveBeenCalledTimes(running && Ticker === RafSmoothTicker ? 1 : 0);
   });
@@ -271,7 +273,7 @@ describe('FakeSmoothTicker test utility', () => {
   test('supports repeated timestamps and rejects backward or inactive ticks', () => {
     const ticker = new FakeSmoothTicker(10);
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     ticker.value.subscribe(next);
 

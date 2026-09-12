@@ -1,4 +1,4 @@
-import { once, useClearable, useCombineMap } from 'reactive';
+import { once, useClearable, useCombineMap } from 'functive';
 
 import type { ShadValueInputs } from './type';
 

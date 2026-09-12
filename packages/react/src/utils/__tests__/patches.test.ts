@@ -1,6 +1,4 @@
-import type { IPatchItem } from '@flowdown/core';
-
-import { describe, expect, test } from 'vitest';
+import type { IPatchItem } from '@fluxdown/core';
 
 import { isPatchesEqual } from '..';
 

@@ -1,10 +1,9 @@
-import type { IBlockState, PluginSet } from '@flowdown/types';
+import type { IBlockState, PluginSet } from '@fluxdown/types';
 import type { ElementContent, Parent, RootContent } from 'hast';
 
-import { Smooth } from '@flowdown/core-presets/mapper';
-import { PluginPriority } from '@flowdown/types';
-import { assert } from '@flowdown/utils';
-import { first, last, reverse, take } from 'lodash-es';
+import { Smooth } from '@fluxdown/core-presets/mapper';
+import { PluginPriority } from '@fluxdown/types';
+import { assert } from '@fluxdown/utils';
 import {
   D,
   type IReadableClosure,
@@ -15,8 +14,8 @@ import {
   S,
   useClearable,
   useMap,
-} from 'reactive';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+} from 'functive';
+import { first, last, reverse, take } from 'lodash-es';
 
 import type { HastRoot } from '../../../typings';
 import type { MapperInputs, MapperPluggable } from '../../base';
@@ -189,7 +188,7 @@ describe('Core mapper pipeline', () => {
   });
 
   test('preserves equivalent configurations and replaces changed mapper options', () => {
-    const construct = vi.fn();
+    const construct = jest.fn();
 
     const Take = once(({ source, count }: MapperInputs & { count: number }) => {
       construct(count);
@@ -205,13 +204,14 @@ describe('Core mapper pipeline', () => {
 
     expect(view.read()).toEqual(['second', 'first']);
 
-    expect(construct).toHaveBeenCalledExactlyOnceWith(2);
+    expect(construct).toHaveBeenCalledTimes(1);
+    expect(construct).toHaveBeenCalledWith(2);
 
     view.mappers.next([[Take, { count: 2 }], Reverse]);
 
     expect(view.read()).toEqual(['second', 'first']);
 
-    expect(construct).toHaveBeenCalledOnce();
+    expect(construct).toHaveBeenCalledTimes(1);
 
     view.mappers.next([[Take, { count: 1 }], Reverse]);
 
@@ -243,7 +243,7 @@ describe('Core mapper pipeline', () => {
   });
 
   test('preserves the compiler and Smooth progress when appending mappers and releases removed stages', () => {
-    const destroyed = vi.fn();
+    const destroyed = jest.fn();
 
     const sources: IReadableClosure<Block[]>[] = [];
 

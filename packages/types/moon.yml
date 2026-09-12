@@ -1,0 +1,6 @@
+language: typescript
+layer: library
+
+workspace:
+  inheritedTasks:
+    exclude: [test]

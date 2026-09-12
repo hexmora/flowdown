@@ -1,6 +1,6 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 
-import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@fluxdown/types';
 
 import { isRepairNodeType } from '../../utils';
 import { BaseRepairPlugin } from '../base';

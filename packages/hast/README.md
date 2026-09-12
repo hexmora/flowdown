@@ -1,3 +1,3 @@
-# @flowdown/hast
+# @fluxdown/hast
 
-Shared HAST utilities for Flowdown packages.
+Shared HAST utilities for Fluxdown packages.

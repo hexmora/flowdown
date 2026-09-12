@@ -1,4 +1,4 @@
-import type { IRehypePlugin, PluginClass } from '@flowdown/types';
+import type { IRehypePlugin, PluginClass } from '@fluxdown/types';
 
 import { HoistFootnoteRehypePlugin } from './hoist-footnote';
 import { RawParserRehypePlugin } from './raw-parser';

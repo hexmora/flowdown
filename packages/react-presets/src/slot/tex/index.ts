@@ -1,4 +1,4 @@
-import type { IPluggableConfig } from '@flowdown/types';
+import type { IPluggableConfig } from '@fluxdown/types';
 
 import { BaseSlotPlugin } from '../../base';
 import { TexRenderer } from './renderer';

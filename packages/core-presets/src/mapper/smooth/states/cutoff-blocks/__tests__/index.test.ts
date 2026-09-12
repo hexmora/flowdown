@@ -1,8 +1,8 @@
-import type { IBlockState } from '@flowdown/types';
-import type { IReactiveState } from 'reactive';
+import type { IBlockState } from '@fluxdown/types';
+import type { IReactiveState } from 'functive';
 
-import { mapClosure, MutableState, render, S, toClosure } from 'reactive';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
+import { mapClosure, MutableState, render, S, toClosure } from 'functive';
 
 import type { SmoothPosition } from '../../smooth-cursor/states';
 
@@ -63,7 +63,7 @@ describe('CutoffBlocks', () => {
 
     const hidden = createArrayBlock([1, 2]);
 
-    const forkHidden = vi.spyOn(hidden.block, 'fork');
+    const forkHidden = jest.spyOn(hidden.block, 'fork');
 
     const { state, end } = setupCutoff([empty.block, hidden.block], {
       blockIndex: -1,
@@ -96,7 +96,7 @@ describe('CutoffBlocks', () => {
 
     const range = previous.range;
 
-    const destroy = vi.spyOn(previous, 'destroy');
+    const destroy = jest.spyOn(previous, 'destroy');
 
     items.next([b.block]);
 
@@ -108,7 +108,7 @@ describe('CutoffBlocks', () => {
 
     expect(current.range.value).toEqual({ start: 0, end: 1 });
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     expect(meta.closed).toBe(true);
 
@@ -122,7 +122,7 @@ describe('CutoffBlocks', () => {
 
     state.destroy();
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     expect(current.meta.closed).toBe(true);
 
@@ -169,11 +169,11 @@ describe('CutoffBlocks', () => {
 
     const fork = a.block.fork();
 
-    const destroy = vi.spyOn(fork, 'destroy');
+    const destroy = jest.spyOn(fork, 'destroy');
 
-    vi.spyOn(a.block, 'fork').mockReturnValue(fork);
+    jest.spyOn(a.block, 'fork').mockReturnValue(fork);
 
-    vi.spyOn(b.block, 'fork').mockImplementation(() => {
+    jest.spyOn(b.block, 'fork').mockImplementation(() => {
       throw failure;
     });
 
@@ -184,7 +184,7 @@ describe('CutoffBlocks', () => {
 
     expect(() => state.value).toThrow(failure);
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     expect([a.source, a.meta, b.source, b.meta, items, end].every((input) => !input.closed)).toBe(
       true,
@@ -206,25 +206,25 @@ describe('CutoffBlocks', () => {
 
     const failure = new Error('Block cleanup failed.');
 
-    const first = vi.spyOn(forkA, 'destroy').mockImplementation(() => {
+    const first = jest.spyOn(forkA, 'destroy').mockImplementation(() => {
       destroyA();
 
       throw failure;
     });
 
-    const second = vi.spyOn(forkB, 'destroy');
+    const second = jest.spyOn(forkB, 'destroy');
 
     expect(() => state.destroy()).toThrow('Block cleanup failed.');
 
-    expect(first).toHaveBeenCalledOnce();
+    expect(first).toHaveBeenCalledTimes(1);
 
-    expect(second).toHaveBeenCalledOnce();
+    expect(second).toHaveBeenCalledTimes(1);
 
     state.destroy();
 
-    expect(first).toHaveBeenCalledOnce();
+    expect(first).toHaveBeenCalledTimes(1);
 
-    expect(second).toHaveBeenCalledOnce();
+    expect(second).toHaveBeenCalledTimes(1);
   });
 
   test('publishes a new list only after retained forks update their derived metadata', () => {
@@ -290,9 +290,9 @@ describe('CutoffBlocks', () => {
 
     const fork = block.fork();
 
-    const read = vi.spyOn(fork, 'value', 'get');
+    const read = jest.spyOn(fork, 'value', 'get');
 
-    vi.spyOn(block, 'fork').mockReturnValue(fork);
+    jest.spyOn(block, 'fork').mockReturnValue(fork);
 
     const { state, end } = setupCutoff([block], { blockIndex: 0, charIndex: 1 });
 

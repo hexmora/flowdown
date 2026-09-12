@@ -1,4 +1,4 @@
-import type { IRawPatchItem, IRemarkPlugin } from '@flowdown/types';
+import type { IRawPatchItem, IRemarkPlugin } from '@fluxdown/types';
 import type { Element, Nodes as HastNode, Root as HastRoot, Text as HastText } from 'hast';
 import type {
   List,
@@ -13,10 +13,9 @@ import type {
   Text,
 } from 'mdast';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { cloneDeep, first, floor, last, nth } from 'lodash-es';
 import { unified } from 'unified';
-import { describe, expect, test } from 'vitest';
 
 import type { ParserPatch } from '../../typings';
 
@@ -130,8 +129,8 @@ const getOffsetRange = (node: MdastNode): [number, number] => {
   const start = node.position?.start.offset;
   const end = node.position?.end.offset;
 
-  expect(start).toBeTypeOf('number');
-  expect(end).toBeTypeOf('number');
+  expect(typeof start).toBe('number');
+  expect(typeof end).toBe('number');
   assert(start !== undefined && end !== undefined);
 
   return [start, end];
@@ -701,7 +700,7 @@ describe('PatchesRemarkPlugin', () => {
         patches: [{ key: 'point', range: [2, 2] }],
       }).plugin.call(unified());
 
-      expect(transformer).toBeTypeOf('function');
+      expect(typeof transformer).toBe('function');
       assert(transformer);
       const transformWithoutFile = transformer as unknown as (root: MdastRoot) => void;
 

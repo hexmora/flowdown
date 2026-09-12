@@ -8,3 +8,9 @@ coverage
 *.log
 AGENTS.md
 CLAUDE.md
+
+.moon/cache
+.moon/docker
+.moon/workspace-graph.json
+.release
+*.tgz

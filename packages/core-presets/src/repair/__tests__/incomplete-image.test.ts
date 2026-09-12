@@ -1,8 +1,7 @@
 import type { Image, Paragraph } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { first, last } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { IncompleteImageRepairPlugin, type IncompleteImageRepairPluginConfig } from '..';
 import { paragraph, repairMarkdown, root, runRepairs } from './utils';

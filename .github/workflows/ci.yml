@@ -16,26 +16,110 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
-    name: Typecheck and lint
+  changeset-coverage:
+    name: changeset-coverage
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@v1
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
         with:
-          runtime: node@22
+          runtime: node@24.14.1
           cache: true
           install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck workspace
-        run: pnpm typecheck
+      # Bootstrap uses the PR checker with read-only permissions. This workflow
+      # and checker require the release owner's CODEOWNERS review.
+      - name: Require a new Changeset for every changed source package
+        env:
+          EVENT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: pnpm exec moon run workspace:changeset-check -- --base "$EVENT_BASE" --head "$EVENT_HEAD"
 
-      - name: Lint workspace
-        run: pnpm lint
+      - name: Validate all pending Changesets
+        run: |
+          # Full status reads every pending record; coverage already compared the
+          # event SHAs above. Pin its git baseline for this detached CI checkout.
+          git update-ref refs/heads/main "$GITHUB_SHA"
+          pnpm changeset:status
+
+  release-candidate:
+    name: release-candidate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          runtime: node@24.14.1
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify release versions against the prepared candidate
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT_BASE: ${{ github.event.pull_request.base.sha }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
+        run: pnpm exec tsx scripts/release-github.ts check-candidate --base "$EVENT_BASE" --head "$EVENT_HEAD" --pr "$EVENT_PR"
+
+  package-quality:
+    name: package-quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          runtime: node@24.14.1
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check workspace
+        run: pnpm check
+
+      - name: Build and verify publish dry run
+        run: pnpm publish:dry-run
+
+      - name: Save verified packages and content manifests
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: npm-dry-run-${{ github.sha }}
+          path: |
+            .release/**/tarballs/*.tgz
+            .release/**/manifest.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

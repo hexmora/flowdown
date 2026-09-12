@@ -1,7 +1,5 @@
 import type { Element, Nodes } from 'hast';
 
-import { describe, expect, test } from 'vitest';
-
 import { RawParserRehypePlugin } from '..';
 import { markdownToHast } from '../../remark/__tests__/utils';
 
@@ -25,7 +23,7 @@ const findElement = (root: Nodes, tagName: string): Element | undefined => {
   return undefined;
 };
 
-const containsRawNode = (root: Nodes): boolean => {
+const containsRawNode = (root: Nodes | { type: 'raw' }): boolean => {
   if (root.type === 'raw') {
     return true;
   }

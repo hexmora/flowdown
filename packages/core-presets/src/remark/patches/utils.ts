@@ -1,8 +1,8 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 import type { ListItem, Nodes, Parent, Root, RootContent, Text } from 'mdast';
 import type { Point, Position, Node as UnistNode } from 'unist';
 
-import { isMdastParent } from '@flowdown/mdast';
+import { isMdastParent } from '@fluxdown/mdast';
 import { first, isArray, isSafeInteger, last } from 'lodash-es';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 

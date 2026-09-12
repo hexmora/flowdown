@@ -1,4 +1,4 @@
-import { memoReturns } from 'reactive';
+import { memoReturns } from 'functive';
 
 import type { IRenderPatchItem } from '../../../../externals';
 import type { RenderPatchesMapperInputs } from './type';

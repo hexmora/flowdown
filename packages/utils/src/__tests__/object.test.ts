@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { defaultsBy } from '../object';
 
 describe('defaultsBy', () => {

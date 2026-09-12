@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import type { SmoothStreamingProps } from './type';
 
-import { Flowdown } from '../../../src';
+import { Fluxdown } from '../../../src';
 import { SMOOTH_MARKDOWN } from './consts';
 import '../playground/style.scss';
 
@@ -67,7 +67,7 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
     <main className="playground-shell">
       <header className="playground-header">
         <div>
-          <p className="playground-eyebrow">Flowdown workshop</p>
+          <p className="playground-eyebrow">Fluxdown workshop</p>
 
           <h1>Smooth Streaming</h1>
         </div>
@@ -167,7 +167,7 @@ export const SmoothStreaming = ({ initialText = SMOOTH_MARKDOWN }: SmoothStreami
           </div>
 
           <div className="playground-preview-content">
-            <Flowdown
+            <Fluxdown
               build={{ repair: true, repairEnding: true }}
               shad={{ enabled: shad, length: shadLength, maskWidth }}
               smooth

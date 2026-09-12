@@ -1,4 +1,4 @@
-import type { IPluggableConfig } from '@flowdown/types';
+import type { IPluggableConfig } from '@fluxdown/types';
 
 import { createElement } from 'react';
 

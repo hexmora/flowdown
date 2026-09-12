@@ -1,7 +1,7 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 import type { Heading, Parent } from 'mdast';
 
-import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
+import { type IPluggableConfig, PluginPriority } from '@fluxdown/types';
 import { last } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';

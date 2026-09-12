@@ -1,4 +1,4 @@
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 
 import { BaseSmoothTicker } from './base';
 import { getNow } from './utils';

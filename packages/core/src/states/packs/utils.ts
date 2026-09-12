@@ -1,4 +1,4 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 
 import { isEqual } from 'lodash-es';
 

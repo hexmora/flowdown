@@ -1,9 +1,8 @@
-import type { IRenderPatchItem } from '@flowdown/core';
+import type { IRenderPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
 import { act, render, screen } from '@testing-library/react';
-import { MutableState } from 'reactive';
-import { describe, expect, test } from 'vitest';
+import { MutableState } from 'functive';
 
 import { PatchReconciler } from '..';
 

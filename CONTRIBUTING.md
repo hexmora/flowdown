@@ -1,19 +1,43 @@
 # Contributing
 
-Thank you for your interest in Flowdown.
+Thank you for your interest in Fluxdown.
 
 ## Development
 
-This repository uses pnpm.
+Use the Node.js version in `.node-version` and the pinned pnpm version.
+Run `pnpm install` after changing dependencies.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm lint
 pnpm test
 pnpm build
 pnpm build:storybook
 ```
+
+For a single project, use its directory name as the moon project ID:
+
+```bash
+pnpm exec moon run core:build
+pnpm exec moon run react:test
+pnpm exec moon tasks
+```
+
+Place package tests in `__tests__` directories.
+
+Every PR that changes a workspace package's `src/**` must add a new, nonempty
+Changeset naming every affected package with a `patch`, `minor`, or `major` bump,
+including private packages. Commit it with the source changes; existing or empty
+Changesets do not satisfy this requirement.
+
+```bash
+pnpm changeset
+pnpm check
+pnpm publish:dry-run
+```
+
+See [the release guide](docs/releasing.md) for versioning, dry runs, and publishing.
 
 ## Branches
 

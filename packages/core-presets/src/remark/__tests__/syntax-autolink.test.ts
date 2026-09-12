@@ -1,7 +1,5 @@
 import type { Link, Paragraph } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxAutolinkRemarkPlugin } from '..';
 import { parseMarkdown } from './utils';
 

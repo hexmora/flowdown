@@ -1,13 +1,13 @@
-import type { IRepairPlugin } from '@flowdown/types';
-import type { OmitWithType } from '@flowdown/utils';
+import type { IRepairPlugin } from '@fluxdown/types';
+import type { OmitWithType } from '@fluxdown/utils';
 import type { Parent, Root, RootContent } from 'mdast';
 
 import {
   processMdast,
   type ProcessMdastParams,
   type ProcessMdastRunnerParams,
-} from '@flowdown/mdast';
-import { PluginPriority } from '@flowdown/types';
+} from '@fluxdown/mdast';
+import { PluginPriority } from '@fluxdown/types';
 import { isFunction } from 'lodash-es';
 
 type RepairProcessOptions<T extends Parent | RootContent> = OmitWithType<

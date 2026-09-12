@@ -1,7 +1,6 @@
 import type { Element, ElementContent, Root, RootContent, Text } from 'hast';
 
-import { describe, expect, test, vi } from 'vitest';
-
+import { restoreGlobals, stubGlobal } from '../../../../scripts/testing/globals';
 import { sizeOfHast } from '../index';
 
 const root = (children: RootContent[]): Root => ({
@@ -39,14 +38,14 @@ describe('sizeOfHast', () => {
 
     try {
       intl.Segmenter = undefined;
-      vi.resetModules();
+      jest.resetModules();
 
       const { sizeOfHast: getLengthWithoutSegmenter } = await import('..');
 
       expect(getLengthWithoutSegmenter(root([text(value)]))).toBe([...value].length);
     } finally {
       intl.Segmenter = originalSegmenter;
-      vi.resetModules();
+      jest.resetModules();
     }
   });
 
@@ -54,15 +53,15 @@ describe('sizeOfHast', () => {
     const value = '👨‍👩‍👧‍👦A';
 
     try {
-      vi.stubGlobal('Intl', undefined);
-      vi.resetModules();
+      stubGlobal('Intl', undefined);
+      jest.resetModules();
 
       const { sizeOfHast: getLengthWithoutIntl } = await import('../size');
 
       expect(getLengthWithoutIntl(root([text(value)]))).toBe([...value].length);
     } finally {
-      vi.unstubAllGlobals();
-      vi.resetModules();
+      restoreGlobals();
+      jest.resetModules();
     }
   });
 

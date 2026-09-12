@@ -1,8 +1,6 @@
 import type { Element } from 'hast';
 import type { Root, Table } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxTableRemarkPlugin, TableNoralizerRemarkPlugin } from '..';
 import {
   findHastElement,

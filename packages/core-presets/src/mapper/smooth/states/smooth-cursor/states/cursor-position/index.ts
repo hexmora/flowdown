@@ -1,5 +1,5 @@
+import { once, S, useCombine, useCombineMap, useCreate } from 'functive';
 import { sum } from 'lodash-es';
-import { once, S, useCombine, useCombineMap, useCreate } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { IScheduler } from '../../../../modules';

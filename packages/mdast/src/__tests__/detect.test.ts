@@ -1,7 +1,5 @@
 import type { Paragraph, Root, Text } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { isMdastParent } from '../detect';
 
 describe('isMdastParent', () => {

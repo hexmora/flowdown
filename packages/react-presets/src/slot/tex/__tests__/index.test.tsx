@@ -1,7 +1,6 @@
 import type { Element } from 'hast';
 
 import { render, waitFor } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
 import { TexRenderer } from '../renderer';
 
@@ -52,11 +51,14 @@ describe('lazy math rendering', () => {
   test('loads MathJax for expressions that KaTeX does not support', async () => {
     const { container } = render(<TexRenderer Raw={null} {...nodeProps} tex={'\\bbox[5px]{x}'} />);
 
-    await waitFor(() => expect(container.querySelector('mjx-container svg')).not.toBeNull());
+    // A cold Jest transform of MathJax can exceed the default one-second wait on CI.
+    await waitFor(() => expect(container.querySelector('mjx-container svg')).not.toBeNull(), {
+      timeout: 10_000,
+    });
 
     expect(container.firstElementChild).toHaveAttribute('role', 'math');
     expect(container.firstElementChild).toHaveAttribute('aria-label', '\\bbox[5px]{x}');
-  });
+  }, 15_000);
 
   test('keeps invalid expressions readable and escapes the source', async () => {
     const tex = '\\notARealCommand{<script>alert(1)</script>}';

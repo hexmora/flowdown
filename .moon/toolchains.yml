@@ -1,0 +1,10 @@
+# Use the Node/pnpm installed by the developer or CI. Version pins live in
+# .node-version and package.json; moon must never rewrite release manifests.
+javascript:
+  packageManager: pnpm
+  inferTasksFromScripts: false
+  installDependencies: false
+  syncProjectWorkspaceDependencies: false
+  syncPackageManagerField: false
+node: {}
+pnpm: {}

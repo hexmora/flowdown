@@ -1,9 +1,9 @@
-import type { IBlockState, IPluggableConfig, MapperInputs } from '@flowdown/types';
-import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'reactive';
+import type { IBlockState, IPluggableConfig, MapperInputs } from '@fluxdown/types';
+import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'functive';
 
 import type { HastRoot } from '../../../typings';
 
-export type { MapperInputs } from '@flowdown/types';
+export type { MapperInputs } from '@fluxdown/types';
 
 export type MapperResult =
   | IReadableClosure<IBlockState<HastRoot>[]>

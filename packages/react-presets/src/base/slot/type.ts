@@ -1,4 +1,4 @@
-import type { IBasePluginConfig, IPluggable } from '@flowdown/types';
+import type { IBasePluginConfig, IPluggable } from '@fluxdown/types';
 import type { ElementContent, Parent } from 'hast';
 import type { ComponentType, CSSProperties, MouseEvent, ReactNode } from 'react';
 

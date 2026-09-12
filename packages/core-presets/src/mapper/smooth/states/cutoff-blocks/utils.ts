@@ -1,6 +1,5 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
-import { max } from 'lodash-es';
 import {
   BatchScheduler,
   D,
@@ -9,7 +8,8 @@ import {
   MutableState,
   render,
   S,
-} from 'reactive';
+} from 'functive';
+import { max } from 'lodash-es';
 import { Subscription } from 'rxjs';
 
 import type { SmoothPosition } from '../smooth-cursor/states';

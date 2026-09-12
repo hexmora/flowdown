@@ -1,7 +1,5 @@
 import type { List, ListItem } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxTaskListRemarkPlugin } from '..';
 import { collectTextValues, parseMarkdown } from './utils';
 

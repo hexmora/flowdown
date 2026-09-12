@@ -5,9 +5,9 @@ import type {
   IRemarkPlugin,
   IRepairPlugin,
   PluginSet,
-} from '@flowdown/types';
+} from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 import type { ElementContent, Parent } from 'hast';
-import type { IReadableClosure } from 'reactive';
 
 import type { IRenderPatchRender, IRenderPlugin, RendererClass } from '../../externals';
 import type { HastRoot } from '../../typings';

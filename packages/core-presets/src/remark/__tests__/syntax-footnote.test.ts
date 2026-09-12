@@ -1,7 +1,5 @@
 import type { FootnoteDefinition, FootnoteReference, Paragraph } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxFootnoteRemarkPlugin } from '..';
 import { parseMarkdown, stripPositions } from './utils';
 

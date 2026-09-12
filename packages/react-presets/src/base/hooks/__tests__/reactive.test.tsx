@@ -1,8 +1,7 @@
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react';
+import { MutableState } from 'functive';
 import { type ReactNode, StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
-import { MutableState } from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
 
 import { useStateOf, useStateValue } from '..';
 
@@ -54,7 +53,7 @@ describe('useStateOf', () => {
 
     const state = result.current;
 
-    const observer = vi.fn();
+    const observer = jest.fn();
 
     const subscription = state.subscribe(observer);
 
@@ -91,7 +90,7 @@ describe('useStateOf', () => {
 
     const state = result.current;
 
-    const observer = vi.fn();
+    const observer = jest.fn();
 
     const subscription = state.subscribe(observer);
 

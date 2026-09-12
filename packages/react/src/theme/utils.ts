@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { PREFIX } from '@flowdown/react-presets/base';
+import { PREFIX } from '@fluxdown/react-presets/base';
 import { forOwn, isArray, isObject, isString, merge, replace, toLower, toString } from 'lodash-es';
 
 import type { PartialThemeConfig, PresetKeys, Theme, ThemeConfig, ThemeTokens } from '../types';

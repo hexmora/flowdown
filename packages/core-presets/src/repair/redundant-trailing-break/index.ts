@@ -1,7 +1,7 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 
-import { isMdastParent } from '@flowdown/mdast';
-import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
+import { isMdastParent } from '@fluxdown/mdast';
+import { type IPluggableConfig, PluginPriority } from '@fluxdown/types';
 
 import { BaseRepairPlugin } from '../base';
 import { INLINE_PARENT_TYPES, removeTrailingBreaks } from './utils';

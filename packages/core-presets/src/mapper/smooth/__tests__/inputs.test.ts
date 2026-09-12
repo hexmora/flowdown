@@ -1,5 +1,6 @@
-import type { IBlockState, MapperInputs } from '@flowdown/types';
+import type { IBlockState, MapperInputs } from '@fluxdown/types';
 
+import { expectTypeOf } from 'expect-type';
 import {
   type IReadableClosure,
   isOnceFunction,
@@ -8,23 +9,23 @@ import {
   render,
   S,
   toClosure,
-} from 'reactive';
-import { afterEach, expect, expectTypeOf, test, vi } from 'vitest';
+} from 'functive';
 
 import type { SmoothBaseInputs, SmoothInputs } from '..';
 import type { CutoffBlocksInputs, SmoothCursorInputs } from '../states';
 import type { SmoothPosition } from '../states/smooth-cursor/states';
 
 import { Smooth } from '..';
+import { restoreGlobals, stubGlobal } from '../../../../../../scripts/testing/globals';
 import { StepSmoothScheduler } from '../modules/scheduler/__tests__/utils';
 import { FakeSmoothTicker, mockAnimationFrames } from '../modules/ticker/__tests__/utils';
 import { SmoothCursor } from '../states';
 import { createArrayBlock } from './block';
 
 afterEach(() => {
-  vi.useRealTimers();
+  jest.useRealTimers();
 
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 test('parent inputs preserve the contracts owned by their child states', () => {
@@ -95,17 +96,17 @@ test.each([
 ])(
   'Smooth supplies its scheduler and an available ticker with RAF request=$request, cancel=$cancel',
   ({ request, cancel }) => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
 
-    vi.setSystemTime(0);
+    jest.setSystemTime(0);
 
-    vi.stubGlobal('performance', undefined);
+    stubGlobal('performance', undefined);
 
     const frames = mockAnimationFrames();
 
-    vi.stubGlobal('requestAnimationFrame', request ? frames.request : undefined);
+    stubGlobal('requestAnimationFrame', request ? frames.request : undefined);
 
-    vi.stubGlobal('cancelAnimationFrame', cancel ? frames.cancel : undefined);
+    stubGlobal('cancelAnimationFrame', cancel ? frames.cancel : undefined);
 
     const source = MutableState.of<IBlockState<number[]>[]>([]);
 
@@ -120,20 +121,20 @@ test.each([
     expect(state.value.value.map((block) => block.value.value)).toEqual([[]]);
 
     if (request && cancel) {
-      expect(frames.request).toHaveBeenCalledOnce();
+      expect(frames.request).toHaveBeenCalledTimes(1);
 
       frames.frame(1)(1000);
     } else {
       expect(frames.request).not.toHaveBeenCalled();
 
-      vi.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(1000);
     }
 
     expect(state.value.value.map((block) => block.value.value)).toEqual([[1, 2, 3]]);
 
     state.destroy();
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     item.block.destroy();
 

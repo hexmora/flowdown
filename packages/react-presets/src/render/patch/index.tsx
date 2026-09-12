@@ -1,5 +1,5 @@
-import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
-import { assert } from '@flowdown/utils';
+import { type IPluggableConfig, PluginPriority } from '@fluxdown/types';
+import { assert } from '@fluxdown/utils';
 import { isString } from 'lodash-es';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';

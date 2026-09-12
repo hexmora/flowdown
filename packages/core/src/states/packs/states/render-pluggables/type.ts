@@ -1,4 +1,4 @@
-import type { IPluggable, PluginSet } from '@flowdown/types';
+import type { IPluggable, PluginSet } from '@fluxdown/types';
 
 import type { IRenderPlugin } from '../../../../externals';
 

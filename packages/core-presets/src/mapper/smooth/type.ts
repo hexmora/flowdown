@@ -1,5 +1,5 @@
-import type { IBlockState, MapperInputs } from '@flowdown/types';
-import type { IReadableClosure, Newable } from 'reactive';
+import type { IBlockState, MapperInputs } from '@fluxdown/types';
+import type { IReadableClosure, Newable } from 'functive';
 
 import type { IScheduler, ITicker } from './modules';
 

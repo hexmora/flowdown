@@ -1,3 +1,3 @@
-# @flowdown/mdast
+# @fluxdown/mdast
 
-Shared MDAST utilities for Flowdown packages.
+Shared MDAST utilities for Fluxdown packages.

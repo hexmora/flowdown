@@ -1,8 +1,7 @@
 import type { Html, Paragraph } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { first, last, times } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { ParagraphHtmlClosureRepairPlugin } from '..';
 import { paragraph, root, runRepairs } from './utils';

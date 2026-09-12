@@ -1,7 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
+import { combineState, mapClosure } from 'functive';
 import { StrictMode } from 'react';
-import { combineState, mapClosure } from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
 
 import { usePluginConfig } from '..';
 
@@ -52,7 +51,7 @@ describe('usePluginConfig', () => {
 
     const combined = combineState(fields.ticker, fields.scheduler);
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     combined.subscribe(next);
 
@@ -62,7 +61,7 @@ describe('usePluginConfig', () => {
 
     expect(result.current).toBe(fields);
 
-    expect(next).toHaveBeenCalledExactlyOnceWith(['second', 'fast']);
+    expect(next.mock.calls).toEqual([[['second', 'fast']]]);
 
     expect(fields.ticker.value.closed).toBe(false);
 

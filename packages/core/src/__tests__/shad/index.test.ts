@@ -1,8 +1,7 @@
-import type { IBlockState, IRangeState } from '@flowdown/types';
+import type { IBlockState, IRangeState } from '@fluxdown/types';
 
-import { Shad } from '@flowdown/core-presets/mapper';
-import { BatchScheduler, MutableState, render, S } from 'reactive';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { Shad } from '@fluxdown/core-presets/mapper';
+import { BatchScheduler, MutableState, render, S } from 'functive';
 
 import type { HastRoot } from '../../typings';
 
@@ -26,7 +25,7 @@ const setup = (blocks: IBlockState<HastRoot>[], initialEnabled = true, initialLe
 };
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  jest.useFakeTimers();
 });
 
 afterEach(() => {
@@ -34,7 +33,7 @@ afterEach(() => {
 
   cleanups.clear();
 
-  vi.useRealTimers();
+  jest.useRealTimers();
 });
 
 describe('Shad', () => {
@@ -51,7 +50,7 @@ describe('Shad', () => {
 
     expect(fork.length.value).toBe(4);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     block.source.next(paragraph('abcde'));
 
@@ -61,17 +60,17 @@ describe('Shad', () => {
 
     expect(fork.length.value).toBe(5);
 
-    vi.advanceTimersByTime(100);
+    jest.advanceTimersByTime(100);
 
     block.source.next(paragraph('abcdef'));
 
     expect(readParts(fork.value.value)).toEqual({ leading: '', active: 'ef' });
 
-    vi.advanceTimersByTime(199);
+    jest.advanceTimersByTime(199);
 
     expect(readParts(fork.value.value)?.active).toBe('ef');
 
-    vi.advanceTimersByTime(1);
+    jest.advanceTimersByTime(1);
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'ef', active: '' });
 
@@ -99,13 +98,13 @@ describe('Shad', () => {
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'c', active: 'd' });
 
-    vi.advanceTimersByTime(100);
+    jest.advanceTimersByTime(100);
 
     block.source.next(paragraph('wxyz'));
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'y', active: 'z' });
 
-    vi.advanceTimersByTime(100);
+    jest.advanceTimersByTime(100);
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'yz', active: '' });
 
@@ -113,7 +112,7 @@ describe('Shad', () => {
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'me', active: '' });
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   test('updates the visible total only when the last block or source list changes', () => {
@@ -137,13 +136,13 @@ describe('Shad', () => {
 
     expect(readParts(lastFork.value.value)).toEqual({ leading: 'cd', active: '' });
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     last.source.next(paragraph('cde'));
 
     expect(readParts(lastFork.value.value)).toEqual({ leading: '', active: 'de' });
 
-    vi.advanceTimersByTime(200);
+    jest.advanceTimersByTime(200);
 
     first.source.next(paragraph('abcd'));
 
@@ -175,9 +174,9 @@ describe('Shad', () => {
 
       expect(readParts(fork.value.value)).toBeUndefined();
 
-      expect(vi.getTimerCount()).toBe(1);
+      expect(jest.getTimerCount()).toBe(1);
 
-      vi.advanceTimersByTime(100);
+      jest.advanceTimersByTime(100);
 
       if (config === 'enabled') {
         harness.enabled.next(true);
@@ -191,15 +190,15 @@ describe('Shad', () => {
 
       expect(readParts(fork.value.value)).toEqual({ leading: 'd', active: 'e' });
 
-      vi.advanceTimersByTime(99);
+      jest.advanceTimersByTime(99);
 
       expect(readParts(fork.value.value)?.active).toBe('e');
 
-      vi.advanceTimersByTime(1);
+      jest.advanceTimersByTime(1);
 
       expect(readParts(fork.value.value)).toEqual({ leading: 'de', active: '' });
 
-      expect(vi.getTimerCount()).toBe(0);
+      expect(jest.getTimerCount()).toBe(0);
     },
   );
 
@@ -223,7 +222,7 @@ describe('Shad', () => {
         block.source.next(paragraph(''));
       }
 
-      expect(vi.getTimerCount()).toBe(1);
+      expect(jest.getTimerCount()).toBe(1);
 
       block.source.next(paragraph('xy'));
 
@@ -239,7 +238,7 @@ describe('Shad', () => {
 
       expect(readParts(fork.value.value)).toEqual({ leading: 'z', active: 'w' });
 
-      vi.advanceTimersByTime(200);
+      jest.advanceTimersByTime(200);
 
       expect(readParts(fork.value.value)).toEqual({ leading: 'zw', active: '' });
 
@@ -268,7 +267,7 @@ describe('Shad', () => {
 
     expect(readParts(fork.value.value)).toBeUndefined();
 
-    expect(vi.getTimerCount()).toBe(1);
+    expect(jest.getTimerCount()).toBe(1);
 
     block.source.next(paragraph('abcdef'));
 
@@ -306,9 +305,9 @@ describe('Shad', () => {
 
     const lastFork = output.value[1]!;
 
-    const destroyOld = vi.spyOn(oldFork, 'destroy');
+    const destroyOld = jest.spyOn(oldFork, 'destroy');
 
-    const destroyLast = vi.spyOn(lastFork, 'destroy');
+    const destroyLast = jest.spyOn(lastFork, 'destroy');
 
     expect(readParts(oldFork.value.value)).toBeUndefined();
 
@@ -324,7 +323,7 @@ describe('Shad', () => {
 
     expect(collectText(newFork.value.value)).toBe('new');
 
-    expect(destroyOld).toHaveBeenCalledOnce();
+    expect(destroyOld).toHaveBeenCalledTimes(1);
 
     harness.source.next([replacement.block]);
 
@@ -332,7 +331,7 @@ describe('Shad', () => {
 
     expect(readParts(newFork.value.value)).toEqual({ leading: 'ew', active: '' });
 
-    expect(destroyLast).toHaveBeenCalledOnce();
+    expect(destroyLast).toHaveBeenCalledTimes(1);
 
     harness.source.next([]);
 
@@ -396,13 +395,13 @@ describe('Shad', () => {
 
     const secondFork = output.value[1]!;
 
-    const destroyFirst = vi.spyOn(firstFork, 'destroy');
+    const destroyFirst = jest.spyOn(firstFork, 'destroy');
 
-    const destroySecond = vi.spyOn(secondFork, 'destroy');
+    const destroySecond = jest.spyOn(secondFork, 'destroy');
 
-    const destroyFirstSource = vi.spyOn(first.block, 'destroy');
+    const destroyFirstSource = jest.spyOn(first.block, 'destroy');
 
-    const destroySecondSource = vi.spyOn(second.block, 'destroy');
+    const destroySecondSource = jest.spyOn(second.block, 'destroy');
 
     expect(readParts(firstFork.value.value)).toBeUndefined();
 
@@ -428,7 +427,7 @@ describe('Shad', () => {
 
     expect(destroyFirst).not.toHaveBeenCalled();
 
-    expect(destroySecond).toHaveBeenCalledOnce();
+    expect(destroySecond).toHaveBeenCalledTimes(1);
 
     expect(observerCount(second.block.length)).toBe(0);
 
@@ -442,9 +441,9 @@ describe('Shad', () => {
 
     harness.state.destroy();
 
-    expect(destroyFirst).toHaveBeenCalledOnce();
+    expect(destroyFirst).toHaveBeenCalledTimes(1);
 
-    expect(destroySecond).toHaveBeenCalledOnce();
+    expect(destroySecond).toHaveBeenCalledTimes(1);
 
     expect(destroyFirstSource).not.toHaveBeenCalled();
 
@@ -460,9 +459,9 @@ describe('Shad', () => {
 
     const fork = firstBlock(harness.state.value.value);
 
-    const destroyFork = vi.spyOn(fork, 'destroy');
+    const destroyFork = jest.spyOn(fork, 'destroy');
 
-    const destroySource = vi.spyOn(block.block, 'destroy');
+    const destroySource = jest.spyOn(block.block, 'destroy');
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'bc', active: '' });
 
@@ -474,7 +473,7 @@ describe('Shad', () => {
 
     expect(borrowed.every((state) => observerCount(state) > 0)).toBe(true);
 
-    expect(vi.getTimerCount()).toBe(1);
+    expect(jest.getTimerCount()).toBe(1);
 
     harness.state.destroy();
 
@@ -482,7 +481,7 @@ describe('Shad', () => {
 
     expect(subscription.closed).toBe(true);
 
-    expect(destroyFork).toHaveBeenCalledOnce();
+    expect(destroyFork).toHaveBeenCalledTimes(1);
 
     expect(destroySource).not.toHaveBeenCalled();
 
@@ -490,7 +489,7 @@ describe('Shad', () => {
 
     expect([...borrowed, block.source, block.meta].every((state) => !state.closed)).toBe(true);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   test('waits for the final active suffix to settle after upstream completion', () => {
@@ -502,7 +501,7 @@ describe('Shad', () => {
 
     const fork = firstBlock(output.value);
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     fork.value.subscribe({ complete });
 
@@ -526,14 +525,14 @@ describe('Shad', () => {
 
     expect(complete).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(200);
+    jest.advanceTimersByTime(200);
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'cd', active: '' });
 
     expect(fork.value.closed).toBe(true);
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });

@@ -1,10 +1,8 @@
-import type { MapperInputs, MapperPluggable } from '@flowdown/core';
-import type { IPluggableConfig } from '@flowdown/types';
+import type { MapperInputs, MapperPluggable } from '@fluxdown/core';
+import type { IPluggableConfig } from '@fluxdown/types';
 
-import { Shad, Smooth } from '@flowdown/core-presets/mapper';
+import { Shad, Smooth } from '@fluxdown/core-presets/mapper';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
-import { first, reverse } from 'lodash-es';
-import { createRef, StrictMode } from 'react';
 import {
   type IReadableClosure,
   MutableState,
@@ -14,12 +12,13 @@ import {
   useCombineMap,
   useDefaults,
   useMap,
-} from 'reactive';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+} from 'functive';
+import { first, reverse } from 'lodash-es';
+import { createRef, StrictMode } from 'react';
 
-import type { FlowdownRef, IPluginItem } from '../types';
+import type { FluxdownRef, IPluginItem } from '../types';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 import styles from '../../../react-presets/src/render/shad/renderer/index.module.scss';
 import { createManualTicker, createStepScheduler } from './utils/smooth';
 
@@ -42,10 +41,10 @@ afterEach(async () => {
 
   await act(async () => {});
 
-  vi.restoreAllMocks();
+  jest.restoreAllMocks();
 });
 
-describe('Flowdown mapper plugins', () => {
+describe('Fluxdown mapper plugins', () => {
   test('overrides mapper tuples with the top-level Smooth and Shad configuration', () => {
     const ticker = createManualTicker();
 
@@ -63,7 +62,7 @@ describe('Flowdown mapper plugins', () => {
       [Shad, { enabled: ReactiveState.of(true), length: ReactiveState.of(2) }],
     ];
 
-    const content = (text: string) => <Flowdown text={text} plugins={[{ mappers }]} />;
+    const content = (text: string) => <Fluxdown text={text} plugins={[{ mappers }]} />;
 
     const view = render(content('a'));
 
@@ -79,13 +78,13 @@ describe('Flowdown mapper plugins', () => {
   test('applies keyed pack config and rebinds distinct readable config values', async () => {
     const state = MutableState.of(1);
 
-    const destroy = vi.fn();
+    const destroy = jest.fn();
 
     const left = { value: state, destroy };
 
     const right = { value: state, destroy };
 
-    const received = vi.fn();
+    const received = jest.fn();
 
     const Configured = once(function Configured({
       source,
@@ -99,7 +98,7 @@ describe('Flowdown mapper plugins', () => {
     });
 
     const content = (count: IReadableClosure<number>) => (
-      <Flowdown
+      <Fluxdown
         text={'first\n\nsecond'}
         plugins={[{ config: { configured: { count } }, mappers: [Configured] }]}
       />
@@ -127,7 +126,7 @@ describe('Flowdown mapper plugins', () => {
   });
 
   test('updates tuple config, pack order, and mapper membership without replacing Core', async () => {
-    const ref = createRef<FlowdownRef>();
+    const ref = createRef<FluxdownRef>();
 
     const packs = (count: number): IPluginItem[] => [
       { mappers: [Reverse] },
@@ -135,24 +134,24 @@ describe('Flowdown mapper plugins', () => {
     ];
 
     const view = render(
-      <Flowdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={packs(1)} />,
+      <Fluxdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={packs(1)} />,
     );
 
     const core = ref.current;
 
     expect(view.container.textContent).toBe('third');
 
-    view.rerender(<Flowdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={packs(2)} />);
+    view.rerender(<Fluxdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={packs(2)} />);
 
     await waitFor(() => expect(view.container.textContent).toBe('thirdsecond'));
 
     view.rerender(
-      <Flowdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={reverse(packs(2))} />,
+      <Fluxdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={reverse(packs(2))} />,
     );
 
     await waitFor(() => expect(view.container.textContent).toBe('secondfirst'));
 
-    view.rerender(<Flowdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={[]} />);
+    view.rerender(<Fluxdown ref={ref} text={'first\n\nsecond\n\nthird'} plugins={[]} />);
 
     await waitFor(() => expect(view.container.textContent).toBe('firstsecondthird'));
 
@@ -160,9 +159,9 @@ describe('Flowdown mapper plugins', () => {
   });
 
   test('reuses and releases dynamically added mappers through StrictMode updates', async () => {
-    const created = vi.fn();
+    const created = jest.fn();
 
-    const destroyed = vi.fn();
+    const destroyed = jest.fn();
 
     const Tracked = once(({ source, count }: MapperInputs & { count: number }) => {
       created(count);
@@ -174,13 +173,13 @@ describe('Flowdown mapper plugins', () => {
 
     const content = (count: number) => (
       <StrictMode>
-        <Flowdown text={'first\n\nsecond'} plugins={[{ mappers: [[Tracked, { count }]] }]} />
+        <Fluxdown text={'first\n\nsecond'} plugins={[{ mappers: [[Tracked, { count }]] }]} />
       </StrictMode>
     );
 
     const view = render(
       <StrictMode>
-        <Flowdown text={'first\n\nsecond'} />
+        <Fluxdown text={'first\n\nsecond'} />
       </StrictMode>,
     );
 
@@ -206,7 +205,7 @@ describe('Flowdown mapper plugins', () => {
 
     view.rerender(
       <StrictMode>
-        <Flowdown text="removed" />
+        <Fluxdown text="removed" />
       </StrictMode>,
     );
 
@@ -227,7 +226,7 @@ describe('Flowdown mapper plugins', () => {
     const smooth = { enabled: true, ticker: ticker.Ticker, scheduler };
 
     const renderContent = (text: string, mappers: MapperPluggable[] = []) => (
-      <Flowdown smooth={smooth} text={text} plugins={[{ mappers }]} />
+      <Fluxdown smooth={smooth} text={text} plugins={[{ mappers }]} />
     );
 
     const view = render(renderContent('a'));

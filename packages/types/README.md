@@ -1,3 +1,3 @@
-# @flowdown/types
+# @fluxdown/types
 
-Shared types for Flowdown packages.
+Shared types for Fluxdown packages.

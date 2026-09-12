@@ -1,11 +1,10 @@
-import type { MapperInputs } from '@flowdown/core';
-import type { IReactRenderPluggable } from '@flowdown/react-presets/base';
-import type { IPluggable, IPluggableConfig, IRemarkPlugin } from '@flowdown/types';
+import type { MapperInputs } from '@fluxdown/core';
+import type { IReactRenderPluggable } from '@fluxdown/react-presets/base';
+import type { IPluggable, IPluggableConfig, IRemarkPlugin } from '@fluxdown/types';
 
-import { SyntaxPolicyRemarkPlugin } from '@flowdown/core-presets/remark';
+import { SyntaxPolicyRemarkPlugin } from '@fluxdown/core-presets/remark';
 import { renderHook } from '@testing-library/react';
-import { once } from 'reactive';
-import { describe, expect, test } from 'vitest';
+import { once } from 'functive';
 
 import type { IPluginItem } from '../../types';
 

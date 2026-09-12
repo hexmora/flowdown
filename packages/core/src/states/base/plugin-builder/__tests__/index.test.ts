@@ -3,13 +3,12 @@ import type {
   IPluggable,
   IPluginWithConfig,
   PluginClass,
-} from '@flowdown/types';
+} from '@fluxdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
+import { D, type IReactiveState, render, S, toReactiveState } from 'functive';
 import { isArray } from 'lodash-es';
-import { D, type IReactiveState, render, S, toReactiveState } from 'reactive';
 import { BehaviorSubject } from 'rxjs';
-import { describe, expect, test, vi } from 'vitest';
 
 import { buildPluggables, isPluggableEqual, PluginBuilder } from '..';
 
@@ -42,7 +41,7 @@ const createPluginClass = (
 
     config: TestPluginConfig;
 
-    destroy = vi.fn(onDestroy);
+    destroy = jest.fn(onDestroy);
 
     constructor(config: unknown = {}) {
       onConstruct(config);
@@ -73,8 +72,8 @@ const getObserverCount = (state: IReactiveState<unknown>) => {
 
 describe('PluginBuilder', () => {
   test('compares plugin classes by reference and tuple options deeply', () => {
-    const PluginA = createPluginClass('same-key', vi.fn());
-    const ReplacementPluginA = createPluginClass('same-key', vi.fn());
+    const PluginA = createPluginClass('same-key', jest.fn());
+    const ReplacementPluginA = createPluginClass('same-key', jest.fn());
 
     expect(isPluggableEqual(PluginA, PluginA)).toBe(true);
     expect(isPluggableEqual(PluginA, ReplacementPluginA)).toBe(false);
@@ -99,9 +98,9 @@ describe('PluginBuilder', () => {
   });
 
   test('compares lifecycle inputs by identity without reading their lazy values', () => {
-    const Plugin = createPluginClass('plugin', vi.fn());
-    const destroy = vi.fn();
-    const read = vi.fn();
+    const Plugin = createPluginClass('plugin', jest.fn());
+    const destroy = jest.fn();
+    const read = jest.fn();
     const source = {
       destroy,
       get value() {
@@ -123,7 +122,7 @@ describe('PluginBuilder', () => {
   });
 
   test('does not read options when pluggables are the same reference', () => {
-    const Plugin = createPluginClass('same-reference', vi.fn());
+    const Plugin = createPluginClass('same-reference', jest.fn());
 
     const tuple = new Proxy<[PluginClass<TestPlugin, unknown>, unknown]>([Plugin, {}], {
       get: () => {
@@ -135,8 +134,8 @@ describe('PluginBuilder', () => {
   });
 
   test('buildPluggables returns one instance or an array based on argument count', () => {
-    const PluginA = createPluginClass('a', vi.fn());
-    const PluginB = createPluginClass('b', vi.fn());
+    const PluginA = createPluginClass('a', jest.fn());
+    const PluginB = createPluginClass('b', jest.fn());
 
     const empty = buildPluggables<TestPlugin>();
     const single = buildPluggables(PluginA);
@@ -152,8 +151,8 @@ describe('PluginBuilder', () => {
   });
 
   test('lazily builds bare and tuple plugins with embedded options', () => {
-    const constructA = vi.fn();
-    const constructB = vi.fn();
+    const constructA = jest.fn();
+    const constructB = jest.fn();
     const PluginA = createPluginClass('a', constructA);
     const PluginB = createPluginClass('b', constructB);
     const optionsA = { label: 'configured' };
@@ -164,39 +163,39 @@ describe('PluginBuilder', () => {
 
     const [pluginA, pluginB] = closure.value.value;
 
-    expect(constructA).toHaveBeenCalledOnce();
+    expect(constructA).toHaveBeenCalledTimes(1);
     expect(constructA).toHaveBeenCalledWith(optionsA);
-    expect(constructB).toHaveBeenCalledOnce();
+    expect(constructB).toHaveBeenCalledTimes(1);
     expect(pluginA?.config).toBe(optionsA);
     expect(pluginB?.config).toEqual({});
   });
 
   test('destroys already constructed plugins when a later constructor fails', () => {
-    const destroy = vi.fn();
+    const destroy = jest.fn();
     const failure = new Error('Failed to construct the next plugin.');
-    const PluginA = createPluginClass('a', vi.fn(), destroy);
+    const PluginA = createPluginClass('a', jest.fn(), destroy);
     const PluginB = createPluginClass('b', () => {
       throw failure;
     });
     const { closure, plugins, pluginsSubject } = setupBuilder([PluginA, PluginB]);
 
     expect(() => closure.value).toThrow(failure);
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
     expect(getObserverCount(plugins)).toBe(0);
     expect(plugins.closed).toBe(false);
     expect(pluginsSubject.isStopped).toBe(false);
 
     closure.destroy();
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     plugins.destroy();
     pluginsSubject.complete();
   });
 
   test('reuses instances when reordered tuples have deeply equal options', () => {
-    const constructA = vi.fn();
-    const constructB = vi.fn();
+    const constructA = jest.fn();
+    const constructB = jest.fn();
     const PluginA = createPluginClass('a', constructA);
     const PluginB = createPluginClass('b', constructB);
     const { closure, pluginsSubject } = setupBuilder([
@@ -211,15 +210,15 @@ describe('PluginBuilder', () => {
     ]);
 
     expect(closure.value.value).toEqual([initialB, initialA]);
-    expect(constructA).toHaveBeenCalledOnce();
-    expect(constructB).toHaveBeenCalledOnce();
+    expect(constructA).toHaveBeenCalledTimes(1);
+    expect(constructB).toHaveBeenCalledTimes(1);
   });
 
   test('publishes reused instances for equivalent source emissions', () => {
-    const Plugin = createPluginClass('plugin', vi.fn());
+    const Plugin = createPluginClass('plugin', jest.fn());
     const { closure, pluginsSubject } = setupBuilder([[Plugin, { nested: { enabled: true } }]]);
     const [instance] = closure.value.value;
-    const next = vi.fn();
+    const next = jest.fn();
 
     closure.value.subscribe(next);
 
@@ -228,12 +227,12 @@ describe('PluginBuilder', () => {
     pluginsSubject.next([[Plugin, { nested: { enabled: true } }]]);
 
     expect(closure.value.value).toEqual([instance]);
-    expect(next).toHaveBeenCalledOnce();
+    expect(next).toHaveBeenCalledTimes(1);
   });
 
   test('keeps source pluggables paired across sorting and replaces only changed options', () => {
-    const constructLow = vi.fn();
-    const constructHigh = vi.fn();
+    const constructLow = jest.fn();
+    const constructHigh = jest.fn();
     const PluginLow = createPluginClass('low', constructLow);
     const PluginHigh = createPluginClass('high', constructHigh);
     const { closure, pluginsSubject } = setupBuilder([
@@ -259,15 +258,15 @@ describe('PluginBuilder', () => {
     expect(currentLow).not.toBe(initialLow);
     expect(currentLow?.config.label).toBe('low:2');
     expect(currentHigh).toBe(initialHigh);
-    expect(initialLow?.destroy).toHaveBeenCalledOnce();
+    expect(initialLow?.destroy).toHaveBeenCalledTimes(1);
     expect(initialHigh?.destroy).not.toHaveBeenCalled();
     expect(constructLow).toHaveBeenCalledTimes(2);
-    expect(constructHigh).toHaveBeenCalledOnce();
+    expect(constructHigh).toHaveBeenCalledTimes(1);
   });
 
   test('can preserve declaration order when sorting is disabled', () => {
-    const PluginLow = createPluginClass('low', vi.fn());
-    const PluginHigh = createPluginClass('high', vi.fn());
+    const PluginLow = createPluginClass('low', jest.fn());
+    const PluginHigh = createPluginClass('high', jest.fn());
     const { closure } = setupBuilder(
       [
         [PluginLow, { priority: 1 }],
@@ -289,7 +288,7 @@ describe('PluginBuilder', () => {
 
       readonly config = config;
 
-      readonly destroy = vi.fn();
+      readonly destroy = jest.fn();
 
       constructor(readonly options: { label: string }) {}
     }
@@ -298,7 +297,7 @@ describe('PluginBuilder', () => {
 
     const pluggable: IPluggable<ConfiguredPlugin, { label: string }> = [ConfiguredPlugin, options];
 
-    const Middle = createPluginClass('middle', vi.fn());
+    const Middle = createPluginClass('middle', jest.fn());
 
     const { closure, pluginsSubject } = setupBuilder([pluggable, Middle]);
 
@@ -317,7 +316,7 @@ describe('PluginBuilder', () => {
 
     expect(closure.value.value.map((plugin) => plugin.key)).toEqual(['middle', 'configured']);
 
-    expect(instance?.destroy).toHaveBeenCalledOnce();
+    expect(instance?.destroy).toHaveBeenCalledTimes(1);
 
     pluginsSubject.next([[ConfiguredPlugin, { label: 'options', priority: undefined }], Middle]);
 
@@ -336,14 +335,14 @@ describe('PluginBuilder', () => {
 
       readonly key = GetterPlugin.key;
 
-      readonly destroy = vi.fn();
+      readonly destroy = jest.fn();
 
       get config() {
         return config;
       }
     }
 
-    const Middle = createPluginClass('middle', vi.fn());
+    const Middle = createPluginClass('middle', jest.fn());
 
     const { closure } = setupBuilder([
       GetterPlugin,
@@ -363,15 +362,15 @@ describe('PluginBuilder', () => {
 
     closure.destroy();
 
-    expect(configured?.destroy).toHaveBeenCalledOnce();
+    expect(configured?.destroy).toHaveBeenCalledTimes(1);
 
-    expect(original?.destroy).toHaveBeenCalledOnce();
+    expect(original?.destroy).toHaveBeenCalledTimes(1);
   });
 
   test('replaces changed classes and retires removed/current instances once', () => {
-    const constructA = vi.fn();
-    const constructReplacementA = vi.fn();
-    const constructB = vi.fn();
+    const constructA = jest.fn();
+    const constructReplacementA = jest.fn();
+    const constructB = jest.fn();
     const PluginA = createPluginClass('a', constructA);
     const ReplacementPluginA = createPluginClass('a', constructReplacementA);
     const PluginB = createPluginClass('b', constructB);
@@ -390,26 +389,26 @@ describe('PluginBuilder', () => {
 
     expect(replacementA).not.toBe(initialA);
     expect(reusedB).toBe(initialB);
-    expect(initialA?.destroy).toHaveBeenCalledOnce();
+    expect(initialA?.destroy).toHaveBeenCalledTimes(1);
     expect(initialB?.destroy).not.toHaveBeenCalled();
 
     pluginsSubject.next([[ReplacementPluginA, { label: 'a' }]]);
 
-    expect(initialB?.destroy).toHaveBeenCalledOnce();
+    expect(initialB?.destroy).toHaveBeenCalledTimes(1);
 
     closure.destroy();
     closure.destroy();
 
-    expect(replacementA?.destroy).toHaveBeenCalledOnce();
-    expect(initialA?.destroy).toHaveBeenCalledOnce();
-    expect(initialB?.destroy).toHaveBeenCalledOnce();
-    expect(constructA).toHaveBeenCalledOnce();
-    expect(constructReplacementA).toHaveBeenCalledOnce();
-    expect(constructB).toHaveBeenCalledOnce();
+    expect(replacementA?.destroy).toHaveBeenCalledTimes(1);
+    expect(initialA?.destroy).toHaveBeenCalledTimes(1);
+    expect(initialB?.destroy).toHaveBeenCalledTimes(1);
+    expect(constructA).toHaveBeenCalledTimes(1);
+    expect(constructReplacementA).toHaveBeenCalledTimes(1);
+    expect(constructB).toHaveBeenCalledTimes(1);
   });
 
   test('destroys instances and subscriptions without destroying caller input', () => {
-    const Plugin = createPluginClass('plugin', vi.fn());
+    const Plugin = createPluginClass('plugin', jest.fn());
     const { closure, plugins } = setupBuilder([Plugin]);
     const [instance] = closure.value.value;
 
@@ -417,7 +416,7 @@ describe('PluginBuilder', () => {
 
     closure.destroy();
 
-    expect(instance?.destroy).toHaveBeenCalledOnce();
+    expect(instance?.destroy).toHaveBeenCalledTimes(1);
     expect(plugins.closed).toBe(false);
     expect(getObserverCount(plugins)).toBe(0);
 
@@ -425,9 +424,9 @@ describe('PluginBuilder', () => {
   });
 
   test('destroys current instances after a plugin source error', () => {
-    const Plugin = createPluginClass('plugin', vi.fn());
+    const Plugin = createPluginClass('plugin', jest.fn());
     const { closure, plugins, pluginsSubject } = setupBuilder([Plugin]);
-    const error = vi.fn();
+    const error = jest.fn();
     const reason = new Error('failed');
 
     closure.value.subscribe({ error });
@@ -436,16 +435,16 @@ describe('PluginBuilder', () => {
 
     pluginsSubject.error(reason);
 
-    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(reason);
     expect(() => closure.destroy()).not.toThrow();
-    expect(instance?.destroy).toHaveBeenCalledOnce();
+    expect(instance?.destroy).toHaveBeenCalledTimes(1);
 
     plugins.destroy();
   });
 
   test('destroying before initialization constructs no plugins', () => {
-    const construct = vi.fn();
+    const construct = jest.fn();
     const Plugin = createPluginClass('plugin', construct);
     const { closure } = setupBuilder([Plugin]);
 
@@ -453,6 +452,6 @@ describe('PluginBuilder', () => {
     closure.destroy();
 
     expect(construct).not.toHaveBeenCalled();
-    expect(() => closure.value).toThrowError('Cannot set up a destroyed state closure.');
+    expect(() => closure.value).toThrow('Cannot set up a destroyed state closure.');
   });
 });

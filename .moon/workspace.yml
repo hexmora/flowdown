@@ -1,0 +1,8 @@
+projects:
+  sources:
+    workspace: .
+  globs:
+    - packages/*/moon.yml
+
+vcs:
+  defaultBranch: main

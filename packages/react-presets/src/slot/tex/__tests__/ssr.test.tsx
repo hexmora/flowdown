@@ -1,14 +1,13 @@
-// @vitest-environment node
+/** @jest-environment node */
 
 import type { Element } from 'hast';
 
 import { PassThrough } from 'node:stream';
 import { renderToPipeableStream } from 'react-dom/server';
-import { describe, expect, test, vi } from 'vitest';
 
 import { TexRenderer } from '../renderer';
 
-vi.mock('katex/dist/katex.min.css', () => {
+jest.mock('katex/dist/katex.min.css', () => {
   throw new Error('KaTeX CSS must not be imported during server rendering');
 });
 

@@ -2,7 +2,7 @@ import { useRendersCount, useUpdate } from 'react-use';
 
 import type { TrackedPreviewProps } from './type';
 
-import { Flowdown } from '../../../src';
+import { Fluxdown } from '../../../src';
 
 export const TrackedPreview = ({
   actions,
@@ -32,7 +32,7 @@ export const TrackedPreview = ({
       </div>
 
       <section aria-label={ariaLabel} className="playground-preview-content">
-        {text.length > 0 ? <Flowdown build={config} patches={patches} text={text} /> : null}
+        {text.length > 0 ? <Fluxdown build={config} patches={patches} text={text} /> : null}
       </section>
     </div>
   );

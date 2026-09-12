@@ -1,11 +1,10 @@
-import type { BaseSmoothConfig } from '@flowdown/core-presets/mapper';
-import type { IBlockState, PluginSet } from '@flowdown/types';
+import type { BaseSmoothConfig } from '@fluxdown/core-presets/mapper';
+import type { IBlockState, PluginSet } from '@fluxdown/types';
 import type { ElementContent, Parent, RootContent } from 'hast';
 import type { Plugin } from 'unified';
 
-import { BaseRehypePlugin } from '@flowdown/core-presets/rehype';
-import { assert } from '@flowdown/utils';
-import { first, last } from 'lodash-es';
+import { BaseRehypePlugin } from '@fluxdown/core-presets/rehype';
+import { assert } from '@fluxdown/utils';
 import {
   D,
   type IReadableClosure,
@@ -15,8 +14,8 @@ import {
   render,
   S,
   useFlatten,
-} from 'reactive';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+} from 'functive';
+import { first, last } from 'lodash-es';
 
 import type { HastRoot } from '../../../typings';
 import type { MapperPluggable } from '../../base';
@@ -28,6 +27,7 @@ import {
   FakeSmoothTicker,
   StepSmoothScheduler,
 } from '../../../__tests__/utils/smooth';
+import { restoreGlobals, stubGlobal } from '../../../../../../scripts/testing/globals';
 import { BaseRenderer } from '../../../externals';
 
 type Block = IBlockState<HastRoot>;
@@ -50,7 +50,7 @@ class ManualTicker extends FakeSmoothTicker {
 
 class ReplacementTicker extends ManualTicker {}
 
-const compiled = vi.fn();
+const compiled = jest.fn();
 
 class ObserveCompilation extends BaseRehypePlugin {
   static readonly key = 'observe-smooth-compilation';
@@ -147,16 +147,16 @@ afterEach(() => {
 
   closures.clear();
 
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('Core smooth pipeline', () => {
   test.each([undefined, { ...enabled, enabled: false }])(
     'renders updates synchronously when smooth is %j',
     (smooth) => {
-      const requestFrame = vi.fn();
+      const requestFrame = jest.fn();
 
-      vi.stubGlobal('requestAnimationFrame', requestFrame);
+      stubGlobal('requestAnimationFrame', requestFrame);
 
       const view = setup('', smooth);
 

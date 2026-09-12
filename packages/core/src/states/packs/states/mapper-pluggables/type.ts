@@ -1,4 +1,4 @@
-import type { PluginSet } from '@flowdown/types';
+import type { PluginSet } from '@fluxdown/types';
 
 import type { MapperPluggable } from '../../../base';
 

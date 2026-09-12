@@ -1,6 +1,6 @@
 import type { Element, Root as HastRoot, RootContent } from 'hast';
 
-import { getTextUnits, isHiddenTagName, sizeOfHast } from '@flowdown/hast';
+import { getTextUnits, isHiddenTagName, sizeOfHast } from '@fluxdown/hast';
 
 import { BLOCK_TAG_NAMES, BOUNDARY_TAG_NAMES, FORBIDDEN_TAG_NAMES } from './consts';
 

@@ -1,10 +1,9 @@
-import type { BaseShadConfig, BaseSmoothConfig } from '@flowdown/core-presets/mapper';
-import type { IBlockState, PluginSet } from '@flowdown/types';
+import type { BaseShadConfig, BaseSmoothConfig } from '@fluxdown/core-presets/mapper';
+import type { IBlockState, PluginSet } from '@fluxdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import { Shad } from '@flowdown/core-presets/mapper';
-import { assert } from '@flowdown/utils';
-import { last } from 'lodash-es';
+import { Shad } from '@fluxdown/core-presets/mapper';
+import { assert } from '@fluxdown/utils';
 import {
   D,
   type IReadableClosure,
@@ -15,8 +14,8 @@ import {
   S,
   useFlatten,
   useMap,
-} from 'reactive';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+} from 'functive';
+import { last } from 'lodash-es';
 
 import type { HastRoot } from '../../../typings';
 import type { MapperPluggable } from '../../base';
@@ -131,7 +130,7 @@ const setup = (
 };
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  jest.useFakeTimers();
 
   ManualTicker.instances = [];
 
@@ -143,7 +142,7 @@ afterEach(() => {
 
   closures.clear();
 
-  vi.useRealTimers();
+  jest.useRealTimers();
 });
 
 describe('Core shad pipeline', () => {
@@ -207,7 +206,7 @@ describe('Core shad pipeline', () => {
 
       expect(readParts(firstBlock(view.core.value.value).value.value)).toBeUndefined();
 
-      expect(vi.getTimerCount()).toBe(1);
+      expect(jest.getTimerCount()).toBe(1);
     },
   );
 
@@ -252,7 +251,7 @@ describe('Core shad pipeline', () => {
 
     expect(readParts(fork.value.value)).toBeUndefined();
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     view.tick(16);
 
@@ -268,7 +267,7 @@ describe('Core shad pipeline', () => {
 
     expect(readParts(fork.value.value)).toEqual({ leading: '', active: 'ab' });
 
-    vi.advanceTimersByTime(200);
+    jest.advanceTimersByTime(200);
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'ab', active: '' });
 
@@ -315,7 +314,7 @@ describe('Core shad pipeline', () => {
 
       expect(core.value.closed).toBe(true);
 
-      expect(vi.getTimerCount()).toBe(0);
+      expect(jest.getTimerCount()).toBe(0);
     },
   );
 
@@ -338,7 +337,7 @@ describe('Core shad pipeline', () => {
 
     expect(fork.value.closed).toBe(false);
 
-    vi.advanceTimersByTime(200);
+    jest.advanceTimersByTime(200);
 
     expect(readParts(fork.value.value)).toEqual({ leading: 'cd', active: '' });
 
@@ -350,6 +349,6 @@ describe('Core shad pipeline', () => {
 
     expect(value.closed).toBe(true);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });
