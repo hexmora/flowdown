@@ -1,0 +1,96 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel
+        type: choice
+        required: true
+        default: beta
+        options:
+          - beta
+          - stable
+      package:
+        description: Package to publish (dependencies must already exist for single-package releases)
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - "@fluxdown/utils"
+          - functive
+          - "@fluxdown/types"
+          - "@fluxdown/core-presets"
+          - "@fluxdown/core"
+          - "@fluxdown/react-presets"
+          - fluxdown
+      dry_run:
+        description: Verify and pack without uploading to npm
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: read
+
+# All channels/packages share a lock because they may update the same registry state.
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
+        with:
+          runtime: node@24.14.1
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check workspace
+        run: pnpm check
+
+      - name: Verify packages and publish selected channel
+        env:
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+          RELEASE_PACKAGE: ${{ inputs.package }}
+          RELEASE_DRY_RUN: ${{ inputs.dry_run }}
+          # OIDC is preferred. An optional granular token supports first publication.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/fluxdown-npmrc
+        run: |
+          node --input-type=module -e 'import {writeFileSync} from "node:fs"; writeFileSync(process.env.NPM_CONFIG_USERCONFIG, process.env.NODE_AUTH_TOKEN ? "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}\n" : "");'
+          mode=--dry-run
+          if [[ "$RELEASE_DRY_RUN" == "false" ]]; then
+            mode=--publish
+          fi
+          pnpm release -- --channel "$RELEASE_CHANNEL" --package "$RELEASE_PACKAGE" "$mode"
+
+      - name: Save packages and content manifests
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-${{ inputs.channel }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .release/**/tarballs/*.tgz
+            .release/**/manifest.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

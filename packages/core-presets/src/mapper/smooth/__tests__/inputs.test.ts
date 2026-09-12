@@ -1,5 +1,6 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
+import { expectTypeOf } from 'expect-type';
 import {
   type IReadableClosure,
   isOnceFunction,
@@ -8,8 +9,7 @@ import {
   render,
   S,
   toClosure,
-} from 'reactive';
-import { expect, expectTypeOf, test } from 'vitest';
+} from 'functive';
 
 import type { SmoothInputs } from '..';
 import type { CutoffBlocksInputs, SmoothCursorInputs } from '../states';

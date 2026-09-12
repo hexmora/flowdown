@@ -6,20 +6,21 @@ import type {
   SmoothTickerClass,
   TickerParams,
   TickerType,
-} from '@flowdown/core-presets/mapper';
+} from '@fluxdown/core-presets/mapper';
 
 import {
   IntervalSmoothTicker,
   RafSmoothTicker,
   SpringSmoothScheduler,
-} from '@flowdown/core-presets/mapper';
-import { afterEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+} from '@fluxdown/core-presets/mapper';
+import { expectTypeOf } from 'expect-type';
 
 import { ALL_SCHEDULERS, ALL_TICKERS } from '..';
+import { restoreGlobals, stubGlobal } from '../../../../../../scripts/testing/globals';
 import { getSchedulerByType, getTickerByType, isEnableRAF, toBaseSmoothConfig } from '../utils';
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('smooth configuration', () => {
@@ -75,9 +76,9 @@ describe('smooth configuration', () => {
   ])(
     'selects the default ticker with request=$request and cancel=$cancel',
     ({ request, cancel, ticker }) => {
-      vi.stubGlobal('requestAnimationFrame', request ? vi.fn() : undefined);
+      stubGlobal('requestAnimationFrame', request ? jest.fn() : undefined);
 
-      vi.stubGlobal('cancelAnimationFrame', cancel ? vi.fn() : undefined);
+      stubGlobal('cancelAnimationFrame', cancel ? jest.fn() : undefined);
 
       expect(isEnableRAF()).toBe(request && cancel);
 
@@ -92,9 +93,9 @@ describe('smooth configuration', () => {
   );
 
   test('uses an explicit configuration regardless of available RAF APIs', () => {
-    vi.stubGlobal('requestAnimationFrame', vi.fn());
+    stubGlobal('requestAnimationFrame', jest.fn());
 
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    stubGlobal('cancelAnimationFrame', jest.fn());
 
     const result = toBaseSmoothConfig({ enabled: true, ticker: 'interval', scheduler: 'spring' });
 

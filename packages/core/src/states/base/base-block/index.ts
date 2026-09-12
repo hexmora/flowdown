@@ -5,10 +5,10 @@ import type {
   IBlockState,
   IBlockStateCloneParams,
   IRangeState,
-} from '@flowdown/types';
-import type { IReactiveState, IReadableClosure } from 'reactive';
+} from '@fluxdown/types';
+import type { IReactiveState, IReadableClosure } from 'functive';
 
-import { BaseStateClosure, toClosure } from 'reactive';
+import { BaseStateClosure, toClosure } from 'functive';
 
 export abstract class BaseBlockItem<T>
   extends BaseStateClosure<T, BaseBlockItemInputs<T>>

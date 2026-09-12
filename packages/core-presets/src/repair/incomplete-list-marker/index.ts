@@ -1,6 +1,6 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { last } from 'lodash-es';
 
 import { BaseRepairPlugin } from '../base';

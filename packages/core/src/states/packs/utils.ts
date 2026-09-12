@@ -7,10 +7,10 @@ import type {
   SmoothSchedulerClass,
   SmoothTickerClass,
   TickerType,
-} from '@flowdown/core-presets/mapper';
-import type { IRawPatchItem } from '@flowdown/types';
+} from '@fluxdown/core-presets/mapper';
+import type { IRawPatchItem } from '@fluxdown/types';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { isBoolean, isEqual, isFunction, isString } from 'lodash-es';
 
 import type { IRenderPatchItem } from '../../externals';

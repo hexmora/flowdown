@@ -1,6 +1,6 @@
 {
-  "name": "@flowdown/core",
-  "version": "0.1.0",
+  "name": "@fluxdown/core",
+  "version": "1.0.0",
   "description": "Headless pure-computation utilities for turning streaming Markdown strings into HAST structures.",
   "keywords": [
     "hast",
@@ -21,7 +21,9 @@
     "directory": "packages/core"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
@@ -32,33 +34,39 @@
     ".": "./src/index.ts"
   },
   "publishConfig": {
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/esm/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        "import": {
+          "types": "./dist/esm/index.d.ts",
+          "default": "./dist/esm/index.js"
+        },
+        "require": {
+          "types": "./dist/cjs/index.d.cts",
+          "default": "./dist/cjs/index.cjs"
+        }
       }
     },
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "jest --config ../../jest.config.ts --selectProjects core --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
-    "@flowdown/core-presets": "workspace:*",
-    "@flowdown/types": "workspace:*",
-    "@flowdown/utils": "workspace:*",
+    "@fluxdown/core-presets": "workspace:*",
+    "@fluxdown/types": "workspace:*",
+    "@fluxdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
+    "functive": "workspace:*",
     "lodash-es": "catalog:",
     "marked": "catalog:",
-    "reactive": "workspace:*",
     "remark-parse": "catalog:",
     "remark-rehype": "catalog:",
     "rxjs": "catalog:",
@@ -66,14 +74,16 @@
     "unified": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
+    "expect-type": "catalog:",
     "mdast-util-gfm-table": "catalog:",
     "micromark-extension-gfm-table": "catalog:",
     "oxlint": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-dts": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

@@ -1,6 +1,5 @@
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { first } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { RedundantBreakBeforeHtmlRepairPlugin } from '..';
 import { paragraph, root, runRepairs } from './utils';

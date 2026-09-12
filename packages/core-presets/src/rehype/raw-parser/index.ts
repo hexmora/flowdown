@@ -1,7 +1,7 @@
 import type { Root as HastRoot } from 'hast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
 import { cloneDeep } from 'lodash-es';
 import rehypeRaw, { type Options } from 'rehype-raw';
 

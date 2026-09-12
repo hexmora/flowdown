@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, test } from 'vitest';
-
 import { DoubleStepSmoothScheduler, StepSmoothScheduler } from '../utils/smooth';
 import {
   collectText,

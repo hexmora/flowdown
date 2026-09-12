@@ -1,5 +1,5 @@
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+import type { IPluggable, IPluginWithConfig } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
 export interface PluginBuilderInputs<T extends IPluginWithConfig> {
   plugins: IReadableClosure<IPluggable<T, unknown>[]>;

@@ -1,5 +1,4 @@
 import { render, waitFor } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
 import { PREFIX } from '../../../base';
 import { CodeHighlighterRenderer } from '../renderer';

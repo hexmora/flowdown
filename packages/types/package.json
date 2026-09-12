@@ -1,9 +1,9 @@
 {
-  "name": "@flowdown/types",
-  "version": "0.1.0",
-  "description": "Shared public types for Flowdown packages.",
+  "name": "@fluxdown/types",
+  "version": "1.0.0",
+  "description": "Shared public types for Fluxdown packages.",
   "keywords": [
-    "flowdown",
+    "fluxdown",
     "markdown",
     "plugins",
     "types"
@@ -19,37 +19,57 @@
     "directory": "packages/types"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "publishConfig": {
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/esm/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/esm/index.d.ts",
+          "default": "./dist/esm/index.js"
+        },
+        "require": {
+          "types": "./dist/cjs/index.d.cts",
+          "default": "./dist/cjs/index.cjs"
+        }
+      }
+    },
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
-    "@flowdown/utils": "workspace:*",
+    "@fluxdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
     "@types/unist": "catalog:",
-    "reactive": "workspace:*",
+    "functive": "workspace:*",
     "unified": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@types/node": "catalog:",
     "oxlint": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-dts": "catalog:"
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

@@ -1,4 +1,4 @@
-import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin } from '@fluxdown/types';
 
 import {
   ApplyRepairsRemarkPlugin,
@@ -6,8 +6,8 @@ import {
   PRESET_REMARK_PLUGINS,
   SyntaxFootnoteRemarkPlugin,
   SyntaxMathRemarkPlugin,
-} from '@flowdown/core-presets/remark';
-import { memoReturns } from 'reactive';
+} from '@fluxdown/core-presets/remark';
+import { memoReturns } from 'functive';
 
 import type { RemarkPluggablesMapperInputs } from './type';
 

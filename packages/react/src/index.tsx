@@ -1,22 +1,22 @@
-import type { ReactRenderExtraParams } from '@flowdown/react-presets/base';
+import type { ReactRenderExtraParams } from '@fluxdown/react-presets/base';
 import type { ReactNode } from 'react';
 
-import { Core, isPluggablesEqual } from '@flowdown/core';
+import { Core, isPluggablesEqual } from '@fluxdown/core';
 import {
   SlotProvider,
   useDeferredUnmount,
   useStateOf,
   useStatic,
-} from '@flowdown/react-presets/base';
-import { PRESET_RENDER_PLUGINS } from '@flowdown/react-presets/render';
-import { PRESET_SLOT_PLUGINS } from '@flowdown/react-presets/slot';
-import { defaultsBy } from '@flowdown/utils';
+} from '@fluxdown/react-presets/base';
+import { PRESET_RENDER_PLUGINS } from '@fluxdown/react-presets/render';
+import { PRESET_SLOT_PLUGINS } from '@fluxdown/react-presets/slot';
+import { defaultsBy } from '@fluxdown/utils';
 import cn from 'classnames';
+import { D, render, S } from 'functive';
 import { forwardRef, memo, useImperativeHandle } from 'react';
-import { D, render, S } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
-import type { FlowdownProps, FlowdownRef } from './types';
+import type { FluxdownProps, FluxdownRef } from './types';
 
 import { RootReconciler } from './components';
 import { DEFAULT_CONFIG, EL, EO } from './consts';
@@ -28,8 +28,8 @@ import { isPatchesEqual, isPropsEqual, isShadEqual, isSmoothEqual } from './util
 
 export * from './types';
 
-export const Flowdown = /*#__PURE__*/ memo(
-  /*#__PURE__*/ forwardRef<FlowdownRef, FlowdownProps>(function Flowdown(
+export const Fluxdown = /*#__PURE__*/ memo(
+  /*#__PURE__*/ forwardRef<FluxdownRef, FluxdownProps>(function Fluxdown(
     {
       className,
       style,

@@ -1,4 +1,4 @@
-import type { IReadableClosure } from 'reactive';
+import type { IReadableClosure } from 'functive';
 
 import type { SmoothSchedulerClass } from '../../../../type';
 import type { SmoothTicksInputs } from '../smooth-ticks';

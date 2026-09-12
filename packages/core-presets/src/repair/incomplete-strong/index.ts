@@ -1,7 +1,7 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 import type { PhrasingContent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { first, last, nth } from 'lodash-es';
 
 import { isRepairNodeType } from '../../utils';

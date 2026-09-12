@@ -1,0 +1,51 @@
+language: javascript
+layer: tool
+
+tasks:
+  format:
+    command: oxfmt .
+    options:
+      cache: false
+      runInCI: false
+  format-check:
+    command: oxfmt --check .
+    inputs: []
+    options:
+      cache: false
+  lint:
+    command: oxlint scripts jest.config.ts rslib.shared.ts
+    inputs:
+      [
+        scripts/**/*,
+        rslib.shared.ts,
+        jest.config.ts,
+        .oxlintrc.json,
+        package.json,
+        pnpm-lock.yaml,
+        pnpm-workspace.yaml,
+      ]
+  typecheck:
+    command: tsc --noEmit -p scripts/tsconfig.json
+    inputs:
+      - scripts/**/*
+      - jest.config.ts
+      - rslib.shared.ts
+      - tsconfig.base.json
+      - package.json
+      - pnpm-lock.yaml
+  version:
+    script: pnpm exec changeset version && pnpm install
+    env:
+      # Changesets formats after rewriting manifests; refresh installation below.
+      PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
+    options:
+      cache: false
+      runInCI: false
+  publish-dry-run:
+    command: tsx scripts/release.ts --dry-run
+    options:
+      cache: false
+  publish:
+    command: tsx scripts/release.ts
+    options:
+      cache: false

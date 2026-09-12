@@ -1,5 +1,5 @@
-import type { MapperPluggable, PluginConfigs } from '@flowdown/core';
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
+import type { MapperPluggable, PluginConfigs } from '@fluxdown/core';
+import type { IPluggable, IPluginWithConfig } from '@fluxdown/types';
 
 import { get, has, isArray } from 'lodash-es';
 import { useMemo } from 'react';

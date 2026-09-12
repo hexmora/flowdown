@@ -1,4 +1,4 @@
-import type { PluginClass } from '@flowdown/types';
+import type { PluginClass } from '@fluxdown/types';
 
 import type { AnySlotPlugin } from '../base';
 

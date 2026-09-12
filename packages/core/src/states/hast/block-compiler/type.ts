@@ -4,8 +4,8 @@ import type {
   IRawPatchItem,
   IRehypePlugin,
   IRemarkPlugin,
-} from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+} from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
 import type { HastRoot } from '../../../typings';
 import type { IBlockSection } from '../../base';

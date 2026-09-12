@@ -1,4 +1,4 @@
-import { Destructible } from 'reactive';
+import { Destructible } from 'functive';
 import { Subject } from 'rxjs';
 
 import type { ITicker } from './type';

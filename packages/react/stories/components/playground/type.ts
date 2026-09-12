@@ -1,4 +1,4 @@
-import type { IPatchItem } from '@flowdown/core';
+import type { IPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
 export interface PlaygroundProps {

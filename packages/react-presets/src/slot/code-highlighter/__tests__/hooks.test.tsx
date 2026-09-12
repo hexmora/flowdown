@@ -1,13 +1,13 @@
 import type { ThemedToken } from 'shiki/core';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useHighlighted } from '../renderer/hooks';
+import { highlightCode as highlightCodeImplementation } from '../renderer/utils';
 
-const { highlightCode } = vi.hoisted(() => ({ highlightCode: vi.fn() }));
+jest.mock('../renderer/utils', () => ({ highlightCode: jest.fn() }));
 
-vi.mock('../renderer/utils', () => ({ highlightCode }));
+const highlightCode = jest.mocked(highlightCodeImplementation);
 
 interface PendingHighlight {
   resolve: (tokens: ThemedToken[][]) => void;
@@ -56,9 +56,7 @@ describe('useHighlighted', () => {
 
     const { result } = renderHook(() => useHighlighted('source', 'js'));
 
-    await act(async () => vi.dynamicImportSettled());
-
-    expect(highlightCode).toHaveBeenCalledOnce();
+    await waitFor(() => expect(highlightCode).toHaveBeenCalledTimes(1));
     expect(result.current).toBeNull();
   });
 });

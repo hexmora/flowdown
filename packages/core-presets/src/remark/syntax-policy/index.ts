@@ -2,7 +2,7 @@ import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
 
 import { appendMicromarkExtension } from '../../utils';
 import { BaseRemarkPlugin } from '../base';

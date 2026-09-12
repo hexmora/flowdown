@@ -1,6 +1,6 @@
-import { assert } from '@flowdown/utils';
-import { MutableState, ReactiveState, render, S } from 'reactive';
-import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { assert } from '@fluxdown/utils';
+import { expectTypeOf } from 'expect-type';
+import { MutableState, ReactiveState, render, S } from 'functive';
 
 import type { SmoothTickerClass } from '../../../../..';
 import type { SmoothTick } from '../states';
@@ -194,7 +194,7 @@ describe('SmoothTicks', () => {
       ]),
     );
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     ticks.value.subscribe({ complete });
 
@@ -212,7 +212,7 @@ describe('SmoothTicks', () => {
 
     ticks.destroy();
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
     expect(ticker.destroyCalls).toBe(1);
   });

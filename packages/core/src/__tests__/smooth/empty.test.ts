@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
-
 import {
   createBlock,
   firstBlock,
@@ -35,7 +33,7 @@ describe('Smooth empty blocks', () => {
 
     const content = createBlock('content', paragraph('abc'), 1, 2);
 
-    const forkContent = vi.spyOn(content.block, 'fork');
+    const forkContent = jest.spyOn(content.block, 'fork');
 
     harness.source.next([empty.block, content.block]);
 
@@ -59,7 +57,7 @@ describe('Smooth empty blocks', () => {
 
     expect(advanced.map((block) => block.meta.value.blockCount)).toEqual([2, 2]);
 
-    expect(forkContent).toHaveBeenCalledOnce();
+    expect(forkContent).toHaveBeenCalledTimes(1);
 
     harness.state.destroy();
   });
@@ -75,17 +73,17 @@ describe('Smooth empty blocks', () => {
 
     const b = createBlock('b', paragraph('de'), 2, 3);
 
-    const forkA = vi.spyOn(a.block, 'fork');
+    const forkA = jest.spyOn(a.block, 'fork');
 
-    const forkEmpty = vi.spyOn(empty.block, 'fork');
+    const forkEmpty = jest.spyOn(empty.block, 'fork');
 
-    const forkB = vi.spyOn(b.block, 'fork');
+    const forkB = jest.spyOn(b.block, 'fork');
 
     harness.source.next([a.block, empty.block, b.block]);
 
     const ticker = latest(PrimarySmoothTicker.instances);
 
-    expect(forkA).toHaveBeenCalledOnce();
+    expect(forkA).toHaveBeenCalledTimes(1);
 
     for (const time of [16, 32, 48]) {
       ticker.tick(time);
@@ -105,15 +103,15 @@ describe('Smooth empty blocks', () => {
 
     expect(emptyFork).toBeDefined();
 
-    const destroyEmpty = vi.spyOn(emptyFork!, 'destroy');
+    const destroyEmpty = jest.spyOn(emptyFork!, 'destroy');
 
     expect(output.map((block) => block.meta.value.key)).toEqual(['a', 'empty', 'b']);
 
     expect(output.map((block) => block.range.value)).toEqual([null, null, { start: 0, end: 1 }]);
 
-    expect(forkEmpty).toHaveBeenCalledOnce();
+    expect(forkEmpty).toHaveBeenCalledTimes(1);
 
-    expect(forkB).toHaveBeenCalledOnce();
+    expect(forkB).toHaveBeenCalledTimes(1);
 
     ticker.tick(80);
 
@@ -125,7 +123,7 @@ describe('Smooth empty blocks', () => {
 
     expect(firstBlock(harness.state.value.value).meta.value.blockCount).toBe(1);
 
-    expect(destroyEmpty).toHaveBeenCalledOnce();
+    expect(destroyEmpty).toHaveBeenCalledTimes(1);
 
     harness.state.destroy();
   });

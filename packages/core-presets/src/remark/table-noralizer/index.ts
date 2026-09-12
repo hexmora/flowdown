@@ -1,8 +1,8 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
-import { processMdast } from '@flowdown/utils';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
+import { processMdast } from '@fluxdown/utils';
 
 import { BaseRemarkPlugin } from '../base';
 import { normalizeTableColumns } from './utils';

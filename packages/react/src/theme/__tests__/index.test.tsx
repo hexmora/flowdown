@@ -1,13 +1,13 @@
-import { PREFIX } from '@flowdown/react-presets/base';
+import { PREFIX } from '@fluxdown/react-presets/base';
 import { render, renderHook } from '@testing-library/react';
+import { expectTypeOf } from 'expect-type';
 import { createRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, expectTypeOf, test } from 'vitest';
 
-import type { FlowdownRef, PartialThemeConfig, Theme, ThemeConfig } from '../..';
+import type { FluxdownRef, PartialThemeConfig, Theme, ThemeConfig } from '../..';
 
 import { useThemeStyles } from '..';
-import { Flowdown } from '../..';
+import { Fluxdown } from '../..';
 import { PRESET_THEME_MAP } from '../presets';
 import { mapTokensToStyles, resolveTheme } from '../utils';
 
@@ -58,7 +58,7 @@ describe('themes', () => {
   test('uses the SCSS prefix and converts nested numeric leaves to CSS tokens', () => {
     const styles = mapTokensToStyles(PRESET_THEME_MAP.light.tokens);
 
-    expect(PREFIX).toBe('flowdown');
+    expect(PREFIX).toBe('fluxdown');
     expect(styles).toMatchObject({
       [token('heading-h1-font-weight')]: '650',
       [token('heading-h1-line-height')]: '1.25',
@@ -86,15 +86,15 @@ describe('themes', () => {
   });
 
   test('updates tokens without remounting blocks or rebuilding the core', () => {
-    const ref = createRef<FlowdownRef>();
-    const view = render(<Flowdown ref={ref} text="# Heading" />);
+    const ref = createRef<FluxdownRef>();
+    const view = render(<Fluxdown ref={ref} text="# Heading" />);
     const root = view.container.firstElementChild as HTMLElement;
     const heading = root.firstElementChild;
     const core = ref.current;
 
     expect(root.style.getPropertyValue(token('colors-bg'))).toBe('#ffffff');
     view.rerender(
-      <Flowdown
+      <Fluxdown
         ref={ref}
         text="# Heading"
         theme={['dark', { tokens: { heading: { h1: { fontSize: '3rem' } } } }]}
@@ -105,15 +105,15 @@ describe('themes', () => {
     expect(root.firstElementChild).toBe(heading);
     expect(ref.current).toBe(core);
 
-    view.rerender(<Flowdown ref={ref} text="# Heading" theme="light" />);
+    view.rerender(<Fluxdown ref={ref} text="# Heading" theme="light" />);
     expect(root.style.getPropertyValue(token('heading-h1-font-size'))).toBe('2rem');
   });
 
   test('isolates themes per root and preserves consumer styles', () => {
     const view = render(
       <>
-        <Flowdown style={{ color: 'red' }} text="Light" />
-        <Flowdown text="Dark" theme="dark" />
+        <Fluxdown style={{ color: 'red' }} text="Light" />
+        <Fluxdown text="Dark" theme="dark" />
       </>,
     );
     const [light, dark] = Array.from(view.container.children) as HTMLElement[];
@@ -124,7 +124,7 @@ describe('themes', () => {
   });
 
   test('includes preset tokens during server rendering', () => {
-    const markup = renderToStaticMarkup(<Flowdown text="# Server" theme="dark" />);
+    const markup = renderToStaticMarkup(<Fluxdown text="# Server" theme="dark" />);
 
     expect(markup).toContain(`${token('colors-bg')}:#212121`);
     expect(markup).toContain(`${token('heading-h1-font-size')}:2rem`);

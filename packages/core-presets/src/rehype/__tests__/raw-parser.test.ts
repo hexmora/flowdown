@@ -1,7 +1,5 @@
 import type { Element, Nodes } from 'hast';
 
-import { describe, expect, test } from 'vitest';
-
 import { RawParserRehypePlugin } from '..';
 import { markdownToHast } from '../../remark/__tests__/utils';
 

@@ -1,10 +1,10 @@
-import type { SmoothSchedulerClass, SmoothTickerClass } from '@flowdown/core-presets/mapper';
-import type { IBlockMeta, IBlockState } from '@flowdown/types';
+import type { SmoothSchedulerClass, SmoothTickerClass } from '@fluxdown/core-presets/mapper';
+import type { IBlockMeta, IBlockState } from '@fluxdown/types';
 import type { Element, ElementContent, RootContent, Text } from 'hast';
 
-import { Smooth } from '@flowdown/core-presets/mapper';
+import { Smooth } from '@fluxdown/core-presets/mapper';
+import { MutableState, render, S } from 'functive';
 import { first, last } from 'lodash-es';
-import { MutableState, render, S } from 'reactive';
 
 import type { HastRoot } from '../../typings';
 

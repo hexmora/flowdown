@@ -1,4 +1,4 @@
-import type { Newable } from 'reactive';
+import type { Newable } from 'functive';
 
 import type { IScheduler, ITicker } from './modules';
 import type { SmoothCursorInputs } from './states';

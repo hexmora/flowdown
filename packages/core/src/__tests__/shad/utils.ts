@@ -1,7 +1,7 @@
 import type { Element, RootContent } from 'hast';
 
-import { SHAD_DATA_ATTR, SHAD_HOST_VALUE } from '@flowdown/core-presets/mapper';
-import { assert } from '@flowdown/utils';
+import { SHAD_DATA_ATTR, SHAD_HOST_VALUE } from '@fluxdown/core-presets/mapper';
+import { assert } from '@fluxdown/utils';
 
 import type { HastRoot } from '../../typings';
 

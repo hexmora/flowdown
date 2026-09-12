@@ -3,6 +3,9 @@ packages:
 
 catalogMode: strict
 
+# moon runs tasks in parallel; dependency installation is an explicit step.
+verifyDepsBeforeRun: error
+
 catalog:
   ahooks: ^3.9.7
   classnames: ^2.5.1
@@ -54,26 +57,47 @@ catalog:
   "@commitlint/config-conventional": ^21.0.2
   husky: ^9.1.7
   hast-util-sanitize: ^5.0.2
-  typescript: ^6.0.3
+  typescript: 7.0.2
   oxlint: ^1.69.0
   oxfmt: ^0.55.0
   vite: ^8.0.16
-  "@vitejs/plugin-react": ^6.0.2
-  vite-plugin-dts: ^5.0.2
-  vite-plugin-lib-inject-css: ^2.2.2
   vite-plugin-svgr: ^5.2.0
   storybook: ^10.4.4
   "@storybook/addon-docs": ^10.4.4
   "@storybook/react-vite": ^10.4.4
-  vitest: ^4.1.8
-  jsdom: ^29.1.1
   "@testing-library/jest-dom": ^6.9.1
   "@testing-library/react": ^16.3.2
-  snapshot-diff: ^0.10.0
   eslint-plugin-perfectionist: ^5.10.0
   remark-parse: ^11.0.0
+  "@moonrepo/cli": 2.5.4
+  "@rslib/core": 1.0.0
+  "@rsbuild/core": 2.2.3
+  "@rsbuild/plugin-react": 2.1.0
+  "@rsbuild/plugin-sass": 2.0.1
+  "@rsbuild/plugin-less": 2.0.1
+  "@rsbuild/plugin-svgr": 2.0.5
+  "jest": 30.5.1
+  "jest-environment-jsdom": 30.5.1
+  "@swc/jest": 0.2.39
+  "@swc/core": 1.16.2
+  "@types/jest": 30.0.0
+  "expect-type": 1.4.0
+  "@changesets/cli": 3.0.2
+  "@changesets/read": 1.0.1
+  "semver": 7.8.5
+  "@types/semver": 7.8.0
+  tsx: 4.23.13
+
+  "@svgr/core": 8.1.0
+  "@svgr/plugin-jsx": 8.1.0
 
 packageExtensions:
+  # Perfectionist and its typescript-eslint utilities still use the legacy
+  # compiler API. Scope the official compatibility package to this lint plugin;
+  # workspace typechecks and Rslib declaration builds use TypeScript 7.
+  eslint-plugin-perfectionist@5:
+    dependencies:
+      typescript: npm:@typescript/typescript6@6.0.2
   storybook@*:
     dependencies:
       "@storybook/react-vite": ^10.4.4
@@ -85,6 +109,7 @@ overrides:
   "@types/react-dom": "catalog:"
 
 allowBuilds:
+  "@swc/core": true
   "@parcel/watcher": true
   esbuild: true
   unrs-resolver: true

@@ -1,6 +1,6 @@
 export const SHAD_TAG_NAME = 'span';
 
-export const SHAD_DATA_ATTR = 'dataFlowdownShad';
+export const SHAD_DATA_ATTR = 'dataFluxdownShad';
 
 export const SHAD_HOST_VALUE = 'host';
 

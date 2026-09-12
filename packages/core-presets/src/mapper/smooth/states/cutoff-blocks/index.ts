@@ -1,6 +1,6 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
-import { once, useClearable, useCombineMap, useMap } from 'reactive';
+import { once, useClearable, useCombineMap, useMap } from 'functive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { CutoffBlockEntry, CutoffBlocksInputs } from './type';

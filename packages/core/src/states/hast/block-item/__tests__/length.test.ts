@@ -1,13 +1,12 @@
 import type { Element, ElementContent, Root, RootContent } from 'hast';
 import type { Plugin } from 'unified';
 
-import { getLengthOfHast } from '@flowdown/utils';
+import { getLengthOfHast } from '@fluxdown/utils';
 import { gfmTableFromMarkdown } from 'mdast-util-gfm-table';
 import { gfmTable } from 'micromark-extension-gfm-table';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { describe, expect, test } from 'vitest';
 
 import { markdownToHast } from '../../block-compiler/utils';
 

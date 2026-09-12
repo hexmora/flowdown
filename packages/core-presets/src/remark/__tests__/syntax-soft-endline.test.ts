@@ -1,7 +1,5 @@
 import type { Paragraph } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxSoftEndlineRemarkPlugin } from '..';
 import { collectTextValues, parseMarkdown } from './utils';
 

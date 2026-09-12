@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { assert, AssertError } from '../assert';
 
 describe('assert', () => {

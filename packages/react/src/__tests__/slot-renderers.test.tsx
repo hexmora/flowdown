@@ -1,17 +1,16 @@
 import type { Element } from 'hast';
 
-import { SlotProvider } from '@flowdown/react-presets/base';
+import { SlotProvider } from '@fluxdown/react-presets/base';
 import {
   CodeBlockSlotPlugin,
   HeadingSlotPlugin,
   ImageSlotPlugin,
   LinkSlotPlugin,
   PRESET_SLOT_PLUGINS,
-} from '@flowdown/react-presets/slot';
+} from '@fluxdown/react-presets/slot';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 
 const CodeBlockRenderer = new CodeBlockSlotPlugin().Component;
 const HeadingRenderer = new HeadingSlotPlugin().Component;
@@ -35,7 +34,7 @@ const CodeBlockHarness = ({ loading }: { loading: boolean }) => {
 
 describe('minimal slot renderers', () => {
   test('preserves the starting number of an ordered Markdown list', () => {
-    render(<Flowdown text={'3. Third step\n4. Fourth step'} />);
+    render(<Fluxdown text={'3. Third step\n4. Fourth step'} />);
 
     expect(screen.getByRole('list')).toHaveAttribute('start', '3');
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
@@ -134,7 +133,7 @@ describe('minimal slot renderers', () => {
   test('renders email autolinks without allowing email URLs as image sources', () => {
     render(
       <>
-        <Flowdown text="<hello@example.com>" />
+        <Fluxdown text="<hello@example.com>" />
         <ImageRenderer
           Raw={null}
           alt="Invalid source"

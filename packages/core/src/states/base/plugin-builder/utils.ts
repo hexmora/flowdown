@@ -1,5 +1,5 @@
-import { type IPluggable, type IPluginWithConfig, PluginPriority } from '@flowdown/types';
-import { assert } from '@flowdown/utils';
+import { type IPluggable, type IPluginWithConfig, PluginPriority } from '@fluxdown/types';
+import { assert } from '@fluxdown/utils';
 import {
   every,
   first,

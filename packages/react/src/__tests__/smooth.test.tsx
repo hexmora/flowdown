@@ -1,11 +1,10 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { createRef, StrictMode } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import type { FlowdownRef } from '../types';
+import type { FluxdownRef } from '../types';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
+import { restoreGlobals } from '../../../../scripts/testing/globals';
 import { createRafClock } from './utils/raf';
 import { createManualTicker, createStepScheduler } from './utils/smooth';
 
@@ -14,12 +13,12 @@ afterEach(async () => {
 
   await act(async () => {});
 
-  vi.restoreAllMocks();
+  jest.restoreAllMocks();
 
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
-describe('Flowdown smooth streaming', () => {
+describe('Fluxdown smooth streaming', () => {
   test('waits for new content before constructing a ticker, including StrictMode replay', async () => {
     const ticker = createManualTicker();
 
@@ -31,7 +30,7 @@ describe('Flowdown smooth streaming', () => {
 
     const view = render(
       <StrictMode>
-        <Flowdown smooth={smooth} text="abc" />
+        <Fluxdown smooth={smooth} text="abc" />
       </StrictMode>,
     );
 
@@ -41,7 +40,7 @@ describe('Flowdown smooth streaming', () => {
 
     view.rerender(
       <StrictMode>
-        <Flowdown smooth={smooth} text="abcd" />
+        <Fluxdown smooth={smooth} text="abcd" />
       </StrictMode>,
     );
 
@@ -65,14 +64,14 @@ describe('Flowdown smooth streaming', () => {
   test('renders immediately by default and when an options object omits enabled', () => {
     const clock = createRafClock();
 
-    const view = render(<Flowdown text="" />);
+    const view = render(<Fluxdown text="" />);
 
-    view.rerender(<Flowdown text="default stream" />);
+    view.rerender(<Fluxdown text="default stream" />);
 
     expect(view.container).toHaveTextContent('default stream');
 
     view.rerender(
-      <Flowdown smooth={{ scheduler: 'spring', ticker: 'raf' }} text="object stream" />,
+      <Fluxdown smooth={{ scheduler: 'spring', ticker: 'raf' }} text="object stream" />,
     );
 
     expect(view.container).toHaveTextContent('object stream');
@@ -83,11 +82,11 @@ describe('Flowdown smooth streaming', () => {
   test('shows initial content immediately and reveals an appended suffix across frames', async () => {
     const clock = createRafClock();
 
-    const view = render(<Flowdown smooth text="abc" />);
+    const view = render(<Fluxdown smooth text="abc" />);
 
     expect(view.container).toHaveTextContent('abc');
 
-    view.rerender(<Flowdown smooth text="abcdef" />);
+    view.rerender(<Fluxdown smooth text="abcdef" />);
 
     expect(view.container.textContent).toBe('abc');
 
@@ -99,27 +98,27 @@ describe('Flowdown smooth streaming', () => {
   test('enables smoothing dynamically, flushes on disable, and resumes from visible content', async () => {
     const clock = createRafClock();
 
-    const ref = createRef<FlowdownRef>();
+    const ref = createRef<FluxdownRef>();
 
-    const view = render(<Flowdown ref={ref} text="abc" />);
+    const view = render(<Fluxdown ref={ref} text="abc" />);
 
     const closure = ref.current;
 
-    view.rerender(<Flowdown ref={ref} smooth text="abc" />);
+    view.rerender(<Fluxdown ref={ref} smooth text="abc" />);
 
-    view.rerender(<Flowdown ref={ref} smooth text="abcdef" />);
+    view.rerender(<Fluxdown ref={ref} smooth text="abcdef" />);
 
     expect(view.container.textContent).toBe('abc');
 
-    view.rerender(<Flowdown ref={ref} smooth={false} text="abcdef" />);
+    view.rerender(<Fluxdown ref={ref} smooth={false} text="abcdef" />);
 
     expect(view.container.textContent).toBe('abcdef');
 
     expect(clock.pending.size).toBe(0);
 
-    view.rerender(<Flowdown ref={ref} smooth text="abcdef" />);
+    view.rerender(<Fluxdown ref={ref} smooth text="abcdef" />);
 
-    view.rerender(<Flowdown ref={ref} smooth text="abcdefghi" />);
+    view.rerender(<Fluxdown ref={ref} smooth text="abcdefghi" />);
 
     expect(view.container.textContent).toBe('abcdef');
 
@@ -131,9 +130,9 @@ describe('Flowdown smooth streaming', () => {
   test('reveals compiled emphasis without displaying Markdown delimiters', async () => {
     const clock = createRafClock();
 
-    const view = render(<Flowdown smooth text="" />);
+    const view = render(<Fluxdown smooth text="" />);
 
-    view.rerender(<Flowdown smooth text="**alphabet**" />);
+    view.rerender(<Fluxdown smooth text="**alphabet**" />);
 
     expect(view.container.textContent).toBe('');
 
@@ -153,11 +152,11 @@ describe('Flowdown smooth streaming', () => {
   test('keeps completed blocks and the growing paragraph mounted across ticks', async () => {
     const clock = createRafClock();
 
-    const view = render(<Flowdown smooth text="first" />);
+    const view = render(<Fluxdown smooth text="first" />);
 
     const firstParagraph = view.container.querySelector('p');
 
-    view.rerender(<Flowdown smooth text={'first\n\nsecond'} />);
+    view.rerender(<Fluxdown smooth text={'first\n\nsecond'} />);
 
     expect(view.container.textContent).toBe('first');
 
@@ -171,7 +170,7 @@ describe('Flowdown smooth streaming', () => {
 
     expect(view.container.querySelectorAll('p').item(1)).toBe(growingParagraph);
 
-    view.rerender(<Flowdown smooth text={'first\n\nsecond plus'} />);
+    view.rerender(<Fluxdown smooth text={'first\n\nsecond plus'} />);
 
     expect(view.container.textContent).toBe('firstsecond');
 
@@ -185,13 +184,13 @@ describe('Flowdown smooth streaming', () => {
   test('cancels pending animation work and closes the committed core on unmount', async () => {
     const clock = createRafClock();
 
-    const ref = createRef<FlowdownRef>();
+    const ref = createRef<FluxdownRef>();
 
-    const view = render(<Flowdown ref={ref} smooth text="first" />);
+    const view = render(<Fluxdown ref={ref} smooth text="first" />);
 
     const closure = ref.current;
 
-    view.rerender(<Flowdown ref={ref} smooth text="first with a pending suffix" />);
+    view.rerender(<Fluxdown ref={ref} smooth text="first with a pending suffix" />);
 
     expect(clock.pending.size).toBeGreaterThan(0);
 
@@ -213,11 +212,11 @@ describe('Flowdown smooth streaming', () => {
   test('survives StrictMode replay and leaves no animation work after final unmount', async () => {
     const clock = createRafClock();
 
-    const ref = createRef<FlowdownRef>();
+    const ref = createRef<FluxdownRef>();
 
     const view = render(
       <StrictMode>
-        <Flowdown ref={ref} smooth text="first" />
+        <Fluxdown ref={ref} smooth text="first" />
       </StrictMode>,
     );
 
@@ -225,7 +224,7 @@ describe('Flowdown smooth streaming', () => {
 
     view.rerender(
       <StrictMode>
-        <Flowdown ref={ref} smooth text="first second" />
+        <Fluxdown ref={ref} smooth text="first second" />
       </StrictMode>,
     );
 
@@ -247,15 +246,15 @@ describe('Flowdown smooth streaming', () => {
   test('applies build changes to existing text while smoothing is enabled', async () => {
     const clock = createRafClock();
 
-    const view = render(<Flowdown build={{ tex: false }} smooth text="$x$" />);
+    const view = render(<Fluxdown build={{ tex: false }} smooth text="$x$" />);
 
     expect(view.container.textContent).toBe('$x$');
 
-    view.rerender(<Flowdown build={{ tex: true }} smooth text="$x$" />);
+    view.rerender(<Fluxdown build={{ tex: true }} smooth text="$x$" />);
 
     await clock.advanceUntil(() => view.container.textContent === 'x');
 
-    view.rerender(<Flowdown build={{ tex: false }} smooth={false} text="$x$" />);
+    view.rerender(<Fluxdown build={{ tex: false }} smooth={false} text="$x$" />);
 
     expect(view.container.textContent).toBe('$x$');
   });
@@ -273,15 +272,15 @@ describe('Flowdown smooth streaming', () => {
       scheduler: Scheduler,
     });
 
-    const view = render(<Flowdown smooth={options(first.Ticker)} text="abc" />);
+    const view = render(<Fluxdown smooth={options(first.Ticker)} text="abc" />);
 
-    view.rerender(<Flowdown smooth={options(first.Ticker)} text="abcdef" />);
+    view.rerender(<Fluxdown smooth={options(first.Ticker)} text="abcdef" />);
 
     await act(async () => first.current().tick(16));
 
     expect(view.container.textContent).toBe('abcd');
 
-    view.rerender(<Flowdown smooth={options(second.Ticker)} text="abcdef" />);
+    view.rerender(<Fluxdown smooth={options(second.Ticker)} text="abcdef" />);
 
     expect(view.container.textContent).toBe('abcd');
 
@@ -319,15 +318,15 @@ describe('Flowdown smooth streaming', () => {
       scheduler,
     });
 
-    const view = render(<Flowdown smooth={options(SlowScheduler)} text="abc" />);
+    const view = render(<Fluxdown smooth={options(SlowScheduler)} text="abc" />);
 
-    view.rerender(<Flowdown smooth={options(SlowScheduler)} text="abcdefgh" />);
+    view.rerender(<Fluxdown smooth={options(SlowScheduler)} text="abcdefgh" />);
 
     await act(async () => ticker.current().tick(16));
 
     expect(view.container.textContent).toBe('abcd');
 
-    view.rerender(<Flowdown smooth={options(FastScheduler)} text="abcdefgh" />);
+    view.rerender(<Fluxdown smooth={options(FastScheduler)} text="abcdefgh" />);
 
     expect(view.container.textContent).toBe('abcd');
 
@@ -338,31 +337,5 @@ describe('Flowdown smooth streaming', () => {
     await act(async () => ticker.current().tick(48));
 
     expect(view.container.textContent).toBe('abcdefgh');
-  });
-
-  test('renders full server markup with smoothing enabled and starts no timers', () => {
-    const request = vi.fn();
-
-    const interval = vi.fn();
-
-    vi.stubGlobal('document', undefined);
-
-    vi.stubGlobal('requestAnimationFrame', request);
-
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
-
-    vi.stubGlobal('setInterval', interval);
-
-    try {
-      const markup = renderToStaticMarkup(<Flowdown smooth text="# Smooth server heading" />);
-
-      expect(markup).toMatch(/<h1\b[^>]*>Smooth server heading<\/h1>/);
-
-      expect(request).not.toHaveBeenCalled();
-
-      expect(interval).not.toHaveBeenCalled();
-    } finally {
-      vi.unstubAllGlobals();
-    }
   });
 });

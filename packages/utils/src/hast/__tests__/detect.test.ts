@@ -1,7 +1,5 @@
 import type { Element, Root, Text } from 'hast';
 
-import { describe, expect, test } from 'vitest';
-
 import { isHastElement, isHastLeafElement, isHastParent, isHastText } from '../detect';
 
 describe('hast node detection', () => {

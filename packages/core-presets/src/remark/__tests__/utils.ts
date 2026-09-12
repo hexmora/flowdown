@@ -1,4 +1,4 @@
-import type { IRehypePlugin, IRemarkPlugin } from '@flowdown/types';
+import type { IRehypePlugin, IRemarkPlugin } from '@fluxdown/types';
 import type { Nodes as HastNode, Root as HastRoot } from 'hast';
 import type { Root as MdastRoot, Root, RootContent } from 'mdast';
 

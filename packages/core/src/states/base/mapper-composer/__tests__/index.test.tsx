@@ -1,11 +1,11 @@
 /**
- * @jsxImportSource reactive
+ * @jsxImportSource functive
  */
 
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
-import { PluginPriority } from '@flowdown/types';
-import { reverse, sortBy } from 'lodash-es';
+import { PluginPriority } from '@fluxdown/types';
+import { expectTypeOf } from 'expect-type';
 import {
   BatchScheduler,
   type IReadableClosure,
@@ -17,8 +17,8 @@ import {
   useClearable,
   useCombineMap,
   useMap,
-} from 'reactive';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+} from 'functive';
+import { reverse, sortBy } from 'lodash-es';
 
 import type { MapperInputs, MapperPluggable } from '..';
 import type { HastRoot } from '../../../../typings';
@@ -143,9 +143,9 @@ describe('MapperComposer', () => {
   });
 
   test('keeps the unchanged prefix when appending, replacing, removing, and reordering mappers', () => {
-    const construct = vi.fn();
+    const construct = jest.fn();
 
-    const cleanup = vi.fn();
+    const cleanup = jest.fn();
 
     const createMapper = (key: string) =>
       once(({ source }: MapperInputs) => {
@@ -223,9 +223,9 @@ describe('MapperComposer', () => {
   });
 
   test('keeps equivalent tuple configs and rebuilds the changed suffix', () => {
-    const construct = vi.fn();
+    const construct = jest.fn();
 
-    const cleanup = vi.fn();
+    const cleanup = jest.fn();
 
     const Configured = once(({ source, count }: MapperInputs & { count: number }) => {
       construct(count);
@@ -241,7 +241,7 @@ describe('MapperComposer', () => {
 
     mappers.next([[Configured, { count: 1 }]]);
 
-    expect(construct).toHaveBeenCalledOnce();
+    expect(construct).toHaveBeenCalledTimes(1);
 
     expect(cleanup).not.toHaveBeenCalled();
 
@@ -251,7 +251,7 @@ describe('MapperComposer', () => {
 
     expect(construct.mock.calls).toEqual([[1], [2]]);
 
-    expect(cleanup).toHaveBeenCalledOnce();
+    expect(cleanup).toHaveBeenCalledTimes(1);
 
     destroy();
 
@@ -259,7 +259,7 @@ describe('MapperComposer', () => {
   });
 
   test('updates reactive configuration without rebuilding the mapper', () => {
-    const construct = vi.fn();
+    const construct = jest.fn();
 
     const index = MutableState.of(0);
 
@@ -285,7 +285,7 @@ describe('MapperComposer', () => {
 
     expect(closure.value.value).toEqual([second]);
 
-    expect(construct).toHaveBeenCalledOnce();
+    expect(construct).toHaveBeenCalledTimes(1);
 
     expect(construct).toHaveBeenCalledWith(indexClosure);
 
@@ -303,11 +303,11 @@ describe('MapperComposer', () => {
 
     const options = { count: 1 };
 
-    const select = vi.fn((blocks: IBlockState<HastRoot>[], count: number) =>
+    const select = jest.fn((blocks: IBlockState<HastRoot>[], count: number) =>
       blocks.slice(0, count),
     );
 
-    const construct = vi.fn();
+    const construct = jest.fn();
 
     const Configured = once(
       (
@@ -339,7 +339,7 @@ describe('MapperComposer', () => {
   });
 
   test('releases constructed mappers if a later mapper throws', () => {
-    const cleanup = vi.fn();
+    const cleanup = jest.fn();
 
     const First = once(({ source }: MapperInputs) => {
       useClearable(cleanup);
@@ -357,7 +357,7 @@ describe('MapperComposer', () => {
 
     expect(() => closure.value).toThrow(failure);
 
-    expect(cleanup).toHaveBeenCalledOnce();
+    expect(cleanup).toHaveBeenCalledTimes(1);
 
     expect(observerCount(source)).toBe(0);
 
@@ -373,7 +373,7 @@ describe('MapperComposer', () => {
   test('settles list and source changes in one batched output', () => {
     const { closure, source, mappers, first, second, destroy } = setup([Reverse]);
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     closure.value.subscribe(next);
 
@@ -385,16 +385,17 @@ describe('MapperComposer', () => {
       source.next([second, first]);
     });
 
-    expect(next).toHaveBeenCalledExactlyOnceWith([second]);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith([second]);
 
     destroy();
   });
 
   test('compares closure config values by identity without initializing them', () => {
-    const read = vi.fn();
+    const read = jest.fn();
 
     const source = {
-      destroy: vi.fn(),
+      destroy: jest.fn(),
       get value() {
         read();
 
@@ -403,7 +404,7 @@ describe('MapperComposer', () => {
     };
 
     const other = {
-      destroy: vi.fn(),
+      destroy: jest.fn(),
       get value() {
         return source.value;
       },

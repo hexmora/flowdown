@@ -1,5 +1,5 @@
+import { once, S, useCombineMap, useCreate, useMap } from 'functive';
 import { isEqual } from 'lodash-es';
-import { once, S, useCombineMap, useCreate, useMap } from 'reactive';
 
 import type { BlockRemarksConfig } from '../../type';
 import type { CompiledBlockInputs } from './type';

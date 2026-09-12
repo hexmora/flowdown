@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
-import type { IBasePluginConfig, IRemarkPlugin } from '@flowdown/types';
+import type { IBasePluginConfig, IRemarkPlugin } from '@fluxdown/types';
 import type { Root as MdastRoot } from 'mdast';
 import type { Plugin } from 'unified';
 import type { Node } from 'unist';
 
-import { Destructible } from 'reactive';
+import { Destructible } from 'functive';
 
 export abstract class BaseRemarkPlugin<
   P = void,

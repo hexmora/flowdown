@@ -1,5 +1,6 @@
 import { act } from '@testing-library/react';
-import { expect, vi } from 'vitest';
+
+import { stubGlobal } from '../../../../../scripts/testing/globals';
 
 export const createRafClock = () => {
   const pending = new Map<number, FrameRequestCallback>();
@@ -8,7 +9,7 @@ export const createRafClock = () => {
 
   let timestamp = 0;
 
-  const request = vi.fn((callback: FrameRequestCallback) => {
+  const request = jest.fn((callback: FrameRequestCallback) => {
     const id = ++nextId;
 
     pending.set(id, callback);
@@ -16,15 +17,15 @@ export const createRafClock = () => {
     return id;
   });
 
-  const cancel = vi.fn((id: number) => {
+  const cancel = jest.fn((id: number) => {
     pending.delete(id);
   });
 
-  vi.spyOn(performance, 'now').mockImplementation(() => timestamp);
+  jest.spyOn(performance, 'now').mockImplementation(() => timestamp);
 
-  vi.stubGlobal('requestAnimationFrame', request);
+  stubGlobal('requestAnimationFrame', request);
 
-  vi.stubGlobal('cancelAnimationFrame', cancel);
+  stubGlobal('cancelAnimationFrame', cancel);
 
   const step = async () => {
     timestamp += 16;

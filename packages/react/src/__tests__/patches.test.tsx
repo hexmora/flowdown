@@ -1,11 +1,10 @@
-import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin } from '@fluxdown/types';
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
 import type { IPluginItem } from '../types';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 
 type RemarkPluggable = IPluggable<IRemarkPlugin, unknown>;
 
@@ -21,10 +20,10 @@ const createPatches = (label: string) => [
   },
 ];
 
-describe('Flowdown patches', () => {
+describe('Fluxdown patches', () => {
   test('renders point and replacement patches in source order and passes replaced text', () => {
     const { container } = render(
-      <Flowdown
+      <Fluxdown
         text="Hello world"
         patches={[
           {
@@ -67,14 +66,14 @@ describe('Flowdown patches', () => {
       },
     ];
     const { rerender } = render(
-      <Flowdown text="Hello world" patches={createPatches('first')} plugins={plugins} />,
+      <Fluxdown text="Hello world" patches={createPatches('first')} plugins={plugins} />,
     );
 
     expect(screen.getByTestId('replacement')).toHaveTextContent('first:world');
 
     const initialCompileCount = compileCount;
 
-    rerender(<Flowdown text="Hello world" patches={createPatches('second')} plugins={plugins} />);
+    rerender(<Fluxdown text="Hello world" patches={createPatches('second')} plugins={plugins} />);
 
     await waitFor(() => {
       expect(screen.getByTestId('replacement')).toHaveTextContent('second:world');
@@ -85,7 +84,7 @@ describe('Flowdown patches', () => {
 
   test('renders patches without an explicit key', () => {
     render(
-      <Flowdown
+      <Fluxdown
         text="keyless"
         patches={[
           {
@@ -101,7 +100,7 @@ describe('Flowdown patches', () => {
 
   test('ignores an out-of-range patch without hiding source content', () => {
     render(
-      <Flowdown
+      <Fluxdown
         text="visible"
         patches={[
           {

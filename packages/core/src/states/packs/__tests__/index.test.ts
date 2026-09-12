@@ -1,4 +1,4 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 import type { Element, ElementContent, Parent, RootContent } from 'hast';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
@@ -7,20 +7,20 @@ import {
   BaseRehypePlugin,
   HoistFootnoteRehypePlugin,
   PRESET_REHYPE_PLUGINS,
-} from '@flowdown/core-presets/rehype';
+} from '@fluxdown/core-presets/rehype';
 import {
   ApplyRepairsRemarkPlugin,
   BaseRemarkPlugin,
   PatchesRemarkPlugin,
   PRESET_REMARK_PLUGINS,
   SyntaxMathRemarkPlugin,
-} from '@flowdown/core-presets/remark';
+} from '@fluxdown/core-presets/remark';
 import {
   BaseRepairPlugin,
   DanglingFootnoteRepairPlugin,
   IncompleteImageRepairPlugin,
   PRESET_REPAIR_PLUGINS,
-} from '@flowdown/core-presets/repair';
+} from '@fluxdown/core-presets/repair';
 import {
   type IBasePluginConfig,
   type IPluggable,
@@ -30,8 +30,8 @@ import {
   PluginPriority,
   type RepairPluginRunner,
   type RepairPluginSystemConfig,
-} from '@flowdown/types';
-import { first, last, nth } from 'lodash-es';
+} from '@fluxdown/types';
+import { expectTypeOf } from 'expect-type';
 import {
   D,
   type IReactiveState,
@@ -40,8 +40,8 @@ import {
   ReactiveState,
   render,
   S,
-} from 'reactive';
-import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+} from 'functive';
+import { first, last, nth } from 'lodash-es';
 
 import type { HastRoot } from '../../../typings';
 import type { BlockCompilerConfig } from '../../hast';
@@ -62,7 +62,7 @@ interface AppendRemarkPluginConfig {
 class AppendRemarkPlugin extends BaseRemarkPlugin {
   static readonly key = 'remark-test-append';
 
-  static readonly destroyed = vi.fn();
+  static readonly destroyed = jest.fn();
 
   readonly config: IBasePluginConfig = { priority: PluginPriority.Default };
 
@@ -94,7 +94,7 @@ class AppendRemarkPlugin extends BaseRemarkPlugin {
 class AppendRehypePlugin extends BaseRehypePlugin {
   static readonly key = 'rehype-test-append';
 
-  static readonly destroyed = vi.fn();
+  static readonly destroyed = jest.fn();
 
   config = { priority: PluginPriority.Lowest };
 
@@ -118,7 +118,7 @@ interface EndingMarkerRepairPluginConfig {
 class EndingMarkerRepairPlugin extends BaseRepairPlugin {
   static readonly key = 'repair-test-ending-marker';
 
-  static readonly destroyed = vi.fn();
+  static readonly destroyed = jest.fn();
 
   readonly config: RepairPluginSystemConfig = {
     ending: true,
@@ -170,9 +170,9 @@ interface RenderedBlock extends IBlockState<HastRoot> {
 class TestRenderPlugin extends BaseRenderPlugin<ElementContent, Parent, RenderedBlock> {
   static readonly key = 'render-test';
 
-  static readonly constructed = vi.fn();
+  static readonly constructed = jest.fn();
 
-  static readonly destroyed = vi.fn();
+  static readonly destroyed = jest.fn();
 
   constructor() {
     super();
@@ -376,11 +376,11 @@ describe('Core', () => {
 
     expect(updated).not.toBe(initial);
     expect(plugin).toBeInstanceOf(TestRenderPlugin);
-    expect(TestRenderPlugin.constructed).toHaveBeenCalledOnce();
+    expect(TestRenderPlugin.constructed).toHaveBeenCalledTimes(1);
 
     harness.state.destroy();
 
-    expect(TestRenderPlugin.destroyed).toHaveBeenCalledOnce();
+    expect(TestRenderPlugin.destroyed).toHaveBeenCalledTimes(1);
   });
 
   test('reacts to configured extra pluggables while preserving block identity', () => {
@@ -398,7 +398,7 @@ describe('Core', () => {
 
     expect(configuredBlock).toBe(initialBlock);
     expect(collectText(getBlockTree(configuredBlock))).toBe('base|updated|rehype');
-    expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledOnce();
+    expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(1);
     expect(AppendRehypePlugin.destroyed).not.toHaveBeenCalled();
 
     harness.remarks.next([]);
@@ -409,7 +409,7 @@ describe('Core', () => {
     expect(withoutExtras).toBe(initialBlock);
     expect(collectText(getBlockTree(withoutExtras))).toBe('base');
     expect(AppendRemarkPlugin.destroyed).toHaveBeenCalledTimes(2);
-    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledOnce();
+    expect(AppendRehypePlugin.destroyed).toHaveBeenCalledTimes(1);
   });
 
   test('gates math and dangling-footnote behavior through build options', () => {
@@ -458,7 +458,7 @@ describe('Core', () => {
 
   test('lets framework-managed remark fields override user tuple options', () => {
     const harness = setupCore('abc');
-    const renderPatch = vi.fn(() => first(harness.state.value.value)!);
+    const renderPatch = jest.fn(() => first(harness.state.value.value)!);
 
     harness.remarks.next([
       [
@@ -480,7 +480,7 @@ describe('Core', () => {
     ).toBeUndefined();
     expect(renderedBlock?.renderPatches.value).toEqual([{ key: 'actual', render: renderPatch }]);
 
-    const updatedRenderPatch = vi.fn(() => renderedBlock!);
+    const updatedRenderPatch = jest.fn(() => renderedBlock!);
 
     harness.patches.next([{ key: 'actual', range: [2, 2], render: updatedRenderPatch }]);
 
@@ -571,7 +571,7 @@ describe('Core', () => {
     harness.repairs.next([]);
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base');
-    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
+    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledTimes(1);
 
     harness.repairs.next([
       [EndingMarkerRepairPlugin, { marker: '|configured' }] as unknown as IPluggable<
@@ -581,7 +581,7 @@ describe('Core', () => {
     ]);
 
     expect(collectText(getFirstBlockTree(harness.state))).toBe('base|configured');
-    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
+    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledTimes(1);
   });
 
   test('uses an extra configured tuple for a preset class without appending a duplicate', () => {
@@ -701,7 +701,7 @@ describe('Core', () => {
 
     harness.text.next('first');
 
-    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledOnce();
+    expect(EndingMarkerRepairPlugin.destroyed).toHaveBeenCalledTimes(1);
 
     harness.text.next('');
 
@@ -725,7 +725,7 @@ describe('Core', () => {
     harness.state.destroy();
     harness.state.destroy();
 
-    expect(() => harness.state.value).toThrowError('Cannot set up a destroyed state closure.');
+    expect(() => harness.state.value).toThrow('Cannot set up a destroyed state closure.');
     expect(AppendRemarkPlugin.destroyed).not.toHaveBeenCalled();
     expect(AppendRehypePlugin.destroyed).not.toHaveBeenCalled();
   });

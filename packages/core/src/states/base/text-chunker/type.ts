@@ -1,5 +1,5 @@
-import type { IRawPatchItem } from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+import type { IRawPatchItem } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
 export interface IBlockSection {
   text: string;

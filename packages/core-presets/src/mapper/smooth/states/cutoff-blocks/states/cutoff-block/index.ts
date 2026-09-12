@@ -1,7 +1,7 @@
-import type { IRangeState } from '@flowdown/types';
+import type { IRangeState } from '@fluxdown/types';
 
+import { D, once, useClearable, useCombineMap, useMap } from 'functive';
 import { isEqual } from 'lodash-es';
-import { D, once, useClearable, useCombineMap, useMap } from 'reactive';
 
 import type { CutoffBlockInputs } from './type';
 

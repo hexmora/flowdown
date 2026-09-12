@@ -1,7 +1,6 @@
 import type { Element } from 'hast';
 
 import { render, waitFor } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
 import { TexRenderer } from '../renderer';
 

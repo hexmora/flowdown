@@ -1,4 +1,4 @@
-import type { IDestructible } from 'reactive';
+import type { IDestructible } from 'functive';
 import type { Observable } from 'rxjs';
 
 export interface ITicker extends IDestructible {

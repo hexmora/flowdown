@@ -44,7 +44,7 @@ export const createSlotComposer = () => {
       const ComposedSlot = (props: SlotInputProps) =>
         createElement(Component, { ...props, Raw: Previous });
 
-      ComposedSlot.displayName = `FlowdownSlot(${Component.displayName ?? (Component.name || 'Anonymous')})`;
+      ComposedSlot.displayName = `FluxdownSlot(${Component.displayName ?? (Component.name || 'Anonymous')})`;
 
       if (Previous) {
         const current =

@@ -1,7 +1,7 @@
 {
-  "name": "@flowdown/utils",
-  "version": "0.1.0",
-  "description": "Shared utility helpers for Flowdown packages.",
+  "name": "@fluxdown/utils",
+  "version": "1.0.0",
+  "description": "Shared utility helpers for Fluxdown packages.",
   "keywords": [
     "llm",
     "markdown",
@@ -19,24 +19,42 @@
     "directory": "packages/utils"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "publishConfig": {
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/esm/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/esm/index.d.ts",
+          "default": "./dist/esm/index.js"
+        },
+        "require": {
+          "types": "./dist/cjs/index.d.cts",
+          "default": "./dist/cjs/index.cjs"
+        }
+      }
+    },
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "jest --config ../../jest.config.ts --selectProjects utils --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
     "@types/hast": "catalog:",
@@ -44,12 +62,14 @@
     "lodash-es": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
+    "expect-type": "catalog:",
     "oxlint": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-dts": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

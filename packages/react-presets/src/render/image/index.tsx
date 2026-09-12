@@ -1,4 +1,4 @@
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { isString } from 'lodash-es';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';

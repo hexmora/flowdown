@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Typecheck and lint
+    name: Test, typecheck, lint, and verify publish archives
     runs-on: ubuntu-latest
 
     steps:
@@ -25,17 +25,29 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@v1
+        uses: pnpm/setup@v2
         with:
-          runtime: node@22
+          runtime: node@24.14.1
           cache: true
           install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck workspace
-        run: pnpm typecheck
+      - name: Check workspace
+        run: pnpm check
 
-      - name: Lint workspace
-        run: pnpm lint
+      - name: Build and verify publish dry run
+        run: pnpm publish:dry-run
+
+      - name: Save verified packages and content manifests
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-dry-run-${{ github.sha }}
+          path: |
+            .release/**/tarballs/*.tgz
+            .release/**/manifest.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

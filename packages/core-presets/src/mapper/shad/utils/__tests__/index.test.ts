@@ -1,7 +1,6 @@
 import type { Element, ElementContent, Properties, Root, RootContent, Text } from 'hast';
 
-import { getLengthOfHast } from '@flowdown/utils';
-import { describe, expect, test } from 'vitest';
+import { getLengthOfHast } from '@fluxdown/utils';
 
 import { createShadRoot, SHAD_DATA_ATTR, SHAD_HOST_VALUE, SHAD_TAG_NAME } from '../index';
 

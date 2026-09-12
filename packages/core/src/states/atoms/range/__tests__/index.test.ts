@@ -1,12 +1,11 @@
-import { render } from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+import { render } from 'functive';
 
 import { Range } from '../index';
 
 describe('Range', () => {
   test('starts at null and remains writable through its range API', () => {
     const range = render(Range);
-    const next = vi.fn();
+    const next = jest.fn();
 
     range.value.subscribe(next);
 

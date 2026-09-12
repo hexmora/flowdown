@@ -1,7 +1,5 @@
 import type { Element, Text } from 'hast';
 
-import { describe, expect, test } from 'vitest';
-
 import type { SlotType } from '../base';
 
 import { PRESET_RENDER_PLUGINS } from '../render';

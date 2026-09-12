@@ -1,6 +1,6 @@
-import type { IBlockState, IRangeState } from '@flowdown/types';
+import type { IBlockState, IRangeState } from '@fluxdown/types';
 
-import { Shad } from '@flowdown/core-presets/mapper';
+import { Shad } from '@fluxdown/core-presets/mapper';
 import {
   type IReactiveState,
   type IReadableClosure,
@@ -10,8 +10,7 @@ import {
   render,
   S,
   useMap,
-} from 'reactive';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+} from 'functive';
 
 import type { HastRoot } from '../../typings';
 
@@ -48,7 +47,7 @@ const Uppercase = once(function Uppercase({ source }: { source: IReadableClosure
 });
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  jest.useFakeTimers();
 
   resetSmoothTests();
 });
@@ -58,7 +57,7 @@ afterEach(() => {
 
   cleanups.clear();
 
-  vi.useRealTimers();
+  jest.useRealTimers();
 });
 
 describe('Shad forks', () => {
@@ -81,9 +80,9 @@ describe('Shad forks', () => {
 
     cleanups.add(() => downstream.destroy());
 
-    const destroyMain = vi.spyOn(main, 'destroy');
+    const destroyMain = jest.spyOn(main, 'destroy');
 
-    const destroySource = vi.spyOn(source.block, 'destroy');
+    const destroySource = jest.spyOn(source.block, 'destroy');
 
     expect(collectText(downstream.value.value)).toBe('bc');
 
@@ -145,7 +144,7 @@ describe('Shad forks', () => {
 
     expect(source.source.closed).toBe(false);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   test('expands a downstream range beyond the partially revealed Smooth source', () => {
@@ -258,6 +257,6 @@ describe('Shad forks', () => {
 
     expect(observerCount(source.source)).toBe(0);
 
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });

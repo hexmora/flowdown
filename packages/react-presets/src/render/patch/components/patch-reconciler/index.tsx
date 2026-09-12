@@ -1,4 +1,4 @@
-import type { IRenderPatchItem } from '@flowdown/core';
+import type { IRenderPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
 import { memo, useCallback } from 'react';

@@ -1,7 +1,5 @@
 import type { Code, Heading, Paragraph } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxPolicyRemarkPlugin } from '..';
 import { parseMarkdown } from './utils';
 
@@ -29,12 +27,18 @@ describe('SyntaxPolicyRemarkPlugin', () => {
       new SyntaxPolicyRemarkPlugin({ setextHeading: true }),
     ]);
 
-    expect(indented.children[0]).toMatchObject<Partial<Code>>({
+    expect(indented.children[0]).toMatchObject({
       type: 'code',
       value: 'alpha',
-    });
-    expect(equals.children[0]).toMatchObject<Partial<Heading>>({ type: 'heading', depth: 1 });
-    expect(dashes.children[0]).toMatchObject<Partial<Heading>>({ type: 'heading', depth: 2 });
+    } satisfies Partial<Code>);
+    expect(equals.children[0]).toMatchObject({
+      type: 'heading',
+      depth: 1,
+    } satisfies Partial<Heading>);
+    expect(dashes.children[0]).toMatchObject({
+      type: 'heading',
+      depth: 2,
+    } satisfies Partial<Heading>);
   });
 
   test('does not affect fenced code or ATX headings', () => {

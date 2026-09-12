@@ -1,4 +1,4 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 
 import { keys, last } from 'lodash-es';
 import { Marked, type Token } from 'marked';
@@ -19,7 +19,7 @@ export const buildBlockSections = ([currentTexts, currentPatches]: [
   }));
 };
 
-const DISPLAY_MATH_TOKEN = 'flowdown_display_math';
+const DISPLAY_MATH_TOKEN = 'fluxdown_display_math';
 
 // oxlint-disable-next-line unicorn/prefer-set-has -- Fixed lookup tables use arrays by convention.
 const TABLE_INTERRUPT_TOKENS = [

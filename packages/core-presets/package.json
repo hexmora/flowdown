@@ -1,7 +1,7 @@
 {
-  "name": "@flowdown/core-presets",
-  "version": "0.1.0",
-  "description": "Headless preset mapper, remark, rehype, and repair plugins for Flowdown.",
+  "name": "@fluxdown/core-presets",
+  "version": "1.0.0",
+  "description": "Headless preset mapper, remark, rehype, and repair plugins for Fluxdown.",
   "keywords": [
     "headless",
     "markdown",
@@ -21,7 +21,9 @@
     "directory": "packages/core-presets"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
@@ -34,40 +36,62 @@
   "publishConfig": {
     "exports": {
       "./mapper": {
-        "types": "./dist/mapper/index.d.ts",
-        "import": "./dist/mapper.js",
-        "require": "./dist/mapper.cjs"
+        "import": {
+          "types": "./dist/esm/mapper/index.d.ts",
+          "default": "./dist/esm/mapper.js"
+        },
+        "require": {
+          "types": "./dist/cjs/mapper/index.d.cts",
+          "default": "./dist/cjs/mapper.cjs"
+        }
       },
       "./rehype": {
-        "types": "./dist/rehype/index.d.ts",
-        "import": "./dist/rehype.js",
-        "require": "./dist/rehype.cjs"
+        "import": {
+          "types": "./dist/esm/rehype/index.d.ts",
+          "default": "./dist/esm/rehype.js"
+        },
+        "require": {
+          "types": "./dist/cjs/rehype/index.d.cts",
+          "default": "./dist/cjs/rehype.cjs"
+        }
       },
       "./remark": {
-        "types": "./dist/remark/index.d.ts",
-        "import": "./dist/remark.js",
-        "require": "./dist/remark.cjs"
+        "import": {
+          "types": "./dist/esm/remark/index.d.ts",
+          "default": "./dist/esm/remark.js"
+        },
+        "require": {
+          "types": "./dist/cjs/remark/index.d.cts",
+          "default": "./dist/cjs/remark.cjs"
+        }
       },
       "./repair": {
-        "types": "./dist/repair/index.d.ts",
-        "import": "./dist/repair.js",
-        "require": "./dist/repair.cjs"
+        "import": {
+          "types": "./dist/esm/repair/index.d.ts",
+          "default": "./dist/esm/repair.js"
+        },
+        "require": {
+          "types": "./dist/cjs/repair/index.d.cts",
+          "default": "./dist/cjs/repair.cjs"
+        }
       }
     },
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "jest --config ../../jest.config.ts --selectProjects core-presets --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
-    "@flowdown/types": "workspace:*",
-    "@flowdown/utils": "workspace:*",
+    "@fluxdown/types": "workspace:*",
+    "@fluxdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
     "@types/unist": "catalog:",
+    "functive": "workspace:*",
     "hast-util-sanitize": "catalog:",
     "lodash-es": "catalog:",
     "mdast-util-from-markdown": "catalog:",
@@ -86,7 +110,6 @@
     "micromark-extension-math": "catalog:",
     "micromark-util-character": "catalog:",
     "micromark-util-types": "catalog:",
-    "reactive": "workspace:*",
     "rehype-raw": "catalog:",
     "rehype-sanitize": "catalog:",
     "remark-breaks": "catalog:",
@@ -95,14 +118,16 @@
     "unified": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
+    "expect-type": "catalog:",
     "oxlint": "catalog:",
     "remark-parse": "catalog:",
     "remark-rehype": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-dts": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

@@ -1,9 +1,8 @@
-import type { IRemarkPlugin } from '@flowdown/types';
+import type { IRemarkPlugin } from '@fluxdown/types';
 
 import { last } from 'lodash-es';
 import remarkParse from 'remark-parse';
 import { type Data, unified } from 'unified';
-import { describe, expect, test } from 'vitest';
 
 import {
   SyntaxAutolinkRemarkPlugin,

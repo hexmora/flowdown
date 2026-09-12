@@ -1,4 +1,4 @@
-import type { IRepairPlugin, PluginClass } from '@flowdown/types';
+import type { IRepairPlugin, PluginClass } from '@fluxdown/types';
 
 import { AdjacentTextRepairPlugin } from './adjacent-text';
 import { DanglingFootnoteRepairPlugin } from './dangling-footnote';

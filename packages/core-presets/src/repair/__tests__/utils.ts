@@ -1,4 +1,4 @@
-import type { IRepairPlugin } from '@flowdown/types';
+import type { IRepairPlugin } from '@fluxdown/types';
 import type { Paragraph, Parent, PhrasingContent, Root, RootContent } from 'mdast';
 
 import { cloneDeep, isArray } from 'lodash-es';

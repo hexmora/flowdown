@@ -1,4 +1,4 @@
-import type { IRemarkPlugin, PluginClass } from '@flowdown/types';
+import type { IRemarkPlugin, PluginClass } from '@fluxdown/types';
 
 import { ApplyRepairsRemarkPlugin } from './apply-repairs';
 import { CodeMetaRemarkPlugin } from './code-meta';

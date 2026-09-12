@@ -1,4 +1,4 @@
-import type { IPluggable, IPluginWithConfig, PluginClass } from '@flowdown/types';
+import type { IPluggable, IPluginWithConfig, PluginClass } from '@fluxdown/types';
 
 import { isArray, isObjectLike } from 'lodash-es';
 

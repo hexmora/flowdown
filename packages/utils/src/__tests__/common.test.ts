@@ -1,4 +1,4 @@
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
 import { cacheDiffMap, enumerate } from '../common';
 
@@ -23,7 +23,7 @@ describe('enumerate', () => {
 
 describe('cacheDiffMap', () => {
   test('maps every current value when there are no previous entries', () => {
-    const mapper = vi.fn((source: string) => `new:${source}`);
+    const mapper = jest.fn((source: string) => `new:${source}`);
 
     const result = cacheDiffMap({
       prev: [],
@@ -36,8 +36,8 @@ describe('cacheDiffMap', () => {
   });
 
   test('reuses, creates, removes, and orders mapped values', () => {
-    const mapper = vi.fn((source: string) => `new:${source}`);
-    const teardown = vi.fn();
+    const mapper = jest.fn((source: string) => `new:${source}`);
+    const teardown = jest.fn();
 
     const result = cacheDiffMap({
       prev: [
@@ -51,14 +51,14 @@ describe('cacheDiffMap', () => {
     });
 
     expect(result).toEqual(['old:first', 'new:added', 'old:second']);
-    expect(mapper).toHaveBeenCalledOnce();
+    expect(mapper).toHaveBeenCalledTimes(1);
     expect(mapper).toHaveBeenCalledWith('added');
-    expect(teardown).toHaveBeenCalledOnce();
+    expect(teardown).toHaveBeenCalledTimes(1);
     expect(teardown).toHaveBeenCalledWith('old:removed', 'removed');
   });
 
   test('accepts a Map as the previous value', () => {
-    const mapper = vi.fn((source: string) => source.toUpperCase());
+    const mapper = jest.fn((source: string) => source.toUpperCase());
 
     const result = cacheDiffMap({
       prev: new Map([
@@ -70,15 +70,15 @@ describe('cacheDiffMap', () => {
     });
 
     expect(result).toEqual(['existing:first', 'ADDED', 'existing:second']);
-    expect(mapper).toHaveBeenCalledOnce();
+    expect(mapper).toHaveBeenCalledTimes(1);
     expect(mapper).toHaveBeenCalledWith('added');
   });
 
   test('uses Object.is by default', () => {
     const nanValue = { source: 'nan' };
     const positiveZeroValue = { source: 'positive-zero' };
-    const mapper = vi.fn((source: number) => ({ source }));
-    const teardown = vi.fn();
+    const mapper = jest.fn((source: number): { source: number | string } => ({ source }));
+    const teardown = jest.fn();
 
     const result = cacheDiffMap({
       prev: [
@@ -92,9 +92,9 @@ describe('cacheDiffMap', () => {
 
     expect(result[0]).toBe(nanValue);
     expect(Object.is(result[1]?.source, -0)).toBe(true);
-    expect(mapper).toHaveBeenCalledOnce();
+    expect(mapper).toHaveBeenCalledTimes(1);
     expect(Object.is(mapper.mock.calls[0]?.[0], -0)).toBe(true);
-    expect(teardown).toHaveBeenCalledOnce();
+    expect(teardown).toHaveBeenCalledTimes(1);
     expect(teardown).toHaveBeenCalledWith(positiveZeroValue, 0);
   });
 
@@ -108,9 +108,9 @@ describe('cacheDiffMap', () => {
     const removedSource: Source = { id: 3, label: 'old-removed' };
     const currentKeptSource: Source = { id: 1, label: 'new-kept' };
     const addedSource: Source = { id: 2, label: 'new-added' };
-    const mapper = vi.fn((source: Source) => `new:${source.label}`);
-    const teardown = vi.fn();
-    const comparer = vi.fn((left: Source, right: Source) => left.id === right.id);
+    const mapper = jest.fn((source: Source) => `new:${source.label}`);
+    const teardown = jest.fn();
+    const comparer = jest.fn((left: Source, right: Source) => left.id === right.id);
 
     const result = cacheDiffMap({
       prev: [
@@ -124,16 +124,16 @@ describe('cacheDiffMap', () => {
     });
 
     expect(result).toEqual(['existing:kept', 'new:new-added']);
-    expect(mapper).toHaveBeenCalledOnce();
+    expect(mapper).toHaveBeenCalledTimes(1);
     expect(mapper).toHaveBeenCalledWith(addedSource);
-    expect(teardown).toHaveBeenCalledOnce();
+    expect(teardown).toHaveBeenCalledTimes(1);
     expect(teardown).toHaveBeenCalledWith('existing:removed', removedSource);
     expect(comparer).toHaveBeenCalled();
   });
 
   test('matches duplicate values one-to-one', () => {
-    const mapper = vi.fn((source: string) => `new:${source}`);
-    const teardown = vi.fn();
+    const mapper = jest.fn((source: string) => `new:${source}`);
+    const teardown = jest.fn();
 
     const result = cacheDiffMap({
       prev: [
@@ -147,15 +147,15 @@ describe('cacheDiffMap', () => {
     });
 
     expect(result).toEqual(['existing:first', 'existing:second', 'new:same']);
-    expect(mapper).toHaveBeenCalledOnce();
+    expect(mapper).toHaveBeenCalledTimes(1);
     expect(mapper).toHaveBeenCalledWith('same');
-    expect(teardown).toHaveBeenCalledOnce();
+    expect(teardown).toHaveBeenCalledTimes(1);
     expect(teardown).toHaveBeenCalledWith('existing:removed', 'removed');
   });
 
   test('tears down every previous value when current is empty', () => {
-    const mapper = vi.fn((source: string) => source);
-    const teardown = vi.fn();
+    const mapper = jest.fn((source: string) => source);
+    const teardown = jest.fn();
 
     const result = cacheDiffMap({
       prev: [
@@ -177,7 +177,7 @@ describe('cacheDiffMap', () => {
 
   test('releases newly mapped values when a later mapper fails and preserves previous entries', () => {
     const failure = new Error('Mapping failed.');
-    const teardown = vi.fn();
+    const teardown = jest.fn();
     const prev: [string, string][] = [
       ['kept', 'existing:kept'],
       ['removed', 'existing:removed'],
@@ -210,7 +210,7 @@ describe('cacheDiffMap', () => {
 
   test('releases newly mapped values when a later comparison fails', () => {
     const failure = new Error('Comparison failed.');
-    const teardown = vi.fn();
+    const teardown = jest.fn();
 
     expect(() =>
       cacheDiffMap({
@@ -234,7 +234,7 @@ describe('cacheDiffMap', () => {
   test('attempts every rollback cleanup and retains the original failure when cleanup also fails', () => {
     const failure = new Error('Mapping failed.');
     const cleanupFailure = new Error('Cleanup failed.');
-    const teardown = vi.fn((_value: string, source: string) => {
+    const teardown = jest.fn((_value: string, source: string) => {
       if (source === 'second') {
         throw cleanupFailure;
       }
@@ -269,7 +269,7 @@ describe('cacheDiffMap', () => {
 
   test('releases newly mapped values if retiring an old value fails before the result can be returned', () => {
     const failure = new Error('Retirement failed.');
-    const teardown = vi.fn((_value: string, source: string) => {
+    const teardown = jest.fn((_value: string, source: string) => {
       if (source === 'removed') {
         throw failure;
       }

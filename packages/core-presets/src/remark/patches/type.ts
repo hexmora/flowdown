@@ -1,4 +1,4 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 import type { Parent, RootContent, Text } from 'mdast';
 
 import type { ParserPatch } from '../../typings';

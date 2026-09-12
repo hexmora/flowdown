@@ -1,14 +1,14 @@
-import type { IPatchItem } from '@flowdown/core';
+import type { IPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
-import type { FlowdownConfig } from '../../../src/types';
+import type { FluxdownConfig } from '../../../src/types';
 
 export interface TrackedPreviewProps {
   actions?: ReactNode;
 
   ariaLabel: string;
 
-  config: FlowdownConfig;
+  config: FluxdownConfig;
 
   patches?: IPatchItem<ReactNode>[];
 

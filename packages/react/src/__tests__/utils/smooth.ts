@@ -1,4 +1,4 @@
-import { BaseSmoothScheduler, BaseSmoothTicker } from '@flowdown/core-presets/mapper';
+import { BaseSmoothScheduler, BaseSmoothTicker } from '@fluxdown/core-presets/mapper';
 import { last } from 'lodash-es';
 
 export const createManualTicker = () => {

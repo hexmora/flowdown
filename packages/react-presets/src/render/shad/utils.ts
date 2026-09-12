@@ -1,6 +1,6 @@
 import type { Element, ElementContent } from 'hast';
 
-import { SHAD_DATA_ATTR, SHAD_HOST_VALUE, SHAD_TAG_NAME } from '@flowdown/core-presets/mapper';
+import { SHAD_DATA_ATTR, SHAD_HOST_VALUE, SHAD_TAG_NAME } from '@fluxdown/core-presets/mapper';
 
 import { isElementWithTag } from '../../base';
 

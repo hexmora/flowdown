@@ -1,4 +1,4 @@
-import type { IPluggable, IRepairPlugin } from '@flowdown/types';
+import type { IPluggable, IRepairPlugin } from '@fluxdown/types';
 
 import type { BlockCompilerConfig } from '../../../hast';
 

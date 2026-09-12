@@ -1,7 +1,7 @@
 {
-  "name": "flowdown",
-  "version": "0.1.0",
-  "description": "React wrapper around @flowdown/core for high-performance rendering of streaming Markdown text.",
+  "name": "fluxdown",
+  "version": "1.0.0",
+  "description": "React wrapper around @fluxdown/core for high-performance rendering of streaming Markdown text.",
   "keywords": [
     "hast",
     "llm",
@@ -21,45 +21,72 @@
     "directory": "packages/react"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": [
     "**/*.css",
     "**/*.less",
-    "**/*.scss"
+    "**/*.scss",
+    "./dist/esm/*.browser.js",
+    "./dist/cjs/*.browser.cjs"
   ],
   "main": "./src/index.tsx",
   "module": "./src/index.tsx",
   "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./styles.css": "./dist/esm/styles.css"
+  },
   "publishConfig": {
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.browser.js",
+    "types": "./dist/esm/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/esm/index.d.ts",
+          "browser": "./dist/esm/index.browser.js",
+          "node": "./dist/esm/index.js",
+          "default": "./dist/esm/index.browser.js"
+        },
+        "require": {
+          "types": "./dist/cjs/index.d.cts",
+          "browser": "./dist/cjs/index.browser.cjs",
+          "node": "./dist/cjs/index.cjs",
+          "default": "./dist/cjs/index.browser.cjs"
+        }
+      },
+      "./styles.css": "./dist/esm/styles.css"
+    },
     "access": "public"
   },
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
     "storybook": "storybook dev -p 6006",
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "build:storybook": "storybook build",
     "lint": "oxlint .",
-    "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit"
+    "test": "jest --config ../../jest.config.ts --selectProjects react --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
-    "@flowdown/core": "workspace:*",
-    "@flowdown/core-presets": "workspace:*",
-    "@flowdown/react-presets": "workspace:*",
-    "@flowdown/types": "workspace:*",
-    "@flowdown/utils": "workspace:*",
+    "@fluxdown/core": "workspace:*",
+    "@fluxdown/core-presets": "workspace:*",
+    "@fluxdown/react-presets": "workspace:*",
+    "@fluxdown/types": "workspace:*",
+    "@fluxdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "classnames": "catalog:",
+    "functive": "workspace:*",
     "lodash-es": "catalog:",
-    "reactive": "workspace:*",
     "shallow-equal": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/react-vite": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -68,25 +95,23 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
-    "jsdom": "catalog:",
+    "expect-type": "catalog:",
     "less": "catalog:",
     "oxlint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-use": "catalog:",
     "sass": "catalog:",
-    "snapshot-diff": "catalog:",
     "storybook": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-dts": "catalog:",
-    "vite-plugin-lib-inject-css": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
+    "vite-plugin-svgr": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

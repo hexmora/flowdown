@@ -1,7 +1,7 @@
-import { isPluggablesEqual, PluginBuilder } from '@flowdown/core';
+import { isPluggablesEqual, PluginBuilder } from '@fluxdown/core';
+import { render, S } from 'functive';
 import { set } from 'lodash-es';
 import { useMemo } from 'react';
-import { render, S } from 'reactive';
 
 import type { AnySlotPluggable, AnySlotPlugin, Slots } from './type';
 

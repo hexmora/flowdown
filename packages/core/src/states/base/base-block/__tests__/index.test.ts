@@ -1,4 +1,4 @@
-import type { BaseBlockItemInputs, IBlockMeta, IRangeState } from '@flowdown/types';
+import type { BaseBlockItemInputs, IBlockMeta, IRangeState } from '@fluxdown/types';
 
 import {
   D,
@@ -11,8 +11,7 @@ import {
   type StateClosureInputProps,
   useClearable,
   useMap,
-} from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+} from 'functive';
 
 import { BaseBlockItem } from '../index';
 
@@ -95,11 +94,11 @@ describe('BaseBlockItem', () => {
     const source = MutableState.of('value');
     const meta = createMeta();
     const block = renderTextBlock({ source, meta });
-    const rangeDestroy = vi.spyOn(block.range as ReactiveState<IRangeState | null>, 'destroy');
+    const rangeDestroy = jest.spyOn(block.range as ReactiveState<IRangeState | null>, 'destroy');
 
     block.destroy();
 
-    expect(rangeDestroy).toHaveBeenCalledOnce();
+    expect(rangeDestroy).toHaveBeenCalledTimes(1);
     expect(source.closed).toBe(false);
     expect(meta.closed).toBe(false);
   });
@@ -120,7 +119,7 @@ describe('BaseBlockItem', () => {
   });
 
   test('owns mapper-returned closures independently for each block and fork', () => {
-    const destroyed = vi.fn();
+    const destroyed = jest.fn();
 
     const Uppercase = once(function Uppercase({ source }: { source: IReadableClosure<string> }) {
       useClearable(destroyed);
@@ -150,7 +149,7 @@ describe('BaseBlockItem', () => {
 
     block.destroy();
 
-    expect(destroyed).toHaveBeenCalledOnce();
+    expect(destroyed).toHaveBeenCalledTimes(1);
 
     source.next('changed');
 

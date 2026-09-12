@@ -1,4 +1,4 @@
-import { describe, expectTypeOf, test } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
 import type {
   AdjacentTextRepairPlugin,

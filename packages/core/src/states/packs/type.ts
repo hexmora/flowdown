@@ -1,9 +1,9 @@
-import type { ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
+import type { ShadConfig, SmoothConfig } from '@fluxdown/core-presets/mapper';
 import type {
   ApplyRepairsRemarkPlugin,
   PatchesRemarkPlugin,
   SyntaxMathRemarkPlugin,
-} from '@flowdown/core-presets/remark';
+} from '@fluxdown/core-presets/remark';
 import type {
   IBasePluginConfig,
   IPluggable,
@@ -12,9 +12,9 @@ import type {
   IRehypePlugin,
   IRemarkPlugin,
   IRepairPlugin,
-} from '@flowdown/types';
+} from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 import type { ElementContent, Parent } from 'hast';
-import type { IReadableClosure } from 'reactive';
 
 import type { IRenderPatchRender, IRenderPlugin, RendererClass } from '../../externals';
 import type { HastRoot } from '../../typings';

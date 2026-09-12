@@ -39,7 +39,7 @@ export const Playground = ({ actions, patches, ...props }: PlaygroundProps) => {
     <main className="playground-shell">
       <header className="playground-header">
         <div>
-          <p className="playground-eyebrow">Flowdown workshop</p>
+          <p className="playground-eyebrow">Fluxdown workshop</p>
           <h1>Markdown Playground</h1>
         </div>
 

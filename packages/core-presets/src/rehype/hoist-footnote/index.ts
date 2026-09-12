@@ -1,8 +1,8 @@
 import type { Root as HastRoot } from 'hast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
-import { isHastElement } from '@flowdown/utils';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
+import { isHastElement } from '@fluxdown/utils';
 import { has, last } from 'lodash-es';
 
 import { BaseRehypePlugin } from '../base';

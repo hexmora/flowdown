@@ -1,7 +1,6 @@
 import type { Element, ElementContent, Properties, Root, RootContent, Text } from 'hast';
 
 import { clamp, floor, last, min, toArray, values } from 'lodash-es';
-import { describe, expect, test, vi } from 'vitest';
 
 import { getLengthOfHast, sliceHast } from '../index';
 
@@ -19,7 +18,7 @@ const preservedWhitespace = (value: string): Text => ({
   type: 'text',
   value,
   data: {
-    flowdownPreservedWhitespace: true,
+    fluxdownPreservedWhitespace: true,
   },
 });
 
@@ -68,7 +67,7 @@ const isLayoutWhitespace = (node: Text) => {
   const data = node.data as Record<string, unknown> | undefined;
 
   return (
-    data?.flowdownPreservedWhitespace !== true &&
+    data?.fluxdownPreservedWhitespace !== true &&
     node.value.trim().length === 0 &&
     /[\r\n]/.test(node.value)
   );
@@ -233,7 +232,7 @@ describe('sliceHast', () => {
 
     try {
       intl.Segmenter = undefined;
-      vi.resetModules();
+      jest.resetModules();
 
       const { sliceHast: sliceWithoutSegmenter } = await import('../slice');
       const output = sliceWithoutSegmenter(root([text('A👨‍👩‍👧‍👦B')]), 1, 2);
@@ -241,7 +240,7 @@ describe('sliceHast', () => {
       expect(output).toEqual(root([text('👨')]));
     } finally {
       intl.Segmenter = originalSegmenter;
-      vi.resetModules();
+      jest.resetModules();
     }
   });
 

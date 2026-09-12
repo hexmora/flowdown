@@ -1,8 +1,8 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
-import { isMdastParent, processMdast } from '@flowdown/utils';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
+import { isMdastParent, processMdast } from '@fluxdown/utils';
 import { cloneDeep } from 'lodash-es';
 
 import type { SyntaxHtmlAllowedRemarkPluginConfig } from './type';

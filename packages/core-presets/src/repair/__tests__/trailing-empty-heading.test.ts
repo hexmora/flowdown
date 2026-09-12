@@ -1,7 +1,6 @@
 import type { PhrasingContent } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
-import { describe, expect, test } from 'vitest';
+import { PluginPriority } from '@fluxdown/types';
 
 import { TrailingEmptyHeadingRepairPlugin } from '..';
 import { paragraph, root, runRepairs } from './utils';

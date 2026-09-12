@@ -1,5 +1,4 @@
-import { BatchScheduler } from 'reactive';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { BatchScheduler } from 'functive';
 
 import { StepSmoothScheduler } from '../utils/smooth';
 import {
@@ -49,7 +48,7 @@ describe('Smooth ownership', () => {
         harness.scheduler.next(FailingScheduler);
       }
 
-      const error = vi.fn();
+      const error = jest.fn();
 
       harness.state.value.subscribe({ error });
 
@@ -58,7 +57,8 @@ describe('Smooth ownership', () => {
       } else {
         block.source.next(paragraph('ready to stream'));
 
-        expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+        expect(error).toHaveBeenCalledTimes(1);
+        expect(error).toHaveBeenCalledWith(failure);
 
         expect(PrimarySmoothTicker.instances.every((ticker) => !ticker.running)).toBe(true);
       }
@@ -80,7 +80,7 @@ describe('Smooth ownership', () => {
 
     const output = harness.state.value;
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     output.subscribe({ complete });
 
@@ -124,7 +124,7 @@ describe('Smooth ownership', () => {
 
     expect(output.closed).toBe(true);
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
     expect(ticker.running).toBe(false);
 
@@ -143,7 +143,7 @@ describe('Smooth ownership', () => {
 
     const output = harness.state.value;
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     output.subscribe({ complete });
 
@@ -189,7 +189,7 @@ describe('Smooth ownership', () => {
 
     expect(output.closed).toBe(true);
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
     expect(ticker.running).toBe(false);
 
@@ -209,9 +209,9 @@ describe('Smooth ownership', () => {
 
       const output = harness.state.value;
 
-      const next = vi.fn();
+      const next = jest.fn();
 
-      const complete = vi.fn();
+      const complete = jest.fn();
 
       output.subscribe({ next, complete });
 
@@ -231,9 +231,9 @@ describe('Smooth ownership', () => {
 
       expect(output.closed).toBe(true);
 
-      expect(next).toHaveBeenCalledOnce();
+      expect(next).toHaveBeenCalledTimes(1);
 
-      expect(complete).toHaveBeenCalledOnce();
+      expect(complete).toHaveBeenCalledTimes(1);
 
       expect(PrimarySmoothTicker.instances).toHaveLength(0);
 
@@ -252,13 +252,13 @@ describe('Smooth ownership', () => {
 
     const fork = firstBlock(harness.state.value.value);
 
-    const destroyFork = vi.spyOn(fork, 'destroy');
+    const destroyFork = jest.spyOn(fork, 'destroy');
 
     const meta = fork.meta;
 
     const range = fork.range;
 
-    const destroySource = vi.spyOn(block.block, 'destroy');
+    const destroySource = jest.spyOn(block.block, 'destroy');
 
     expect(observerCount(block.block.baseLength)).toBeGreaterThan(0);
 
@@ -266,7 +266,7 @@ describe('Smooth ownership', () => {
 
     expect(harness.state.value.value).toEqual([]);
 
-    expect(destroyFork).toHaveBeenCalledOnce();
+    expect(destroyFork).toHaveBeenCalledTimes(1);
 
     expect(meta.closed).toBe(true);
 
@@ -300,13 +300,13 @@ describe('Smooth ownership', () => {
 
     const fork = firstBlock(harness.state.value.value);
 
-    const destroyFork = vi.spyOn(fork, 'destroy');
+    const destroyFork = jest.spyOn(fork, 'destroy');
 
     const meta = fork.meta;
 
     const range = fork.range;
 
-    const destroySource = vi.spyOn(block.block, 'destroy');
+    const destroySource = jest.spyOn(block.block, 'destroy');
 
     block.source.next(paragraph('value grows'));
 
@@ -332,7 +332,7 @@ describe('Smooth ownership', () => {
 
     expect(ticker.running).toBe(false);
 
-    expect(destroyFork).toHaveBeenCalledOnce();
+    expect(destroyFork).toHaveBeenCalledTimes(1);
 
     expect(meta.closed).toBe(true);
 
@@ -350,7 +350,7 @@ describe('Smooth ownership', () => {
 
     const harness = setupSmooth([block.block]);
 
-    const destroySource = vi.spyOn(block.block, 'destroy');
+    const destroySource = jest.spyOn(block.block, 'destroy');
 
     expect(
       [harness.source, harness.enabled, harness.ticker, harness.scheduler].map(observerCount),
@@ -374,7 +374,7 @@ describe('Smooth ownership', () => {
 
     const harness = setupSmooth([block.block]);
 
-    const error = vi.fn();
+    const error = jest.fn();
 
     const subscription = harness.state.value.subscribe({ error });
 
@@ -386,7 +386,8 @@ describe('Smooth ownership', () => {
 
     harness.source.error(failure);
 
-    expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(failure);
 
     expect(subscription.closed).toBe(true);
 

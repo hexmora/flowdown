@@ -1,3 +1,3 @@
-# @flowdown/utils
+# @fluxdown/utils
 
-Shared utility helpers for Flowdown packages.
+Shared utility helpers for Fluxdown packages.

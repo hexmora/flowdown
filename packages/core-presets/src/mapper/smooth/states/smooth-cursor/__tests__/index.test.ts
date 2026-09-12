@@ -1,5 +1,6 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
+import { expectTypeOf } from 'expect-type';
 import {
   BatchScheduler,
   type IReadableClosure,
@@ -9,8 +10,7 @@ import {
   render,
   S,
   toClosure,
-} from 'reactive';
-import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+} from 'functive';
 
 import type { SmoothSchedulerClass } from '../../..';
 import type { SmoothPosition } from '../states';
@@ -96,9 +96,9 @@ describe('SmoothCursor', () => {
 
     const blocks = [[], [1, 2], [], [3]].map((value) => createArrayBlock(value).block);
 
-    const reads = blocks.map((block) => vi.spyOn(block, 'value', 'get'));
+    const reads = blocks.map((block) => jest.spyOn(block, 'value', 'get'));
 
-    const forks = blocks.map((block) => vi.spyOn(block, 'fork'));
+    const forks = blocks.map((block) => jest.spyOn(block, 'fork'));
 
     source.next(blocks);
 
@@ -132,7 +132,7 @@ describe('SmoothCursor', () => {
 
     const { cursor, source } = setupCursor([first.block], false);
 
-    const changed = vi.fn();
+    const changed = jest.fn();
 
     cursor.value.subscribe(changed);
 
@@ -140,7 +140,7 @@ describe('SmoothCursor', () => {
 
     first.source.next([1, 2, 3, 4, 5]);
 
-    expect(changed).toHaveBeenCalledOnce();
+    expect(changed).toHaveBeenCalledTimes(1);
 
     next.source.next([3, 4, 5]);
 

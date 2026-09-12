@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
 import { cloneDeep } from 'lodash-es';
 
 import type { PatchesRemarkPluginConfig } from './type';

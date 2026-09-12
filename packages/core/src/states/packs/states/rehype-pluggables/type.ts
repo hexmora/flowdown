@@ -1,4 +1,4 @@
-import type { IPluggable, IRehypePlugin } from '@flowdown/types';
+import type { IPluggable, IRehypePlugin } from '@fluxdown/types';
 
 import type { BlockCompilerConfig } from '../../../hast';
 

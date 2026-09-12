@@ -1,5 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
 import { SpringSmoothScheduler } from '..';
 import { TargetScheduler } from './utils';
 

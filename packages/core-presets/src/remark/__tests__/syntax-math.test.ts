@@ -6,7 +6,6 @@ import { first, now } from 'lodash-es';
 import { toMarkdown, type Options as ToMarkdownOptions } from 'mdast-util-to-markdown';
 import remarkParse from 'remark-parse';
 import { type Data, unified } from 'unified';
-import { describe, expect, test } from 'vitest';
 
 import {
   SyntaxMathRemarkPlugin,

@@ -1,16 +1,15 @@
-import type { IPluggable, IRemarkPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin } from '@fluxdown/types';
 
-import { PRESET_MAPPER_PLUGINS, Shad, Smooth } from '@flowdown/core-presets/mapper';
-import { PRESET_REHYPE_PLUGINS } from '@flowdown/core-presets/rehype';
-import { PRESET_REMARK_PLUGINS, SyntaxMathRemarkPlugin } from '@flowdown/core-presets/remark';
-import { PRESET_REPAIR_PLUGINS } from '@flowdown/core-presets/repair';
-import { describe, expect, test } from 'vitest';
+import { PRESET_MAPPER_PLUGINS, Shad, Smooth } from '@fluxdown/core-presets/mapper';
+import { PRESET_REHYPE_PLUGINS } from '@fluxdown/core-presets/rehype';
+import { PRESET_REMARK_PLUGINS, SyntaxMathRemarkPlugin } from '@fluxdown/core-presets/remark';
+import { PRESET_REPAIR_PLUGINS } from '@fluxdown/core-presets/repair';
 
 import { mergePluginPluggables } from '../states/packs/states/utils';
 
 describe('core preset imports', () => {
   test('resolves plugins through their public type entry points', () => {
-    expect(Smooth).toBeTypeOf('function');
+    expect(typeof Smooth).toBe('function');
 
     expect(PRESET_MAPPER_PLUGINS).toEqual([Smooth, Shad]);
 

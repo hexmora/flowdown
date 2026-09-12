@@ -1,6 +1,6 @@
 import type { PlaygroundSettings } from './type';
 
-export const DEFAULT_MARKDOWN = `# Flowdown Playground
+export const DEFAULT_MARKDOWN = `# Fluxdown Playground
 
 Edit this Markdown and see the preview update immediately.
 
@@ -10,10 +10,10 @@ Edit this Markdown and see the preview update immediately.
 - [A useful link](https://example.com)
 - Inline math: $E = mc^2$
 
-> Flowdown keeps each rendered block reactive.
+> Fluxdown keeps each rendered block reactive.
 
 \`\`\`ts
-const greeting = 'Hello, Flowdown!';
+const greeting = 'Hello, Fluxdown!';
 \`\`\`
 `;
 

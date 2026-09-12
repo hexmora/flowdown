@@ -1,7 +1,5 @@
 import type { Code, Root } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { CodeMetaRemarkPlugin } from '..';
 import { RawParserRehypePlugin, SanitizerRehypePlugin } from '../../rehype';
 import { findHastElement, markdownToHast, runRemarkPlugin } from './utils';

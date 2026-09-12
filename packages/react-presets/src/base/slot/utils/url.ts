@@ -16,7 +16,7 @@ export const normalizePublicUrl = (
 
   if (!scheme) {
     try {
-      const resolved = new URL(source, 'https://flowdown.invalid');
+      const resolved = new URL(source, 'https://fluxdown.invalid');
 
       if (resolved.protocol !== 'https:') {
         return undefined;

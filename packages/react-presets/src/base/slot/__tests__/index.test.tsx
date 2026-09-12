@@ -1,10 +1,9 @@
 import type { Element } from 'hast';
 import type { ComponentType, ReactNode } from 'react';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { has, keys } from 'lodash-es';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { AnySlotPluggable, Slots, SlotType } from '..';
 
@@ -156,7 +155,7 @@ beforeEach(() => {
 afterEach(() => {
   window.removeEventListener('error', suppressExpectedSlotError);
 
-  vi.restoreAllMocks();
+  jest.restoreAllMocks();
 });
 
 describe('slots', () => {
@@ -322,7 +321,7 @@ describe('slots', () => {
   });
 
   test('renders Fallback when a named slot throws', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     render(
       <SlotHarness
@@ -341,7 +340,7 @@ describe('slots', () => {
   });
 
   test('passes original props and reset control to Fallback, then retries the slot', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     let shouldThrow = true;
 
@@ -390,7 +389,7 @@ describe('slots', () => {
 
     expect(capturedProps).toMatchObject({ children: 'content' });
 
-    expect(capturedReset).toBeTypeOf('function');
+    expect(typeof capturedReset).toBe('function');
 
     fireEvent.click(screen.getByTestId('retry-fallback'));
 

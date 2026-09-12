@@ -1,4 +1,4 @@
-import { once, useSwitchMap } from 'reactive';
+import { once, useSwitchMap } from 'functive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { BlockLengthsInputs } from './type';

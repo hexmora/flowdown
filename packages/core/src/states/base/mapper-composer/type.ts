@@ -1,5 +1,5 @@
-import type { IBlockState, IPluggableConfig } from '@flowdown/types';
-import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'reactive';
+import type { IBlockState, IPluggableConfig } from '@fluxdown/types';
+import type { IReadableClosure, JSXDescriptor, OnceFunction } from 'functive';
 
 import type { HastRoot } from '../../../typings';
 

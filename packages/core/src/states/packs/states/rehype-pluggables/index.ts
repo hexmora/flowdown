@@ -1,7 +1,7 @@
-import type { IPluggable, IRehypePlugin } from '@flowdown/types';
+import type { IPluggable, IRehypePlugin } from '@fluxdown/types';
 
-import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@flowdown/core-presets/rehype';
-import { memoReturns } from 'reactive';
+import { HoistFootnoteRehypePlugin, PRESET_REHYPE_PLUGINS } from '@fluxdown/core-presets/rehype';
+import { memoReturns } from 'functive';
 
 import type { RehypePluggablesMapperInputs } from './type';
 

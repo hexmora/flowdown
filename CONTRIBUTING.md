@@ -1,13 +1,14 @@
 # Contributing
 
-Thank you for your interest in Flowdown.
+Thank you for your interest in Fluxdown.
 
 ## Development
 
-This repository uses pnpm.
+Use the Node.js version in `.node-version` and the pinned pnpm version.
+Run `pnpm install` after changing dependencies.
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm lint
 pnpm test
@@ -15,13 +16,24 @@ pnpm build
 pnpm build:storybook
 ```
 
+For a single project, use its directory name as the moon project ID:
+
+```bash
+pnpm exec moon run core:build
+pnpm exec moon run react:test
+pnpm exec moon tasks
+```
+
+Record package changes with `pnpm changeset`. See [the release guide](docs/releasing.md)
+for versioning, dry runs, and publishing.
+
 ## Package Boundaries
 
-- `@flowdown/core` is headless pure computation. It should not depend on React,
+- `@fluxdown/core` is headless pure computation. It should not depend on React,
   Storybook, DOM rendering, hooks, or UI-only packages.
-- `reactive` is headless reactive infrastructure. It should stay
+- `functive` is headless reactive infrastructure. It should stay
   framework-free and avoid React, Storybook, DOM rendering, or UI-only packages.
-- `flowdown` owns React rendering, Storybook, tests, hooks, and
+- `fluxdown` owns React rendering, Storybook, tests, hooks, and
   rendering-layer dependencies.
 - Shared coordinated versions belong in `pnpm-workspace.yaml` catalog entries.
 - Type/env declarations belong under `src/typings/`.

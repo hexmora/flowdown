@@ -2,9 +2,9 @@ import logo from '../../../../docs/assets/logo.png?no-inline';
 
 export const THEME_MARKDOWN = `# A little room for good ideas
 
-Flowdown gives Markdown a considered home: **clear emphasis**, *a quieter voice*, ~~an earlier thought~~, and an [open door to the documentation][docs]. Inline code like \`theme.tokens.heading\` stays easy to scan.
+Fluxdown gives Markdown a considered home: **clear emphasis**, *a quieter voice*, ~~an earlier thought~~, and an [open door to the documentation][docs]. Inline code like \`theme.tokens.heading\` stays easy to scan.
 
-<img src="${logo}" alt="Flowdown logo" width="192" />
+<img src="${logo}" alt="Fluxdown logo" width="192" />
 
 ## Make space for the details
 
@@ -89,7 +89,7 @@ Try an [inline link](https://example.com/guide "A short guide"), a [reference li
 ## Code that reads like code
 
 \`\`\`tsx title="document.tsx"
-import { Flowdown } from 'flowdown';
+import { Fluxdown } from 'fluxdown';
 
 const theme = {
   tokens: {
@@ -98,7 +98,7 @@ const theme = {
 };
 
 export const Document = () => (
-  <Flowdown text="# Hello, world" theme={theme} />
+  <Fluxdown text="# Hello, world" theme={theme} />
 );
 \`\`\`
 
@@ -203,7 +203,7 @@ ___
 
 A reference-style image can share the same definition throughout a document:
 
-[![Flowdown wordmark][flowdown-logo]][repository]
+[![Fluxdown wordmark][fluxdown-logo]][repository]
 
 Good documents invite you to keep reading.[^note] A second reference can return to the same note.[^note]
 
@@ -218,6 +218,6 @@ A longer observation belongs in its own footnote.[^review]
 [docs]: https://example.com/docs "Documentation"
 [collapsed reference]: https://example.com/references
 [shortcut]: https://example.com/shortcuts
-[repository]: https://github.com/hexmora/flowdown
-[flowdown-logo]: ${logo} "Flowdown"
+[repository]: https://github.com/hexmora/fluxdown
+[fluxdown-logo]: ${logo} "Fluxdown"
 `;

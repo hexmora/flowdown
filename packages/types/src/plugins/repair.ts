@@ -1,6 +1,6 @@
-import type { OmitWithType, ProcessMdastParams, ProcessMdastRunnerParams } from '@flowdown/utils';
+import type { OmitWithType, ProcessMdastParams, ProcessMdastRunnerParams } from '@fluxdown/utils';
+import type { IDestructible } from 'functive';
 import type { Parent, RootContent } from 'mdast';
-import type { IDestructible } from 'reactive';
 
 import type { IBasePluginConfig, IPluginWithConfig } from './base';
 

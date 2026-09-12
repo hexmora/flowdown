@@ -1,0 +1,88 @@
+{
+  "name": "functive",
+  "version": "1.0.0",
+  "description": "Headless reactive primitives for Fluxdown streaming state.",
+  "keywords": [
+    "headless",
+    "llm",
+    "markdown",
+    "reactive",
+    "rxjs",
+    "streaming"
+  ],
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/functive#readme",
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexmora/flowdown.git",
+    "directory": "packages/functive"
+  },
+  "files": [
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./jsx-runtime": "./src/jsx-runtime.ts"
+  },
+  "publishConfig": {
+    "main": "./dist/cjs/index.cjs",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/esm/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/esm/index.d.ts",
+          "default": "./dist/esm/index.js"
+        },
+        "require": {
+          "types": "./dist/cjs/index.d.cts",
+          "default": "./dist/cjs/index.cjs"
+        }
+      },
+      "./jsx-runtime": {
+        "import": {
+          "types": "./dist/esm/jsx-runtime.d.ts",
+          "default": "./dist/esm/jsx-runtime.js"
+        },
+        "require": {
+          "types": "./dist/cjs/jsx-runtime.d.cts",
+          "default": "./dist/cjs/jsx-runtime.cjs"
+        }
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rslib build",
+    "lint": "oxlint .",
+    "test": "jest --config ../../jest.config.ts --selectProjects functive --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
+  },
+  "dependencies": {
+    "lodash-es": "catalog:",
+    "rxjs": "catalog:",
+    "shallow-equal": "catalog:"
+  },
+  "devDependencies": {
+    "@rslib/core": "catalog:",
+    "@types/lodash-es": "catalog:",
+    "@types/node": "catalog:",
+    "expect-type": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

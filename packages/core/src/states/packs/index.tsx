@@ -1,12 +1,12 @@
 /**
- * @jsxImportSource reactive
+ * @jsxImportSource functive
  */
 
-import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@fluxdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import { Shad, Smooth } from '@flowdown/core-presets/mapper';
-import { type JSXDescriptor, once, useDefaults, useFlatten, useMap } from 'reactive';
+import { Shad, Smooth } from '@fluxdown/core-presets/mapper';
+import { type JSXDescriptor, once, useDefaults, useFlatten, useMap } from 'functive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { IRenderPlugin } from '../../externals';

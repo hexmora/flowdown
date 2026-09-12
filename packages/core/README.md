@@ -1,12 +1,12 @@
 **English** | [简体中文](./docs/README.zh-CN.md)
 
-# @flowdown/core
+# @fluxdown/core
 
 **The framework-independent engine for streaming Markdown.**
 
-Turn Markdown into reactive content blocks and connect them to your own renderer. `@flowdown/core` handles Markdown processing and updates, while you choose the UI framework or output format.
+Turn Markdown into reactive content blocks and connect them to your own renderer. `@fluxdown/core` handles Markdown processing and updates, while you choose the UI framework or output format.
 
-Use it to build a framework integration or work with Markdown as structured data. For a ready-to-use React component, see [Flowdown](../../README.md#quick-start-react). Core's state flows are powered by [`reactive`](../reactive/README.md).
+Use it to build a framework integration or work with Markdown as structured data. For a ready-to-use React component, see [Fluxdown](../../README.md#quick-start-react). Core's state flows are powered by [`functive`](../functive/README.md).
 
 ## Features
 
@@ -21,7 +21,7 @@ Use it to build a framework integration or work with Markdown as structured data
 ### Install
 
 ```sh
-npm install @flowdown/core reactive
+npm install @fluxdown/core functive
 ```
 
 ### Process streaming Markdown
@@ -29,10 +29,10 @@ npm install @flowdown/core reactive
 `Core` takes a renderer that determines the output for each block. This small renderer returns the reactive blocks themselves so you can inspect their HAST trees:
 
 ```ts
-import { BaseRenderer, Core, type HastRoot } from "@flowdown/core";
-import type { IBlockState } from "@flowdown/types";
+import { BaseRenderer, Core, type HastRoot } from "@fluxdown/core";
+import type { IBlockState } from "@fluxdown/types";
 import type { ElementContent, Parent } from "hast";
-import { D, MutableState, render, S } from "reactive";
+import { D, MutableState, render, S } from "functive";
 
 type MarkdownBlock = IBlockState<HastRoot>;
 
@@ -42,7 +42,7 @@ class BlocksRenderer extends BaseRenderer<HastRoot, ElementContent, Parent, Mark
   }
 }
 
-const text = MutableState.of("# Hello, Flowdown");
+const text = MutableState.of("# Hello, Fluxdown");
 const core = render(
   S([
     Core<MarkdownBlock>,
@@ -69,7 +69,7 @@ text.destroy();
 
 Pass the full Markdown text received so far to `text.next`, appending each new chunk to the previous text. The example keeps repairs enabled for incomplete Markdown throughout the stream.
 
-`D(BlocksRenderer)` passes the renderer class as a static value. `render` creates the core instance, and `core.value.value` gives its current output array. See the [`reactive` guide](../reactive/README.md) for more on state closures and input values.
+`D(BlocksRenderer)` passes the renderer class as a static value. `render` creates the core instance, and `core.value.value` gives its current output array. See the [`functive` guide](../functive/README.md) for more on state closures and input values.
 
 ## Rendering and updates
 
@@ -81,13 +81,13 @@ Destroy the core instance when you are done with it. Core releases the state clo
 
 Set `shad: true` or `shad: { length: 2 }` to mark the newly visible tail for shading. Shad runs after Smooth in the default mapper list and defaults to `false`. An options object enables it unless `enabled: false` is supplied; `length` counts visible characters and defaults to `2`. The active tail settles after 200 ms without growth.
 
-Renderers can recognize the `SHAD_TAG_NAME`, `SHAD_DATA_ATTR`, and `SHAD_HOST_VALUE` marker exported by `@flowdown/core-presets/mapper` and render its two child spans as the committed and active parts. React's `flowdown` package includes that renderer and a separate `maskWidth` option.
+Renderers can recognize the `SHAD_TAG_NAME`, `SHAD_DATA_ATTR`, and `SHAD_HOST_VALUE` marker exported by `@fluxdown/core-presets/mapper` and render its two child spans as the committed and active parts. React's `fluxdown` package includes that renderer and a separate `maskWidth` option.
 
 ## Plugins
 
 Core includes preset Markdown processing plugins. Add to them through `remarks` for Markdown syntax, `rehypes` for HAST transformations, and `repairs` for handling incomplete Markdown. Supply render plugins through `renders` for your renderer to use.
 
-These inputs can be reactive, so you can update plugin configuration alongside the text. For the available preset plugins, see [`@flowdown/core-presets`](../core-presets).
+These inputs can be reactive, so you can update plugin configuration alongside the text. For the available preset plugins, see [`@fluxdown/core-presets`](../core-presets).
 
 ## Contributing
 

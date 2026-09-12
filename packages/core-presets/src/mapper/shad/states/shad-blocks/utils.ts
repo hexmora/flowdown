@@ -1,8 +1,8 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 import type { Root as HastRoot } from 'hast';
 
+import { BatchScheduler, D, type IReactiveState, type IReadableClosure, render, S } from 'functive';
 import { max } from 'lodash-es';
-import { BatchScheduler, D, type IReactiveState, type IReadableClosure, render, S } from 'reactive';
 import { Subscription } from 'rxjs';
 
 import type { ShadPosition } from '../shad-progress';

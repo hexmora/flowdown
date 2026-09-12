@@ -1,12 +1,12 @@
 /**
- * @jsxImportSource reactive
+ * @jsxImportSource functive
  */
 
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
+import { D, type IReadableClosure, type JSXDescriptor, once, useMap, useSwitchMap } from 'functive';
 import { first, isArray, sortBy, tail } from 'lodash-es';
-import { D, type IReadableClosure, type JSXDescriptor, once, useMap, useSwitchMap } from 'reactive';
 
 import type { HastRoot } from '../../../typings';
 import type { Mapper, MapperComposerInputs, MapperPluggable } from './type';

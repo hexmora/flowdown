@@ -3,10 +3,10 @@ import type {
   IBlockMeta,
   IBlockState,
   IBlockStateCloneParams,
-} from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+} from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
-import { BaseStateClosure, MutableState, render, S, toClosure } from 'reactive';
+import { BaseStateClosure, MutableState, render, S, toClosure } from 'functive';
 
 type ArrayBlockInputs<T> = Pick<BaseBlockItemInputs<T[]>, 'meta' | 'range' | 'source'>;
 

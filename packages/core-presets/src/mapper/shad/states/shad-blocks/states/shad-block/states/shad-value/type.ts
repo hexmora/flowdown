@@ -1,4 +1,4 @@
-import type { IBlockState } from '@flowdown/types';
+import type { IBlockState } from '@fluxdown/types';
 import type { Root as HastRoot } from 'hast';
 
 import type { ShadBlockInputs } from '../../type';

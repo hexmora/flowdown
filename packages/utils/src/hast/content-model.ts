@@ -22,7 +22,7 @@ const TABLE_STRUCTURE_TAG_NAMES = [
 // oxlint-disable-next-line unicorn/prefer-set-has -- Fixed lookup tables use arrays by convention.
 const TABLE_LAYOUT_TAG_NAMES = ['colgroup', 'table', 'tbody', 'tfoot', 'thead', 'tr'];
 
-const PRESERVED_WHITESPACE_DATA_KEY = 'flowdownPreservedWhitespace';
+const PRESERVED_WHITESPACE_DATA_KEY = 'fluxdownPreservedWhitespace';
 
 const SEGMENTER =
   typeof Intl === 'undefined' || typeof Intl.Segmenter !== 'function'

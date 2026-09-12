@@ -5,8 +5,7 @@ import {
   RafSmoothTicker,
   Smooth,
   SpringSmoothScheduler,
-} from '@flowdown/core-presets/mapper';
-import { describe, expect, test } from 'vitest';
+} from '@fluxdown/core-presets/mapper';
 
 import { ALL_SCHEDULERS, ALL_TICKERS, BaseRenderer, BaseRenderPlugin } from '..';
 
@@ -22,7 +21,7 @@ describe('core public exports', () => {
       Smooth,
       SpringSmoothScheduler,
     ]) {
-      expect(declaration).toBeTypeOf('function');
+      expect(typeof declaration).toBe('function');
     }
 
     expect(ALL_TICKERS).toEqual([RafSmoothTicker, IntervalSmoothTicker]);

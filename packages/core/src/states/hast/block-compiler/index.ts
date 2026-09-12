@@ -1,5 +1,5 @@
+import { once, S, useMap, useMapEach } from 'functive';
 import { isEqual } from 'lodash-es';
-import { once, S, useMap, useMapEach } from 'reactive';
 
 import type { BlockCompilerInputs, BlockCompilerItem, IBlockCompiler } from './type';
 

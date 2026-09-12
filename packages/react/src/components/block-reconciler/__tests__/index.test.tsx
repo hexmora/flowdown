@@ -1,13 +1,12 @@
-import type { IRenderPatchItem } from '@flowdown/core';
-import type { IReactRenderPlugin } from '@flowdown/react-presets/base';
+import type { IRenderPatchItem } from '@fluxdown/core';
+import type { IReactRenderPlugin } from '@fluxdown/react-presets/base';
 import type { Root } from 'hast';
 import type { ReactNode } from 'react';
 
-import { BlockItem } from '@flowdown/core';
-import { PatchRenderPlugin } from '@flowdown/react-presets/render';
+import { BlockItem } from '@fluxdown/core';
+import { PatchRenderPlugin } from '@fluxdown/react-presets/render';
 import { act, render, screen } from '@testing-library/react';
-import { MutableState, toClosure } from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+import { MutableState, toClosure } from 'functive';
 
 import { BlockReconciler } from '..';
 
@@ -39,7 +38,7 @@ const patchPlugin = new PatchRenderPlugin();
 
 const createPlugin = (label: string): IReactRenderPlugin => ({
   config: {},
-  destroy: vi.fn(),
+  destroy: jest.fn(),
   match: () => true,
   render: (params) =>
     patchPlugin.render({
@@ -84,8 +83,8 @@ describe('BlockReconciler', () => {
     const block = createBlock();
     const patches = MutableState.of(createPatches('first'));
     const plugins = MutableState.of([createPlugin('state')]);
-    const patchSubscribe = vi.spyOn(patches, 'subscribe');
-    const pluginSubscribe = vi.spyOn(plugins, 'subscribe');
+    const patchSubscribe = jest.spyOn(patches, 'subscribe');
+    const pluginSubscribe = jest.spyOn(plugins, 'subscribe');
     const view = render(<BlockReconciler block={block} patches={patches} plugins={plugins} />);
 
     act(() => {
@@ -99,8 +98,16 @@ describe('BlockReconciler', () => {
 
     expect(patchSubscribe).toHaveBeenCalled();
     expect(pluginSubscribe).toHaveBeenCalled();
-    expect(patchSubscribe.mock.results.every(({ value }) => value.closed)).toBe(true);
-    expect(pluginSubscribe.mock.results.every(({ value }) => value.closed)).toBe(true);
+    expect(
+      patchSubscribe.mock.results.every(
+        (result) => result.type === 'return' && result.value.closed,
+      ),
+    ).toBe(true);
+    expect(
+      pluginSubscribe.mock.results.every(
+        (result) => result.type === 'return' && result.value.closed,
+      ),
+    ).toBe(true);
     expect(patches.closed).toBe(false);
     expect(plugins.closed).toBe(false);
 
@@ -113,8 +120,8 @@ describe('BlockReconciler', () => {
     const block = createBlock();
     const patchSource = MutableState.of(createPatches('first'));
     const pluginSource = MutableState.of([createPlugin('closure')]);
-    const patchSubscribe = vi.spyOn(patchSource, 'subscribe');
-    const pluginSubscribe = vi.spyOn(pluginSource, 'subscribe');
+    const patchSubscribe = jest.spyOn(patchSource, 'subscribe');
+    const pluginSubscribe = jest.spyOn(pluginSource, 'subscribe');
     const patches = toClosure(patchSource);
     const plugins = toClosure(pluginSource);
     const view = render(<BlockReconciler block={block} patches={patches} plugins={plugins} />);
@@ -133,8 +140,16 @@ describe('BlockReconciler', () => {
     patches.destroy();
     plugins.destroy();
 
-    expect(patchSubscribe.mock.results.every(({ value }) => value.closed)).toBe(true);
-    expect(pluginSubscribe.mock.results.every(({ value }) => value.closed)).toBe(true);
+    expect(
+      patchSubscribe.mock.results.every(
+        (result) => result.type === 'return' && result.value.closed,
+      ),
+    ).toBe(true);
+    expect(
+      pluginSubscribe.mock.results.every(
+        (result) => result.type === 'return' && result.value.closed,
+      ),
+    ).toBe(true);
 
     block.destroy();
     patchSource.complete();

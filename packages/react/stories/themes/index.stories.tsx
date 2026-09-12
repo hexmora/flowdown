@@ -1,12 +1,12 @@
-import type { PluginConfigs } from '@flowdown/core';
+import type { PluginConfigs } from '@fluxdown/core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
   SyntaxHtmlAllowedRemarkPlugin,
   SyntaxPolicyRemarkPlugin,
-} from '@flowdown/core-presets/remark';
+} from '@fluxdown/core-presets/remark';
 
-import { Flowdown } from '../../src';
+import { Fluxdown } from '../../src';
 import { THEME_MARKDOWN } from './consts';
 
 const meta = {
@@ -32,12 +32,12 @@ const meta = {
     },
     text: THEME_MARKDOWN,
   },
-  component: Flowdown,
+  component: Fluxdown,
   parameters: {
     layout: 'fullscreen',
   },
   title: 'Themes',
-} satisfies Meta<typeof Flowdown>;
+} satisfies Meta<typeof Fluxdown>;
 
 export default meta;
 

@@ -1,4 +1,4 @@
-/** @jsxImportSource reactive */
+/** @jsxImportSource functive */
 
 import type {
   IPluggable,
@@ -7,11 +7,12 @@ import type {
   IRehypePlugin,
   IRemarkPlugin,
   IRepairPlugin,
-} from '@flowdown/types';
+} from '@fluxdown/types';
 
-import { HoistFootnoteRehypePlugin } from '@flowdown/core-presets/rehype';
-import { ApplyRepairsRemarkPlugin, SyntaxMathRemarkPlugin } from '@flowdown/core-presets/remark';
-import { DanglingFootnoteRepairPlugin } from '@flowdown/core-presets/repair';
+import { HoistFootnoteRehypePlugin } from '@fluxdown/core-presets/rehype';
+import { ApplyRepairsRemarkPlugin, SyntaxMathRemarkPlugin } from '@fluxdown/core-presets/remark';
+import { DanglingFootnoteRepairPlugin } from '@fluxdown/core-presets/repair';
+import { expectTypeOf } from 'expect-type';
 import {
   type IReactiveState,
   type IReadableClosure,
@@ -19,8 +20,7 @@ import {
   MutableState,
   render,
   S,
-} from 'reactive';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+} from 'functive';
 
 import type { IPatchItem } from '../..';
 import type { IRenderPatchItem } from '../../../../externals';
@@ -60,7 +60,7 @@ describe('pack state mappers', () => {
 
       const initial = state.value.value;
 
-      const next = vi.fn();
+      const next = jest.fn();
 
       state.value.subscribe(next);
 
@@ -76,7 +76,7 @@ describe('pack state mappers', () => {
 
       expect(state.value.value).not.toBe(initial);
 
-      expect(next).toHaveBeenCalledOnce();
+      expect(next).toHaveBeenCalledTimes(1);
 
       state.destroy();
 
@@ -87,9 +87,9 @@ describe('pack state mappers', () => {
   );
 
   test('maps raw and render patches independently', () => {
-    const renderFirst = vi.fn(() => 'first');
+    const renderFirst = jest.fn(() => 'first');
 
-    const renderSecond = vi.fn(() => 'second');
+    const renderSecond = jest.fn(() => 'second');
 
     const patches = MutableState.of<IPatchItem<string>[]>([
       { key: 'stable', range: [1, 2], render: renderFirst },
@@ -172,7 +172,7 @@ describe('pack state mappers', () => {
 
     const initialRemarks = remarks.value.value;
 
-    const onRemarks = vi.fn();
+    const onRemarks = jest.fn();
 
     remarks.value.subscribe(onRemarks);
 

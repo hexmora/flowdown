@@ -1,5 +1,4 @@
-import { PluginPriority } from '@flowdown/types';
-import { describe, expect, test } from 'vitest';
+import { PluginPriority } from '@fluxdown/types';
 
 import type {
   PandocMathData,

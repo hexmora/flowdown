@@ -1,7 +1,7 @@
 {
-  "name": "@flowdown/react-presets",
-  "version": "0.1.0",
-  "description": "Preset render and slot plugins with shared React rendering infrastructure for Flowdown.",
+  "name": "@fluxdown/react-presets",
+  "version": "1.0.0",
+  "description": "Preset render and slot plugins with shared React rendering infrastructure for Fluxdown.",
   "keywords": [
     "hast",
     "markdown",
@@ -21,77 +21,108 @@
     "directory": "packages/react-presets"
   },
   "files": [
-    "dist"
+    "dist/esm",
+    "dist/cjs",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": [
     "**/*.css",
-    "**/*.scss"
+    "**/*.scss",
+    "./dist/esm/*.browser.js",
+    "./dist/cjs/*.browser.cjs"
   ],
   "exports": {
     "./base": "./src/base/index.ts",
     "./render": "./src/render/index.ts",
-    "./slot": "./src/slot/index.ts"
+    "./slot": "./src/slot/index.ts",
+    "./styles.css": "./dist/esm/styles.css"
   },
   "publishConfig": {
     "exports": {
       "./base": {
-        "types": "./dist/base/index.d.ts",
-        "import": "./dist/base.js",
-        "require": "./dist/base.cjs"
+        "import": {
+          "types": "./dist/esm/base/index.d.ts",
+          "browser": "./dist/esm/base.browser.js",
+          "node": "./dist/esm/base.js",
+          "default": "./dist/esm/base.browser.js"
+        },
+        "require": {
+          "types": "./dist/cjs/base/index.d.cts",
+          "browser": "./dist/cjs/base.browser.cjs",
+          "node": "./dist/cjs/base.cjs",
+          "default": "./dist/cjs/base.browser.cjs"
+        }
       },
       "./render": {
-        "types": "./dist/render/index.d.ts",
-        "import": "./dist/render.js",
-        "require": "./dist/render.cjs"
+        "import": {
+          "types": "./dist/esm/render/index.d.ts",
+          "browser": "./dist/esm/render.browser.js",
+          "node": "./dist/esm/render.js",
+          "default": "./dist/esm/render.browser.js"
+        },
+        "require": {
+          "types": "./dist/cjs/render/index.d.cts",
+          "browser": "./dist/cjs/render.browser.cjs",
+          "node": "./dist/cjs/render.cjs",
+          "default": "./dist/cjs/render.browser.cjs"
+        }
       },
       "./slot": {
-        "types": "./dist/slot/index.d.ts",
-        "import": "./dist/slot.js",
-        "require": "./dist/slot.cjs"
-      }
+        "import": {
+          "types": "./dist/esm/slot/index.d.ts",
+          "browser": "./dist/esm/slot.browser.js",
+          "node": "./dist/esm/slot.js",
+          "default": "./dist/esm/slot.browser.js"
+        },
+        "require": {
+          "types": "./dist/cjs/slot/index.d.cts",
+          "browser": "./dist/cjs/slot.browser.cjs",
+          "node": "./dist/cjs/slot.cjs",
+          "default": "./dist/cjs/slot.browser.cjs"
+        }
+      },
+      "./styles.css": "./dist/esm/styles.css"
     },
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "rslib build",
     "lint": "oxlint .",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "jest --config ../../jest.config.ts --selectProjects react-presets --runInBand",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsx ../../scripts/check-package.ts --source"
   },
   "dependencies": {
-    "@flowdown/core": "workspace:*",
-    "@flowdown/core-presets": "workspace:*",
-    "@flowdown/types": "workspace:*",
-    "@flowdown/utils": "workspace:*",
+    "@fluxdown/core": "workspace:*",
+    "@fluxdown/core-presets": "workspace:*",
+    "@fluxdown/types": "workspace:*",
+    "@fluxdown/utils": "workspace:*",
     "@types/hast": "catalog:",
     "classnames": "catalog:",
+    "functive": "workspace:*",
     "katex": "catalog:",
     "lodash-es": "catalog:",
     "mathjax-full": "catalog:",
     "react": "catalog:",
     "react-error-boundary": "catalog:",
-    "reactive": "workspace:*",
     "shallow-equal": "catalog:",
     "shiki": "catalog:"
   },
   "devDependencies": {
+    "@rslib/core": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "catalog:",
-    "jsdom": "catalog:",
+    "expect-type": "catalog:",
     "oxlint": "catalog:",
     "react-dom": "catalog:",
-    "sass": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plugin-dts": "catalog:",
-    "vite-plugin-lib-inject-css": "catalog:",
-    "vite-plugin-svgr": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

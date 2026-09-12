@@ -1,4 +1,4 @@
-import type { IPluggable, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { IPluggable, IRemarkPlugin, IRepairPlugin } from '@fluxdown/types';
 
 import type { BlockRemarksConfig } from '../../../hast';
 

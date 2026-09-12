@@ -1,3 +1,3 @@
-# @flowdown/types
+# @fluxdown/types
 
-Shared public types used across Flowdown packages.
+Shared public types used across Fluxdown packages.

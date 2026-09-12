@@ -1,9 +1,8 @@
-import type { IRehypePlugin } from '@flowdown/types';
+import type { IRehypePlugin } from '@fluxdown/types';
 import type { Properties, Root, RootContent } from 'hast';
 
 import { create, has, last } from 'lodash-es';
 import { unified } from 'unified';
-import { describe, expect, test } from 'vitest';
 
 import { HoistFootnoteRehypePlugin, RawParserRehypePlugin, SanitizerRehypePlugin } from '..';
 import { SyntaxFootnoteRemarkPlugin } from '../../remark';

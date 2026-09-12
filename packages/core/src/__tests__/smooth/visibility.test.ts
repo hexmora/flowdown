@@ -1,6 +1,5 @@
-import { Smooth } from '@flowdown/core-presets/mapper';
-import { BatchScheduler, ReactiveState, render, S } from 'reactive';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { Smooth } from '@fluxdown/core-presets/mapper';
+import { BatchScheduler, ReactiveState, render, S } from 'functive';
 
 import type { HastRoot } from '../../typings';
 
@@ -55,7 +54,7 @@ describe('Smooth visibility', () => {
 
     const harness = setupSmooth([stale.block]);
 
-    const forkStale = vi.spyOn(stale.block, 'fork');
+    const forkStale = jest.spyOn(stale.block, 'fork');
 
     harness.source.next([current.block]);
 
@@ -259,7 +258,7 @@ describe('Smooth visibility', () => {
 
     const harness = setupSmooth([block.block]);
 
-    const outputs = vi.fn();
+    const outputs = jest.fn();
 
     harness.state.value.subscribe(outputs);
 
@@ -285,7 +284,7 @@ describe('Smooth visibility', () => {
 
     expect(firstBlock(harness.state.value.value)).toBe(fork);
 
-    expect(outputs).toHaveBeenCalledOnce();
+    expect(outputs).toHaveBeenCalledTimes(1);
 
     harness.state.destroy();
   });

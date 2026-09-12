@@ -1,5 +1,4 @@
-import { BatchScheduler, MutableState, ReactiveState, render, S } from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+import { BatchScheduler, MutableState, ReactiveState, render, S } from 'functive';
 
 import { BlockLengths } from '..';
 import { createArrayBlock } from '../../../../../__tests__/block';
@@ -13,7 +12,7 @@ describe('BlockLengths', () => {
 
     const state = render(S([BlockLengths<number[]>, { source }]));
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     state.value.subscribe({ complete });
 
@@ -27,7 +26,7 @@ describe('BlockLengths', () => {
 
     block.source.complete();
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
     state.destroy();
   });
@@ -41,13 +40,13 @@ describe('BlockLengths', () => {
 
     const state = render(S([BlockLengths<number[]>, { source }]));
 
-    const changed = vi.fn();
+    const changed = jest.fn();
 
     state.value.subscribe(changed);
 
     source.next([b.block]);
 
-    expect(changed).toHaveBeenCalledOnce();
+    expect(changed).toHaveBeenCalledTimes(1);
 
     expect(observerCount(a.block.baseLength)).toBe(0);
 
@@ -55,7 +54,7 @@ describe('BlockLengths', () => {
 
     a.source.next([1, 2, 3, 4]);
 
-    expect(changed).toHaveBeenCalledOnce();
+    expect(changed).toHaveBeenCalledTimes(1);
 
     b.source.next([3, 4, 5]);
 
@@ -104,7 +103,7 @@ describe('BlockLengths', () => {
 
     const state = render(S([BlockLengths<number[]>, { source }]));
 
-    const error = vi.fn();
+    const error = jest.fn();
 
     state.value.subscribe({ error });
 
@@ -112,7 +111,8 @@ describe('BlockLengths', () => {
 
     a.source.error(failure);
 
-    expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(failure);
 
     expect(observerCount(b.block.baseLength)).toBe(0);
 
@@ -152,7 +152,7 @@ describe('BlockLengths', () => {
 
     const length = MutableState.of(1);
 
-    vi.spyOn(block, 'baseLength', 'get').mockReturnValue(length);
+    jest.spyOn(block, 'baseLength', 'get').mockReturnValue(length);
 
     const source = ReactiveState.of([block]);
 

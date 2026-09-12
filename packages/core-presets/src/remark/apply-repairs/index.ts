@@ -1,8 +1,8 @@
-import type { IRepairPlugin } from '@flowdown/types';
+import type { IRepairPlugin } from '@fluxdown/types';
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, PluginPriority } from '@fluxdown/types';
 
 import { processRepairByPlugins } from '../../utils';
 import { BaseRemarkPlugin } from '../base';

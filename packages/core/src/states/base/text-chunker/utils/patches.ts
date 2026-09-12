@@ -1,4 +1,4 @@
-import type { IRawPatchItem, IRawPatchRange } from '@flowdown/types';
+import type { IRawPatchItem, IRawPatchRange } from '@fluxdown/types';
 
 import { isSafeInteger, last, sortBy } from 'lodash-es';
 

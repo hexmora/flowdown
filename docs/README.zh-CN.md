@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="Flowdown" width="480" />
+  <img src="./assets/logo.png" alt="Fluxdown" width="480" />
 </p>
 
 [English](../README.md) | **简体中文**
 
 **专为流式场景打造的响应式 Markdown 渲染库。**
 
-从 AI 对话到实时预览，Flowdown 随内容到达持续渲染 Markdown，让不断增长的内容保持流畅，并让你自由控制渲染结果的外观与行为。
+从 AI 对话到实时预览，Fluxdown 随内容到达持续渲染 Markdown，让不断增长的内容保持流畅，并让你自由控制渲染结果的外观与行为。
 
 可以直接使用现有的 React 组件，也可以基于框架无关的核心构建自己的渲染器。
 
@@ -16,27 +16,27 @@
 - **纯响应式。** 文本、配置和插件都响应状态变化，渲染结果自动更新，无需手动刷新。
 - **高度可定制。** 自定义样式，也可以用自己的组件渲染链接、代码块等元素。
 - **插件化。** 通过可组合的插件扩展 Markdown 语法与渲染方式。
-- **核心层框架无关。** [`@flowdown/core`](../packages/core/docs/README.zh-CN.md) 基于框架无关的 [`reactive`](../packages/reactive/docs/README.zh-CN.md) 包构建，可用于实现不同 UI 框架的渲染器。
+- **核心层框架无关。** [`@fluxdown/core`](../packages/core/docs/README.zh-CN.md) 基于框架无关的 [`functive`](../packages/functive/docs/README.zh-CN.md) 包构建，可用于实现不同 UI 框架的渲染器。
 
 ## 快速上手：React
 
-以下示例使用 `flowdown` 包提供的 React 组件。
+以下示例使用 `fluxdown` 包提供的 React 组件。
 
 ### 安装
 
 在已有的 React 项目中安装：
 
 ```sh
-npm install flowdown
+npm install fluxdown
 ```
 
 ### 渲染 Markdown
 
 ```jsx
-import { Flowdown } from "flowdown";
+import { Fluxdown } from "fluxdown";
 
 export default function App() {
-  return <Flowdown text={"# Hello, Flowdown\n\nMarkdown that **keeps up**."} />;
+  return <Fluxdown text={"# Hello, Fluxdown\n\nMarkdown that **keeps up**."} />;
 }
 ```
 
@@ -45,10 +45,10 @@ export default function App() {
 每收到一个片段，就将累积的 Markdown 传给 `text`。开启 `smooth` 后，新内容会逐步平滑显示，可搭配任意流式 API。
 
 ```jsx
-import { Flowdown } from "flowdown";
+import { Fluxdown } from "fluxdown";
 
 export function StreamingMessage({ text }) {
-  return <Flowdown smooth text={text} build={{ repair: true, repairEnding: true }} />;
+  return <Fluxdown smooth text={text} build={{ repair: true, repairEnding: true }} />;
 }
 ```
 
@@ -57,7 +57,7 @@ export function StreamingMessage({ text }) {
 支持 `"light"`（默认）、`"dark"` 或 `[preset, overrides]`。直接传入部分 token 配置时扩展 light。
 
 ```jsx
-<Flowdown
+<Fluxdown
   text="# 你的 Markdown"
   theme={["dark", { tokens: { heading: { h1: { fontSize: "2.25rem" } } } }]}
 />

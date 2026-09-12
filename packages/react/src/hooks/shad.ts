@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { PREFIX } from '@flowdown/react-presets/base';
+import { PREFIX } from '@fluxdown/react-presets/base';
 import { isBoolean } from 'lodash-es';
 
 import type { ShadConfig } from '../types';

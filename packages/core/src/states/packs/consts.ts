@@ -1,10 +1,10 @@
-import type { SmoothSchedulerClass, SmoothTickerClass } from '@flowdown/core-presets/mapper';
+import type { SmoothSchedulerClass, SmoothTickerClass } from '@fluxdown/core-presets/mapper';
 
 import {
   IntervalSmoothTicker,
   RafSmoothTicker,
   SpringSmoothScheduler,
-} from '@flowdown/core-presets/mapper';
+} from '@fluxdown/core-presets/mapper';
 
 export const ALL_TICKERS: SmoothTickerClass[] = [RafSmoothTicker, IntervalSmoothTicker];
 

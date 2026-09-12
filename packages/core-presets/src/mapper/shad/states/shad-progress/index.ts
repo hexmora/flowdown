@@ -1,4 +1,3 @@
-import { last, sumBy } from 'lodash-es';
 import {
   BatchScheduler,
   once,
@@ -6,7 +5,8 @@ import {
   useClearable,
   useCombineMap,
   useSwitchMap,
-} from 'reactive';
+} from 'functive';
+import { last, sumBy } from 'lodash-es';
 import { shallowEqual } from 'shallow-equal';
 
 import type { ShadInputs } from '../../type';

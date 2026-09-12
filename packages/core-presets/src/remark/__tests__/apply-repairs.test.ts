@@ -1,10 +1,9 @@
-import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
+import type { RepairPluginRunner, RepairPluginSystemConfig } from '@fluxdown/types';
 import type { Root } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { first } from 'lodash-es';
 import { unified } from 'unified';
-import { describe, expect, test, vi } from 'vitest';
 
 import { ApplyRepairsRemarkPlugin } from '..';
 import {
@@ -153,7 +152,7 @@ describe('ApplyRepairsRemarkPlugin', () => {
         }
       };
     }
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
     try {
       expect(() =>
@@ -165,7 +164,7 @@ describe('ApplyRepairsRemarkPlugin', () => {
         ),
       ).not.toThrow();
       expect(events).toEqual(['after-error']);
-      expect(error).toHaveBeenCalledOnce();
+      expect(error).toHaveBeenCalledTimes(1);
     } finally {
       error.mockRestore();
     }
