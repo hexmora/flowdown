@@ -1,21 +1,19 @@
-import { describe, expect, test } from 'vitest';
-
 import { texToSvg } from '../renderer/components/mathjax-tex/utils';
 
 describe('MathJax formula isolation', () => {
   test('keeps locally defined macros inside the expression that defines them', () => {
-    expect(texToSvg('\\crossflowdownmacro', 'inline')).toBeNull();
-    expect(texToSvg('\\def\\crossflowdownmacro{shared}\\crossflowdownmacro', 'inline')).toContain(
+    expect(texToSvg('\\crossfluxdownmacro', 'inline')).toBeNull();
+    expect(texToSvg('\\def\\crossfluxdownmacro{shared}\\crossfluxdownmacro', 'inline')).toContain(
       '<svg',
     );
-    expect(texToSvg('\\crossflowdownmacro', 'inline')).toBeNull();
+    expect(texToSvg('\\crossfluxdownmacro', 'inline')).toBeNull();
   });
 
   test('isolates newcommand declarations across subsequent formulas and modes', () => {
     expect(
-      texToSvg('\\newcommand{\\globalflowdownmacro}{shared}\\globalflowdownmacro', 'display'),
+      texToSvg('\\newcommand{\\globalfluxdownmacro}{shared}\\globalfluxdownmacro', 'display'),
     ).toContain('<svg');
-    expect(texToSvg('\\globalflowdownmacro', 'inline')).toBeNull();
-    expect(texToSvg('\\globalflowdownmacro', 'display')).toBeNull();
+    expect(texToSvg('\\globalfluxdownmacro', 'inline')).toBeNull();
+    expect(texToSvg('\\globalfluxdownmacro', 'display')).toBeNull();
   });
 });

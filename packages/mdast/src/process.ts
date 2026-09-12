@@ -1,6 +1,6 @@
 import type { Parent, RootContent } from 'mdast';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { first, last } from 'lodash-es';
 
 import { isMdastParent } from './detect';

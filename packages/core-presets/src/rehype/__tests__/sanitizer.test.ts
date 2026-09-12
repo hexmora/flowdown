@@ -2,7 +2,6 @@ import type { Element, Nodes } from 'hast';
 import type { Schema as SanitizationSchema } from 'hast-util-sanitize';
 
 import { cloneDeep } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { RawParserRehypePlugin, SanitizerRehypePlugin, type SanitizerRehypePluginConfig } from '..';
 import { PatchesRemarkPlugin, SyntaxMathRemarkPlugin } from '../../remark';

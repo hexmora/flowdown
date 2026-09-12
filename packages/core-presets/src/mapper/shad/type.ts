@@ -1,6 +1,6 @@
-import type { IBlockState, MapperInputs } from '@flowdown/types';
+import type { IBlockState, MapperInputs } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 import type { Root as HastRoot } from 'hast';
-import type { IReadableClosure } from 'reactive';
 
 export interface ShadBaseInputs {
   /**

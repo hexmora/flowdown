@@ -1,12 +1,12 @@
-import type { MapperPluggable } from '@flowdown/core';
-import type { IPluggable, IPluginWithConfig } from '@flowdown/types';
-import type { FlattenedState } from 'reactive';
+import type { MapperPluggable } from '@fluxdown/core';
+import type { IPluggable, IPluginWithConfig } from '@fluxdown/types';
+import type { FlattenedState } from 'functive';
 
-import { toPluggable } from '@flowdown/core';
-import { useDeferredUnmount, useStateOf, useStatic } from '@flowdown/react-presets/base';
+import { toPluggable } from '@fluxdown/core';
+import { useDeferredUnmount, useStateOf, useStatic } from '@fluxdown/react-presets/base';
+import { flattenClosure } from 'functive';
 import { forEach } from 'lodash-es';
 import { useMemo } from 'react';
-import { flattenClosure } from 'reactive';
 import { shallowEqual } from 'shallow-equal';
 
 import type { IPluginItem, PluginConfigs } from '../types';

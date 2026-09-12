@@ -1,8 +1,7 @@
 import type { Element, ElementContent, Root, RootContent, Text } from 'hast';
 
-import { sliceHast } from '@flowdown/hast';
+import { sliceHast } from '@fluxdown/hast';
 import { create } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { BlockItem } from '..';
 

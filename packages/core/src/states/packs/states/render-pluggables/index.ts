@@ -1,6 +1,6 @@
-import type { IPluggable } from '@flowdown/types';
+import type { IPluggable } from '@fluxdown/types';
 
-import { memoReturns } from 'reactive';
+import { memoReturns } from 'functive';
 
 import type { IRenderPlugin } from '../../../../externals';
 import type { RenderPluggablesInputs } from './type';

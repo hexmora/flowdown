@@ -1,6 +1,6 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
 import type { IRenderPatchItem } from '../../../externals';
 import type { IPatchItem } from '../index';
@@ -25,7 +25,7 @@ describe('patch utilities', () => {
   });
 
   test('splits raw and render fields while preserving render functions', () => {
-    const render = vi.fn(() => 'rendered');
+    const render = jest.fn(() => 'rendered');
     const patches: IPatchItem<string>[] = [
       { key: 'named', range: [1, 3], render },
       { range: 4, render },

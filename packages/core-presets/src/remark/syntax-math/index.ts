@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
+import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@fluxdown/types';
 import { mathFromMarkdown, mathToMarkdown } from 'mdast-util-math';
 import { math } from 'micromark-extension-math';
 

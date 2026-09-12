@@ -1,4 +1,4 @@
-import { sizeOfHast, sliceHast } from '@flowdown/hast';
+import { sizeOfHast, sliceHast } from '@fluxdown/hast';
 
 import type { HastRoot } from '../../../typings';
 

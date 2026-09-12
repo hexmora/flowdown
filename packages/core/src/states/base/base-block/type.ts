@@ -1,6 +1,6 @@
-import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@flowdown/types';
-import type { Newable } from '@flowdown/utils';
-import type { IReadableClosure } from 'reactive';
+import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@fluxdown/types';
+import type { Newable } from '@fluxdown/utils';
+import type { IReadableClosure } from 'functive';
 
 export type BaseBlockItemInputs<T> = {
   source: IReadableClosure<T>;

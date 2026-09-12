@@ -1,8 +1,8 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 
+import { expectTypeOf } from 'expect-type';
+import { BatchScheduler, type IReactiveState, MutableState, render, S } from 'functive';
 import { cloneDeep } from 'lodash-es';
-import { BatchScheduler, type IReactiveState, MutableState, render, S } from 'reactive';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
 
 import { type IBlockSection, TextChunker } from '../index';
 import { type ChunkedPatch, chunkPatchesByTexts, chunkTextOfMarkdown } from '../utils';
@@ -514,7 +514,7 @@ describe('TextChunker', () => {
     const text = MutableState.of('# Initial\nparagraph\n');
     const patches = MutableState.of<IRawPatchItem[]>([{ key: 'paragraph', range: 10 }]);
     const closure = render(S([TextChunker, { text, patches }]));
-    const next = vi.fn();
+    const next = jest.fn();
 
     expectTypeOf(closure.value).toEqualTypeOf<IReactiveState<IBlockSection[]>>();
 
@@ -536,7 +536,7 @@ describe('TextChunker', () => {
       { text: '# Updated\n', patches: [] },
       { text: 'paragraph\n', patches: [{ key: 'paragraph', range: [0, 0] }] },
     ]);
-    expect(next).toHaveBeenCalledOnce();
+    expect(next).toHaveBeenCalledTimes(1);
 
     next.mockClear();
     patches.next([{ key: 'paragraph', range: [11, 14] }]);
@@ -545,7 +545,7 @@ describe('TextChunker', () => {
       { text: '# Updated\n', patches: [] },
       { text: 'paragraph\n', patches: [{ key: 'paragraph', range: [1, 4] }] },
     ]);
-    expect(next).toHaveBeenCalledOnce();
+    expect(next).toHaveBeenCalledTimes(1);
 
     next.mockClear();
     text.next('');
@@ -557,8 +557,8 @@ describe('TextChunker', () => {
   test('sets up lazily with the latest text and only subscribes once', () => {
     const text = MutableState.of('# Initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const textSubscribe = vi.spyOn(text, 'subscribe');
-    const patchSubscribe = vi.spyOn(patches, 'subscribe');
+    const textSubscribe = jest.spyOn(text, 'subscribe');
+    const patchSubscribe = jest.spyOn(patches, 'subscribe');
     const closure = render(S([TextChunker, { text, patches }]));
 
     expect(textSubscribe).not.toHaveBeenCalled();
@@ -568,15 +568,15 @@ describe('TextChunker', () => {
 
     expect(closure.value.value).toEqual([{ text: '# Latest\n', patches: [] }]);
     expect(closure.value.value).toEqual([{ text: '# Latest\n', patches: [] }]);
-    expect(textSubscribe).toHaveBeenCalledOnce();
-    expect(patchSubscribe).toHaveBeenCalledOnce();
+    expect(textSubscribe).toHaveBeenCalledTimes(1);
+    expect(patchSubscribe).toHaveBeenCalledTimes(1);
   });
 
   test('publishes only the final chunks from a batch', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
     const closure = render(S([TextChunker, { text, patches }]));
-    const next = vi.fn();
+    const next = jest.fn();
 
     closure.value.subscribe(next);
     next.mockClear();
@@ -621,8 +621,8 @@ describe('TextChunker', () => {
   test('does not subscribe when destroyed before setup', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
-    const textSubscribe = vi.spyOn(text, 'subscribe');
-    const patchSubscribe = vi.spyOn(patches, 'subscribe');
+    const textSubscribe = jest.spyOn(text, 'subscribe');
+    const patchSubscribe = jest.spyOn(patches, 'subscribe');
     const closure = render(S([TextChunker, { text, patches }]));
 
     closure.destroy();
@@ -668,13 +668,13 @@ describe('TextChunker', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
     const closure = render(S([TextChunker, { text, patches }]));
-    const error = vi.fn();
+    const error = jest.fn();
     const subscription = closure.value.subscribe({ error });
     const reason = new Error('failed');
 
     text.error(reason);
 
-    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(reason);
     expect(subscription.closed).toBe(true);
     expect(patches.closed).toBe(false);
@@ -687,13 +687,13 @@ describe('TextChunker', () => {
     const text = MutableState.of('initial\n');
     const patches = MutableState.of<IRawPatchItem[]>([]);
     const closure = render(S([TextChunker, { text, patches }]));
-    const error = vi.fn();
+    const error = jest.fn();
     const subscription = closure.value.subscribe({ error });
     const reason = new Error('failed');
 
     patches.error(reason);
 
-    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(reason);
     expect(subscription.closed).toBe(true);
     expect(text.closed).toBe(false);

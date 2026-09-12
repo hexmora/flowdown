@@ -2,11 +2,11 @@ import type {
   SmoothInputs,
   SmoothSchedulerClass,
   SmoothTickerClass,
-} from '@flowdown/core-presets/mapper';
-import type { IBlockState } from '@flowdown/types';
-import type { IReactiveState, IReadableClosure } from 'reactive';
+} from '@fluxdown/core-presets/mapper';
+import type { IBlockState } from '@fluxdown/types';
+import type { IReactiveState, IReadableClosure } from 'functive';
 
-import { expectTypeOf, test } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
 import type { HastRoot } from '../../typings';
 

@@ -4,10 +4,9 @@ import type {
   IRawPatchRange,
   IRehypePlugin,
   IRemarkPlugin,
-} from '@flowdown/types';
+} from '@fluxdown/types';
 import type { RootContent } from 'hast';
 
-import { isEqual, last, times, uniq } from 'lodash-es';
 import {
   BaseStateClosure,
   type IReactiveState,
@@ -19,8 +18,8 @@ import {
   render,
   S,
   toClosure,
-} from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+} from 'functive';
+import { isEqual, last, times, uniq } from 'lodash-es';
 
 import type { HastRoot } from '../../../../typings';
 import type { IBlockSection } from '../../../base';
@@ -68,10 +67,10 @@ const collectText = (node: HastRoot | RootContent): string => {
   return '';
 };
 
-const createRemarkAppender = (value: string, run = vi.fn()) => {
+const createRemarkAppender = (value: string, run = jest.fn()) => {
   const plugin: IRemarkPlugin = {
     config: {},
-    destroy: vi.fn(),
+    destroy: jest.fn(),
     plugin: () => (tree) => {
       run();
 
@@ -91,10 +90,10 @@ const createRemarkAppender = (value: string, run = vi.fn()) => {
   return { plugin, run };
 };
 
-const createRehypeAppender = (value: string, run = vi.fn()) => {
+const createRehypeAppender = (value: string, run = jest.fn()) => {
   const plugin: IRehypePlugin = {
     config: {},
-    destroy: vi.fn(),
+    destroy: jest.fn(),
     plugin: () => (tree) => {
       run();
       tree.children.push({ type: 'text', value });
@@ -105,7 +104,7 @@ const createRehypeAppender = (value: string, run = vi.fn()) => {
 };
 
 const createPluginDescriptor = <T>(getSource: () => T) => {
-  const destroy = vi.fn();
+  const destroy = jest.fn();
 
   class Plugin extends BaseStateClosure<T> {
     protected render() {
@@ -149,7 +148,7 @@ const setupCompiler = ({
   const remarkConfigs: IReactiveState<BlockRemarksConfig>[] = [];
   const remarks: MutableState<IRemarkPlugin[]>[] = [];
   const rehypes: MutableState<IRehypePlugin[]>[] = [];
-  const getRemarks = vi.fn(
+  const getRemarks = jest.fn(
     ({ config: configClosure }: { config: IReadableClosure<BlockRemarksConfig> }) => {
       const currentConfig = configClosure.value;
 
@@ -166,7 +165,7 @@ const setupCompiler = ({
       return plugins;
     },
   );
-  const getRehypes = vi.fn(() => {
+  const getRehypes = jest.fn(() => {
     if (createRehypes) {
       return createRehypes();
     }
@@ -299,7 +298,7 @@ describe('BlockCompiler', () => {
       { ...DEFAULT_CONFIG, patches: [patch('b', [1, 2])] },
     ]);
 
-    const configUpdates = harness.remarkConfigs.map(() => vi.fn());
+    const configUpdates = harness.remarkConfigs.map(() => jest.fn());
     const subscriptions = harness.remarkConfigs.map((state, index) => {
       const next = configUpdates[index];
 
@@ -314,15 +313,15 @@ describe('BlockCompiler', () => {
 
     harness.config.next({ ...DEFAULT_CONFIG, footnote: true });
 
-    expect(configUpdates[0]).toHaveBeenCalledOnce();
-    expect(configUpdates[1]).toHaveBeenCalledOnce();
+    expect(configUpdates[0]).toHaveBeenCalledTimes(1);
+    expect(configUpdates[1]).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs.map((state) => state.value.footnote)).toEqual([true, true]);
 
     configUpdates.forEach((next) => next.mockClear());
     harness.sections.next([section('a', [patch('a')]), section('b', [patch('next')])]);
 
     expect(configUpdates[0]).not.toHaveBeenCalled();
-    expect(configUpdates[1]).toHaveBeenCalledOnce();
+    expect(configUpdates[1]).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs[1]?.value.patches).toEqual([patch('next')]);
 
     configUpdates.forEach((next) => next.mockClear());
@@ -349,8 +348,8 @@ describe('BlockCompiler', () => {
       true,
     ]);
 
-    const updates = harness.remarkConfigs.map(() => vi.fn());
-    const completes = harness.remarkConfigs.map(() => vi.fn());
+    const updates = harness.remarkConfigs.map(() => jest.fn());
+    const completes = harness.remarkConfigs.map(() => jest.fn());
 
     harness.remarkConfigs.forEach((state, index) => {
       state.subscribe({ next: updates[index], complete: completes[index] });
@@ -367,7 +366,7 @@ describe('BlockCompiler', () => {
     ]);
     expect(updates[0]).not.toHaveBeenCalled();
     expect(updates[1]).not.toHaveBeenCalled();
-    expect(updates[2]).toHaveBeenCalledOnce();
+    expect(updates[2]).toHaveBeenCalledTimes(1);
 
     updates.forEach((next) => next.mockClear());
     harness.sections.next([section('a'), section('b')]);
@@ -375,8 +374,8 @@ describe('BlockCompiler', () => {
     expect(harness.remarkConfigs[0]?.value.repairEnding).toBe(false);
     expect(harness.remarkConfigs[1]?.value.repairEnding).toBe(true);
     expect(updates[0]).not.toHaveBeenCalled();
-    expect(updates[1]).toHaveBeenCalledOnce();
-    expect(completes[2]).toHaveBeenCalledOnce();
+    expect(updates[1]).toHaveBeenCalledTimes(1);
+    expect(completes[2]).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs[2]?.closed).toBe(true);
     expect(harness.remarkConfigs[3]?.closed).toBe(true);
 
@@ -386,11 +385,11 @@ describe('BlockCompiler', () => {
     expect(harness.remarkConfigs[0]?.value.repairEnding).toBe(false);
     expect(harness.remarkConfigs[1]?.value.repairEnding).toBe(false);
     expect(updates[0]).not.toHaveBeenCalled();
-    expect(updates[1]).toHaveBeenCalledOnce();
+    expect(updates[1]).toHaveBeenCalledTimes(1);
 
     harness.config.complete();
 
-    expect(completes[2]).toHaveBeenCalledOnce();
+    expect(completes[2]).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs[2]?.closed).toBe(true);
     expect(harness.remarkConfigs[3]?.closed).toBe(true);
   });
@@ -411,8 +410,8 @@ describe('BlockCompiler', () => {
 
     expect(block).toBeDefined();
 
-    const values = vi.fn();
-    const metas = vi.fn();
+    const values = jest.fn();
+    const metas = jest.fn();
 
     block?.value.subscribe(values);
     block?.meta.subscribe(metas);
@@ -421,9 +420,9 @@ describe('BlockCompiler', () => {
 
     harness.sections.next([section('new text', [patch('cursor')])]);
 
-    expect(values).toHaveBeenCalledOnce();
+    expect(values).toHaveBeenCalledTimes(1);
     expect(collectText(values.mock.calls[0]?.[0] as HastRoot)).toBe('new text|patched');
-    expect(metas).toHaveBeenCalledOnce();
+    expect(metas).toHaveBeenCalledTimes(1);
     expect(metas).toHaveBeenCalledWith({
       key: '1',
       sourceText: 'new text',
@@ -454,8 +453,8 @@ describe('BlockCompiler', () => {
     expect(first).toBeDefined();
     expect(collectText(first?.value.value as HastRoot)).toBe('old');
 
-    const values = vi.fn();
-    const metas = vi.fn();
+    const values = jest.fn();
+    const metas = jest.fn();
     const metaAtValueEmission: IBlockMeta[] = [];
 
     first?.value.subscribe((value) => {
@@ -473,10 +472,10 @@ describe('BlockCompiler', () => {
 
     harness.sections.next([section('new first')]);
 
-    expect(values).toHaveBeenCalledOnce();
+    expect(values).toHaveBeenCalledTimes(1);
     expect(collectText(values.mock.calls[0]?.[0] as HastRoot)).toBe('new first|ending');
-    expect(compile.run).toHaveBeenCalledOnce();
-    expect(metas).toHaveBeenCalledOnce();
+    expect(compile.run).toHaveBeenCalledTimes(1);
+    expect(metas).toHaveBeenCalledTimes(1);
     expect(metaAtValueEmission).toEqual([
       {
         key: '1',
@@ -505,11 +504,11 @@ describe('BlockCompiler', () => {
     expect(first).toBeDefined();
     expect(second).toBeDefined();
 
-    const outerNext = vi.fn();
-    const firstValueNext = vi.fn();
-    const secondValueNext = vi.fn();
-    const firstMetaNext = vi.fn();
-    const secondMetaNext = vi.fn();
+    const outerNext = jest.fn();
+    const firstValueNext = jest.fn();
+    const secondValueNext = jest.fn();
+    const firstMetaNext = jest.fn();
+    const secondMetaNext = jest.fn();
 
     harness.closure.value.subscribe(outerNext);
     first?.value.subscribe(firstValueNext);
@@ -530,10 +529,10 @@ describe('BlockCompiler', () => {
     expect(nextBlocks[0]).toBe(first);
     expect(nextBlocks[1]).toBe(second);
     expect(outerNext).not.toHaveBeenCalled();
-    expect(firstValueNext).toHaveBeenCalledOnce();
+    expect(firstValueNext).toHaveBeenCalledTimes(1);
     expect(secondValueNext).not.toHaveBeenCalled();
-    expect(firstMetaNext).toHaveBeenCalledOnce();
-    expect(secondMetaNext).toHaveBeenCalledOnce();
+    expect(firstMetaNext).toHaveBeenCalledTimes(1);
+    expect(secondMetaNext).toHaveBeenCalledTimes(1);
     expect(first?.meta.value).toEqual({
       key: '1',
       sourceText: 'longer',
@@ -555,10 +554,10 @@ describe('BlockCompiler', () => {
   });
 
   test('does not recompile blocks when only their offsets or list metadata change', () => {
-    const compile = vi.fn();
+    const compile = jest.fn();
     const plugin: IRehypePlugin = {
       config: {},
-      destroy: vi.fn(),
+      destroy: jest.fn(),
       plugin: () => (tree) => {
         compile(collectText(tree));
       },
@@ -573,7 +572,7 @@ describe('BlockCompiler', () => {
 
     harness.sections.next([section('longer first'), section('second')]);
 
-    expect(compile).toHaveBeenCalledOnce();
+    expect(compile).toHaveBeenCalledTimes(1);
     expect(compile).toHaveBeenCalledWith('longer first');
     compile.mockClear();
 
@@ -596,9 +595,9 @@ describe('BlockCompiler', () => {
     expect(first).toBeDefined();
     expect(second).toBeDefined();
 
-    const firstNext = vi.fn();
-    const secondNext = vi.fn();
-    const outerNext = vi.fn();
+    const firstNext = jest.fn();
+    const secondNext = jest.fn();
+    const outerNext = jest.fn();
 
     first?.value.subscribe(firstNext);
     second?.value.subscribe(secondNext);
@@ -611,7 +610,7 @@ describe('BlockCompiler', () => {
 
     expect(collectText(first?.value.value as HastRoot)).toBe('a|remark');
     expect(first?.length.value).toBe(8);
-    expect(firstNext).toHaveBeenCalledOnce();
+    expect(firstNext).toHaveBeenCalledTimes(1);
     expect(secondNext).not.toHaveBeenCalled();
     expect(outerNext).not.toHaveBeenCalled();
 
@@ -622,7 +621,7 @@ describe('BlockCompiler', () => {
     expect(collectText(second?.value.value as HastRoot)).toBe('b');
     expect(first?.length.value).toBe(15);
     expect(second?.length.value).toBe(1);
-    expect(firstNext).toHaveBeenCalledOnce();
+    expect(firstNext).toHaveBeenCalledTimes(1);
     expect(secondNext).not.toHaveBeenCalled();
     expect(outerNext).not.toHaveBeenCalled();
   });
@@ -634,8 +633,8 @@ describe('BlockCompiler', () => {
 
     expect(collectText(first?.value.value as HastRoot)).toBe('a');
 
-    const outerNext = vi.fn();
-    const secondComplete = vi.fn();
+    const outerNext = jest.fn();
+    const secondComplete = jest.fn();
 
     harness.closure.value.subscribe(outerNext);
     second?.value.subscribe({ complete: secondComplete });
@@ -652,14 +651,14 @@ describe('BlockCompiler', () => {
     expect(harness.getRemarks).toHaveBeenCalledTimes(3);
     expect(harness.getRehypes).toHaveBeenCalledTimes(3);
 
-    const thirdComplete = vi.fn();
+    const thirdComplete = jest.fn();
 
     third?.value.subscribe({ complete: thirdComplete });
     harness.sections.next([section('a')]);
 
     expect(harness.closure.value.value).toEqual([first]);
-    expect(secondComplete).toHaveBeenCalledOnce();
-    expect(thirdComplete).toHaveBeenCalledOnce();
+    expect(secondComplete).toHaveBeenCalledTimes(1);
+    expect(thirdComplete).toHaveBeenCalledTimes(1);
     expect(second?.value.closed).toBe(true);
     expect(third?.value.closed).toBe(true);
     expect(harness.remarks[1]?.closed).toBe(false);
@@ -687,8 +686,8 @@ describe('BlockCompiler', () => {
 
     expect(block).toBeDefined();
 
-    const outerComplete = vi.fn();
-    const blockComplete = vi.fn();
+    const outerComplete = jest.fn();
+    const blockComplete = jest.fn();
 
     harness.closure.value.subscribe({ complete: outerComplete });
     block?.value.subscribe({ complete: blockComplete });
@@ -696,8 +695,8 @@ describe('BlockCompiler', () => {
     harness.closure.destroy();
     harness.closure.destroy();
 
-    expect(outerComplete).toHaveBeenCalledOnce();
-    expect(blockComplete).toHaveBeenCalledOnce();
+    expect(outerComplete).toHaveBeenCalledTimes(1);
+    expect(blockComplete).toHaveBeenCalledTimes(1);
     expect(harness.closure.value.closed).toBe(true);
     expect(block?.value.closed).toBe(true);
     expect(harness.remarkConfigs[0]?.closed).toBe(true);
@@ -745,8 +744,8 @@ describe('BlockCompiler', () => {
 
     harness.closure.destroy();
 
-    expect(harness.getRemarks).toHaveBeenCalledOnce();
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRemarks).toHaveBeenCalledTimes(1);
+    expect(harness.getRehypes).toHaveBeenCalledTimes(1);
     expect(getObserverCount(harness.sections)).toBe(0);
     expect(getObserverCount(harness.config)).toBe(0);
     expect(getObserverCount(sharedRemarks)).toBe(0);
@@ -760,18 +759,18 @@ describe('BlockCompiler', () => {
   test('destroys block contexts after the section source errors', () => {
     const harness = setupCompiler({ sections: [section('a')] });
     const [block] = harness.closure.value.value;
-    const error = vi.fn();
-    const blockComplete = vi.fn();
+    const error = jest.fn();
+    const blockComplete = jest.fn();
     const reason = new Error('failed');
 
     harness.closure.value.subscribe({ error });
     block?.value.subscribe({ complete: blockComplete });
     harness.sections.error(reason);
 
-    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(reason);
     expect(() => harness.closure.destroy()).not.toThrow();
-    expect(blockComplete).toHaveBeenCalledOnce();
+    expect(blockComplete).toHaveBeenCalledTimes(1);
     expect(block?.value.closed).toBe(true);
     expect(harness.remarkConfigs[0]?.closed).toBe(true);
     expect(harness.config.closed).toBe(false);
@@ -785,7 +784,7 @@ describe('BlockCompiler', () => {
     harness.closure.destroy();
     harness.closure.destroy();
 
-    expect(() => harness.closure.value).toThrowError('Cannot set up a destroyed state closure.');
+    expect(() => harness.closure.value).toThrow('Cannot set up a destroyed state closure.');
     expect(harness.getRemarks).not.toHaveBeenCalled();
     expect(harness.getRehypes).not.toHaveBeenCalled();
 
@@ -828,10 +827,10 @@ describe('BlockCompiler', () => {
 
     expect(block).toBeDefined();
 
-    const outerNext = vi.fn();
-    const valueNext = vi.fn();
-    const metaNext = vi.fn();
-    const remarksConfigNext = vi.fn();
+    const outerNext = jest.fn();
+    const valueNext = jest.fn();
+    const metaNext = jest.fn();
+    const remarksConfigNext = jest.fn();
 
     harness.closure.value.subscribe(outerNext);
     block?.value.subscribe(valueNext);
@@ -849,8 +848,8 @@ describe('BlockCompiler', () => {
     expect(valueNext).not.toHaveBeenCalled();
     expect(metaNext).not.toHaveBeenCalled();
     expect(remarksConfigNext).not.toHaveBeenCalled();
-    expect(harness.getRemarks).toHaveBeenCalledOnce();
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRemarks).toHaveBeenCalledTimes(1);
+    expect(harness.getRehypes).toHaveBeenCalledTimes(1);
   });
 
   test('does not create plugin graphs for an empty list until a block is added', () => {
@@ -865,8 +864,8 @@ describe('BlockCompiler', () => {
 
     harness.sections.next([section('now present')]);
 
-    expect(harness.getRemarks).toHaveBeenCalledOnce();
-    expect(harness.getRehypes).toHaveBeenCalledOnce();
+    expect(harness.getRemarks).toHaveBeenCalledTimes(1);
+    expect(harness.getRehypes).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs[0]?.value.tex).toBe(true);
   });
 
@@ -899,21 +898,21 @@ describe('BlockCompiler', () => {
       },
     });
 
-    expect(() => harness.closure.value).toThrowError('Failed to read remarks.');
-    expect(remarks.destroy).toHaveBeenCalledOnce();
+    expect(() => harness.closure.value).toThrow('Failed to read remarks.');
+    expect(remarks.destroy).toHaveBeenCalledTimes(1);
     expect(remarksConfig?.closed).toBe(true);
     expect(getObserverCount(harness.config)).toBe(0);
 
     harness.closure.destroy();
 
-    expect(remarks.destroy).toHaveBeenCalledOnce();
+    expect(remarks.destroy).toHaveBeenCalledTimes(1);
   });
 
   test('destroys owned plugin descriptors when block setup fails', () => {
     const failure = new Error('Failed to compile remarks.');
     const throwingRemark: IRemarkPlugin = {
       config: {},
-      destroy: vi.fn(),
+      destroy: jest.fn(),
       plugin: () => {
         throw failure;
       },
@@ -927,14 +926,14 @@ describe('BlockCompiler', () => {
     });
 
     expect(() => harness.closure.value).toThrow(failure);
-    expect(remarks.destroy).toHaveBeenCalledOnce();
-    expect(rehypes.destroy).toHaveBeenCalledOnce();
+    expect(remarks.destroy).toHaveBeenCalledTimes(1);
+    expect(rehypes.destroy).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs[0]?.closed).toBe(true);
 
     harness.closure.destroy();
 
-    expect(remarks.destroy).toHaveBeenCalledOnce();
-    expect(rehypes.destroy).toHaveBeenCalledOnce();
+    expect(remarks.destroy).toHaveBeenCalledTimes(1);
+    expect(rehypes.destroy).toHaveBeenCalledTimes(1);
   });
 
   test('destroys plugin descriptors from earlier blocks when the same render pass fails', () => {
@@ -952,23 +951,23 @@ describe('BlockCompiler', () => {
       getRehypes: () => rehypes.descriptor,
     });
 
-    expect(() => harness.closure.value).toThrowError('Failed to read the next remarks.');
-    expect(firstRemarks.destroy).toHaveBeenCalledOnce();
-    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(() => harness.closure.value).toThrow('Failed to read the next remarks.');
+    expect(firstRemarks.destroy).toHaveBeenCalledTimes(1);
+    expect(failedRemarks.destroy).toHaveBeenCalledTimes(1);
     expect(rehypes.destroy).toHaveBeenCalledTimes(2);
     expect(harness.remarkConfigs.every(({ closed }) => closed)).toBe(true);
 
     harness.closure.destroy();
 
-    expect(firstRemarks.destroy).toHaveBeenCalledOnce();
-    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(firstRemarks.destroy).toHaveBeenCalledTimes(1);
+    expect(failedRemarks.destroy).toHaveBeenCalledTimes(1);
     expect(rehypes.destroy).toHaveBeenCalledTimes(2);
   });
 
   test('releases failed append graphs while retaining existing blocks until destroy', () => {
     const source = MutableState.of<IRemarkPlugin[]>([]);
     const existingRemarks = new Source({ source: toClosure(source) });
-    const existingDestroy = vi.spyOn(existingRemarks, 'destroy');
+    const existingDestroy = jest.spyOn(existingRemarks, 'destroy');
     const appendedRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => []);
     const failure = new Error('Failed to read appended remarks.');
     const failedRemarks = createPluginDescriptor<IRemarkPlugin[]>(() => {
@@ -977,8 +976,8 @@ describe('BlockCompiler', () => {
     const rehypes = createPluginDescriptor<IRehypePlugin[]>(() => []);
     const harness = setupCompiler({
       sections: [section('existing')],
-      getRemarks: vi
-        .fn<() => ReadableClosureSource<IRemarkPlugin[]>>()
+      getRemarks: jest
+        .fn<ReadableClosureSource<IRemarkPlugin[]>, []>()
         .mockReturnValueOnce(existingRemarks)
         .mockReturnValueOnce(appendedRemarks.descriptor)
         .mockReturnValue(failedRemarks.descriptor),
@@ -986,15 +985,15 @@ describe('BlockCompiler', () => {
     });
     const output = harness.closure.value;
     const [block] = output.value;
-    const error = vi.fn();
+    const error = jest.fn();
 
     output.subscribe({ error });
     harness.sections.next([section('existing'), section('appended'), section('failed')]);
 
-    expect(error).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledWith(failure);
-    expect(appendedRemarks.destroy).toHaveBeenCalledOnce();
-    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(appendedRemarks.destroy).toHaveBeenCalledTimes(1);
+    expect(failedRemarks.destroy).toHaveBeenCalledTimes(1);
     expect(harness.remarkConfigs.slice(1).every(({ closed }) => closed)).toBe(true);
     expect(existingDestroy).not.toHaveBeenCalled();
     expect(rehypes.destroy).toHaveBeenCalledTimes(2);
@@ -1006,10 +1005,10 @@ describe('BlockCompiler', () => {
 
     harness.closure.destroy();
 
-    expect(existingDestroy).toHaveBeenCalledOnce();
+    expect(existingDestroy).toHaveBeenCalledTimes(1);
     expect(rehypes.destroy).toHaveBeenCalledTimes(3);
-    expect(appendedRemarks.destroy).toHaveBeenCalledOnce();
-    expect(failedRemarks.destroy).toHaveBeenCalledOnce();
+    expect(appendedRemarks.destroy).toHaveBeenCalledTimes(1);
+    expect(failedRemarks.destroy).toHaveBeenCalledTimes(1);
     expect(block?.value.closed).toBe(true);
     expect(harness.remarkConfigs.every(({ closed }) => closed)).toBe(true);
     expect(getObserverCount(source)).toBe(0);
@@ -1057,7 +1056,7 @@ describe('BlockCompiler', () => {
   });
 
   test('releases every removed block plugin subscription under sustained list changes', () => {
-    const run = vi.fn();
+    const run = jest.fn();
     const remark = createRemarkAppender('|remark', run).plugin;
     const sharedRemarks = MutableState.of<IRemarkPlugin[]>([remark]);
     const sharedRehypes = MutableState.of<IRehypePlugin[]>([]);

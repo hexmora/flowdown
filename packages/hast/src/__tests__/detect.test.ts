@@ -1,7 +1,5 @@
 import type { Element } from 'hast';
 
-import { describe, expect, test } from 'vitest';
-
 import { isHastElement } from '../detect';
 
 describe('hast node detection', () => {

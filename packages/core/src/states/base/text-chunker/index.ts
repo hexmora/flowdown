@@ -1,5 +1,5 @@
+import { once, useCombineMap, useMap } from 'functive';
 import { isEqual } from 'lodash-es';
-import { once, useCombineMap, useMap } from 'reactive';
 
 import type { TextChunkerInputs } from './type';
 

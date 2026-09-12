@@ -1,11 +1,10 @@
-import type { IReactRenderPluggable } from '@flowdown/react-presets/base';
+import type { IReactRenderPluggable } from '@fluxdown/react-presets/base';
 
 import { render, waitFor } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
 
 import type { IPluginItem } from '../types';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 
 interface LifecycleCounts {
   created: number;
@@ -49,7 +48,7 @@ describe('render plugin lifecycle', () => {
     const SecondPlugin = createTrackedRenderPlugin('lifecycle-render-second', secondCounts);
 
     const view = render(
-      <Flowdown text="lifecycle" plugins={createPluginPacks([FirstPlugin, SecondPlugin])} />,
+      <Fluxdown text="lifecycle" plugins={createPluginPacks([FirstPlugin, SecondPlugin])} />,
     );
 
     await waitFor(() => {
@@ -59,18 +58,18 @@ describe('render plugin lifecycle', () => {
     });
 
     view.rerender(
-      <Flowdown text="lifecycle" plugins={createPluginPacks([FirstPlugin, SecondPlugin])} />,
+      <Fluxdown text="lifecycle" plugins={createPluginPacks([FirstPlugin, SecondPlugin])} />,
     );
 
     view.rerender(
-      <Flowdown text="lifecycle" plugins={createPluginPacks([SecondPlugin, FirstPlugin])} />,
+      <Fluxdown text="lifecycle" plugins={createPluginPacks([SecondPlugin, FirstPlugin])} />,
     );
 
     expect(firstCounts).toEqual({ created: 1, destroyed: 0 });
 
     expect(secondCounts).toEqual({ created: 1, destroyed: 0 });
 
-    view.rerender(<Flowdown text="lifecycle" plugins={createPluginPacks([SecondPlugin])} />);
+    view.rerender(<Fluxdown text="lifecycle" plugins={createPluginPacks([SecondPlugin])} />);
 
     await waitFor(() => {
       expect(firstCounts).toEqual({ created: 1, destroyed: 1 });
@@ -121,7 +120,7 @@ describe('render plugin lifecycle', () => {
     };
 
     const renderConfigured = (label: string) => (
-      <Flowdown text="configured" plugins={[{ renders: [configured(label)] }]} />
+      <Fluxdown text="configured" plugins={[{ renders: [configured(label)] }]} />
     );
 
     const view = render(renderConfigured('same'));

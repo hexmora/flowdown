@@ -3,11 +3,11 @@ import type {
   IRenderPlugin,
   IRenderPluginMatchParams,
   IRenderPluginRenderParams,
-} from '@flowdown/core';
-import type { IPluggable } from '@flowdown/types';
+} from '@fluxdown/core';
+import type { IPluggable } from '@fluxdown/types';
+import type { IReactiveState } from 'functive';
 import type { Element, ElementContent, Parent } from 'hast';
 import type { ReactNode } from 'react';
-import type { IReactiveState } from 'reactive';
 
 export interface ReactRenderExtraParams {
   getProps: (node?: Element) => Record<string, unknown>;

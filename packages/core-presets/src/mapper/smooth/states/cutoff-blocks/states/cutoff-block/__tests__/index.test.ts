@@ -1,8 +1,8 @@
-import type { IBlockState } from '@flowdown/types';
-import type { IReactiveState } from 'reactive';
+import type { IBlockState } from '@fluxdown/types';
+import type { IReactiveState } from 'functive';
 
-import { D, MutableState, render, S } from 'reactive';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
+import { D, MutableState, render, S } from 'functive';
 
 import { CutoffBlock } from '..';
 import { createArrayBlock } from '../../../../../__tests__/block';
@@ -21,9 +21,9 @@ describe('CutoffBlock', () => {
 
     const fork = state.value.value;
 
-    const output = vi.fn();
+    const output = jest.fn();
 
-    const destroy = vi.spyOn(fork, 'destroy');
+    const destroy = jest.spyOn(fork, 'destroy');
 
     state.value.subscribe(output);
 
@@ -47,13 +47,13 @@ describe('CutoffBlock', () => {
 
     expect(fork.value.value).toEqual([1, 2, 3]);
 
-    expect(output).toHaveBeenCalledOnce();
+    expect(output).toHaveBeenCalledTimes(1);
 
     state.destroy();
 
     state.destroy();
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     expect([source, meta, end, count].every((input) => !input.closed)).toBe(true);
   });

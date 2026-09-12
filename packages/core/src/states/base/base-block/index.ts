@@ -1,7 +1,7 @@
-import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@flowdown/types';
-import type { IReactiveState, IReadableClosure } from 'reactive';
+import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@fluxdown/types';
+import type { IReactiveState, IReadableClosure } from 'functive';
 
-import { BaseStateClosure, toClosure } from 'reactive';
+import { BaseStateClosure, toClosure } from 'functive';
 
 import type { BaseBlockItemInputs, BlockItemClass } from './type';
 

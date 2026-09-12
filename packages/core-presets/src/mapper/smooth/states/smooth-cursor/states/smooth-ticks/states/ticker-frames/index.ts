@@ -1,5 +1,5 @@
+import { once, ReactiveState, useClearable, useMap } from 'functive';
 import { once as onceCallback } from 'lodash-es';
-import { once, ReactiveState, useClearable, useMap } from 'reactive';
 
 import type { SmoothTick, TickerFramesInputs } from './type';
 

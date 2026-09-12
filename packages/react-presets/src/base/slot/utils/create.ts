@@ -50,7 +50,7 @@ const isSlotPropsEqual = (left: StyleProps, right: StyleProps): boolean => {
 export const createTypeOfSlot = <T extends SlotType>(type: T): ComponentType<SlotInputProps<T>> => {
   const TypeOfSlot = (props: SlotInputProps<T>) => createElement(SlotRenderer, { props, type });
 
-  TypeOfSlot.displayName = `FlowdownTypeOfSlot(${type})`;
+  TypeOfSlot.displayName = `FluxdownTypeOfSlot(${type})`;
 
   return memo<SlotInputProps<T>>(TypeOfSlot, isSlotPropsEqual);
 };

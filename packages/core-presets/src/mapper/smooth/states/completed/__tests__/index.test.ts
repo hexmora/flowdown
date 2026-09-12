@@ -5,8 +5,7 @@ import {
   ReactiveState,
   render,
   S,
-} from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+} from 'functive';
 
 import { Completed } from '..';
 
@@ -16,9 +15,9 @@ describe('Completed', () => {
 
     const completed = render(S([Completed, { source }]));
 
-    const next = vi.fn();
+    const next = jest.fn();
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     completed.value.subscribe({ next, complete });
 
@@ -26,7 +25,8 @@ describe('Completed', () => {
 
     source.next(2);
 
-    expect(next).toHaveBeenCalledExactlyOnceWith(false);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(false);
 
     source.complete();
 
@@ -34,7 +34,7 @@ describe('Completed', () => {
 
     expect(completed.value.closed).toBe(true);
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
 
     completed.destroy();
   });
@@ -58,7 +58,7 @@ describe('Completed', () => {
 
     const output = combineMapClosure([source, completed], ([value, closed]) => ({ value, closed }));
 
-    const next = vi.fn();
+    const next = jest.fn();
 
     output.value.subscribe(next);
 
@@ -70,7 +70,8 @@ describe('Completed', () => {
       source.complete();
     });
 
-    expect(next).toHaveBeenCalledExactlyOnceWith({ value: 2, closed: true });
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith({ value: 2, closed: true });
 
     expect(output.value.closed).toBe(true);
 
@@ -104,19 +105,21 @@ describe('Completed', () => {
 
     const failure = new Error('Source failed.');
 
-    const next = vi.fn();
+    const next = jest.fn();
 
-    const error = vi.fn();
+    const error = jest.fn();
 
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     completed.value.subscribe({ next, error, complete });
 
     source.error(failure);
 
-    expect(next).toHaveBeenCalledExactlyOnceWith(false);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledWith(false);
 
-    expect(error).toHaveBeenCalledExactlyOnceWith(failure);
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(failure);
 
     expect(complete).not.toHaveBeenCalled();
 
@@ -128,7 +131,7 @@ describe('Completed', () => {
   test('releases its subscription without destroying the borrowed source', () => {
     const source = MutableState.of(1);
 
-    const subscribe = vi.spyOn(source, 'subscribe');
+    const subscribe = jest.spyOn(source, 'subscribe');
 
     const completed = render(S([Completed, { source }]));
 
@@ -136,9 +139,13 @@ describe('Completed', () => {
 
     expect(completed.value.value).toBe(false);
 
-    expect(subscribe).toHaveBeenCalledOnce();
+    expect(subscribe).toHaveBeenCalledTimes(1);
 
     const [subscription] = subscribe.mock.results;
+
+    if (subscription.type !== 'return') {
+      throw new Error('Expected subscribe to return a subscription');
+    }
 
     expect(subscription.value.closed).toBe(false);
 

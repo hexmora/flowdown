@@ -7,8 +7,6 @@ import type {
   ThematicBreak,
 } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { processMdast, type ProcessMdastParams } from '../process';
 
 declare module 'mdast' {
@@ -249,8 +247,8 @@ describe('processMdast', () => {
       },
     });
 
-    expect(breakAfterTraversal).toBeTypeOf('function');
-    expect(skipTreeAfterTraversal).toBeTypeOf('function');
+    expect(typeof breakAfterTraversal).toBe('function');
+    expect(typeof skipTreeAfterTraversal).toBe('function');
     expect(() => {
       breakAfterTraversal?.();
     }).toThrow('processMdast: break must be called during a visit');

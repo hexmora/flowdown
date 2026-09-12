@@ -1,0 +1,310 @@
+name: Publish npm packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Prepare a beta or resume a previously prepared release
+        type: choice
+        required: true
+        default: beta
+        options:
+          - beta
+          - resume-stable
+          - resume-beta
+      run_id:
+        description: Original publishing workflow run ID (required for resume)
+        type: string
+        required: false
+      artifact_id:
+        description: Exact verified release artifact ID (required for resume)
+        type: string
+        required: false
+      bootstrap:
+        description: First beta publication using the temporary npm-beta environment token
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    outputs:
+      mode: ${{ steps.resolve.outputs.mode }}
+      channel: ${{ steps.resolve.outputs.channel }}
+      source-sha: ${{ steps.resolve.outputs.source-sha }}
+      run-id: ${{ steps.resolve.outputs.run-id }}
+      run-attempt: ${{ steps.resolve.outputs.run-attempt }}
+      artifact-id: ${{ steps.resolve.outputs.artifact-id }}
+      candidate-artifact-id: ${{ steps.candidate.outputs.artifact-id }}
+    steps:
+      - name: Require main and a new workflow run
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_ATTEMPT: ${{ github.run_attempt }}
+          RELEASE_EVENT: ${{ github.event_name }}
+          RELEASE_OPERATION: ${{ inputs.operation }}
+          RELEASE_BOOTSTRAP: ${{ inputs.bootstrap == true }}
+        run: |
+          test "$RELEASE_REF" = refs/heads/main
+          test "$RELEASE_ATTEMPT" = 1
+          if [ "$RELEASE_BOOTSTRAP" = true ]; then
+            test "$RELEASE_EVENT" = workflow_dispatch
+            test "$RELEASE_OPERATION" = beta
+          fi
+
+      - name: Checkout trusted release orchestration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          runtime: node@24.14.1
+          cache: false
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve the release candidate or original artifact
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm exec tsx scripts/release-github.ts resolve
+
+      - name: Pass the reviewed stable candidate to preparation
+        if: steps.resolve.outputs.mode == 'prepare' && steps.resolve.outputs.channel == 'stable'
+        id: candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: stable-candidate-${{ github.run_id }}
+          path: .release/candidate.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Summarize the original artifact before renewed approval
+        if: steps.resolve.outputs.mode == 'resume'
+        env:
+          RELEASE_CHANNEL: ${{ steps.resolve.outputs.channel }}
+          RELEASE_SOURCE: ${{ steps.resolve.outputs.source-sha }}
+          RELEASE_ARTIFACT_ID: ${{ steps.resolve.outputs.artifact-id }}
+          RELEASE_ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ steps.resolve.outputs.run-id }}/artifacts/${{ steps.resolve.outputs.artifact-id }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          const env = process.env;
+          appendFileSync(env.GITHUB_STEP_SUMMARY, [
+            '## Resume publication',
+            '',
+            `Channel: ${env.RELEASE_CHANNEL}`,
+            `Source SHA: ${env.RELEASE_SOURCE}`,
+            `Artifact ID: ${env.RELEASE_ARTIFACT_ID}`,
+            '',
+            `[Review the original manifest and tarballs](${env.RELEASE_ARTIFACT_URL}).`,
+            'A new explicit approval from hexmora is required. No new package bytes are prepared.',
+            '',
+          ].join('\n'));
+          NODE
+
+  prepare:
+    needs: resolve
+    if: needs.resolve.outputs.mode == 'prepare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      artifact-id: ${{ steps.packages.outputs.artifact-id }}
+    steps:
+      - name: Checkout the fixed source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.resolve.outputs.source-sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          runtime: node@24.14.1
+          cache: false
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check workspace
+        run: pnpm check
+
+      - name: Match the pinned publishing npm version
+        run: |
+          npm install --global npm@11.15.0 --ignore-scripts
+          test "$(npm --version)" = 11.15.0
+
+      - name: Download the exact stable candidate
+        if: needs.resolve.outputs.channel == 'stable'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          artifact-ids: ${{ needs.resolve.outputs.candidate-artifact-id }}
+          path: .release
+          merge-multiple: true
+
+      - name: Build and verify stable archives
+        if: needs.resolve.outputs.channel == 'stable'
+        run: pnpm exec moon run workspace:release-prepare -- --channel stable --output .release/prepared --candidate .release/candidate.json
+
+      - name: Build and verify beta archives
+        if: needs.resolve.outputs.channel == 'beta'
+        run: pnpm exec moon run workspace:release-prepare -- --channel beta --output .release/prepared
+
+      - name: Save verified packages before requesting approval
+        id: packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-${{ needs.resolve.outputs.channel }}-${{ github.run_id }}
+          path: .release/prepared
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Summarize the verified packages for owner review
+        continue-on-error: true
+        env:
+          RELEASE_ARTIFACT_URL: ${{ steps.packages.outputs.artifact-url }}
+          RELEASE_ARTIFACT_ID: ${{ steps.packages.outputs.artifact-id }}
+          RELEASE_BOOTSTRAP: ${{ inputs.bootstrap == true }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const manifest = JSON.parse(readFileSync('.release/prepared/manifest.json', 'utf8'));
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, [
+            '## Verified release awaiting owner approval',
+            '',
+            `Channel: ${manifest.channel}; npm tag: ${manifest.tag}`,
+            process.env.RELEASE_BOOTSTRAP === 'true'
+              ? 'Bootstrap: first beta publication using the temporary npm-beta token.'
+              : 'Authentication: npm Trusted Publishing (OIDC).',
+            `Source SHA: ${manifest.sourceSha}`,
+            `Artifact ID: ${process.env.RELEASE_ARTIFACT_ID}`,
+            '',
+            `[Download the manifest and tarballs](${process.env.RELEASE_ARTIFACT_URL}).`,
+            '',
+            '| Package | Version | SHA-256 |',
+            '| --- | --- | --- |',
+            ...manifest.packages.map(pkg => `| ${pkg.name} | ${pkg.version} | ${pkg.sha256} |`),
+            '',
+            'Workspace checks, package checks, and independent consumer checks passed.',
+            'Publication requires an explicit environment approval from hexmora.',
+            '',
+          ].join('\n'));
+          NODE
+
+  publish:
+    needs: [resolve, prepare]
+    if: >-
+      always() && !cancelled() && github.run_attempt == 1 &&
+      needs.resolve.result == 'success' &&
+      (needs.resolve.outputs.channel == 'stable' || needs.resolve.outputs.channel == 'beta') &&
+      (needs.prepare.result == 'success' || needs.resolve.outputs.mode == 'resume')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Only actual publishing shares the registry lock; unrelated main pushes may
+    # resolve or prepare without cancelling an owner-approved publication.
+    concurrency:
+      group: npm-publish
+      cancel-in-progress: false
+    # Both environments require hexmora's explicit approval, including self-review.
+    environment: ${{ needs.resolve.outputs.channel == 'stable' && 'npm-production' || 'npm-beta' }}
+    permissions:
+      contents: write
+      actions: read
+      id-token: write
+    env:
+      EXPECTED_RELEASE_CHANNEL: ${{ needs.resolve.outputs.channel }}
+      EXPECTED_RELEASE_SOURCE_SHA: ${{ needs.resolve.outputs.source-sha }}
+      EXPECTED_RELEASE_REPOSITORY: ${{ github.repository }}
+      EXPECTED_RELEASE_RUN_ID: ${{ needs.resolve.outputs.run-id }}
+      EXPECTED_RELEASE_RUN_ATTEMPT: ${{ needs.resolve.outputs.run-attempt }}
+    steps:
+      - name: Reject job reruns
+        env:
+          RELEASE_ATTEMPT: ${{ github.run_attempt }}
+        run: test "$RELEASE_ATTEMPT" = 1
+
+      # Resume executes protected scripts from this new main run. The artifact's
+      # original source SHA is separately verified; its code is never rebuilt.
+      - name: Checkout trusted publishing scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@c8e77b72cd6022852162c92aa10e7e72b7209c9b # v2
+        with:
+          runtime: node@24.14.1
+          cache: false
+          install: false
+
+      - name: Install locked publishing tools
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up pinned npm for trusted publishing
+        run: |
+          export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/fluxdown-npmrc"
+          printf '%s\n' "NPM_CONFIG_USERCONFIG=$NPM_CONFIG_USERCONFIG" >> "$GITHUB_ENV"
+          : > "$NPM_CONFIG_USERCONFIG"
+          npm install --global npm@11.15.0 --ignore-scripts
+          test "$(npm --version)" = 11.15.0
+
+      - name: Download the exact verified release artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          artifact-ids: ${{ needs.resolve.outputs.mode == 'resume' && needs.resolve.outputs.artifact-id || needs.prepare.outputs.artifact-id }}
+          run-id: ${{ needs.resolve.outputs.run-id }}
+          github-token: ${{ github.token }}
+          path: .release/prepared
+          merge-multiple: true
+
+      - name: Verify the owner's approval for this new run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm exec tsx scripts/release-github.ts verify-approval
+
+      - name: Publish only the verified tarballs
+        env:
+          RELEASE_BOOTSTRAP: ${{ inputs.bootstrap == true }}
+          RELEASE_OPERATION: ${{ inputs.operation }}
+          NPM_BOOTSTRAP_TOKEN: ${{ inputs.bootstrap == true && secrets.NPM_BOOTSTRAP_TOKEN || '' }}
+        run: |
+          trap ': > "$NPM_CONFIG_USERCONFIG"' EXIT
+          if [ "$RELEASE_BOOTSTRAP" = true ]; then
+            test "$RELEASE_OPERATION" = beta
+            test "$EXPECTED_RELEASE_CHANNEL" = beta
+            test -n "$NPM_BOOTSTRAP_TOKEN"
+            printf '%s\n' '//registry.npmjs.org/:_authToken=${NPM_BOOTSTRAP_TOKEN}' > "$NPM_CONFIG_USERCONFIG"
+          fi
+          pnpm exec moon run workspace:release-publish -- --from-artifact .release/prepared --publish
+
+      - name: Finalize release metadata
+        if: needs.resolve.outputs.channel == 'stable'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm exec tsx scripts/release-github.ts finalize --artifact .release/prepared

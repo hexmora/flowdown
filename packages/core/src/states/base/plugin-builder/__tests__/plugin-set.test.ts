@@ -1,11 +1,11 @@
-import type { IPluggable, IRemarkPlugin, PluginSet } from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+import type { IPluggable, IRemarkPlugin, PluginSet } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
-import { PRESET_MAPPER_PLUGINS, Shad, Smooth } from '@flowdown/core-presets/mapper';
-import { SyntaxPolicyRemarkPlugin } from '@flowdown/core-presets/remark';
-import { PluginPriority } from '@flowdown/types';
-import { once, render } from 'reactive';
-import { describe, expect, expectTypeOf, test } from 'vitest';
+import { PRESET_MAPPER_PLUGINS, Shad, Smooth } from '@fluxdown/core-presets/mapper';
+import { SyntaxPolicyRemarkPlugin } from '@fluxdown/core-presets/remark';
+import { PluginPriority } from '@fluxdown/types';
+import { expectTypeOf } from 'expect-type';
+import { once, render } from 'functive';
 
 import type { CoreInputs } from '../../../packs';
 import type { MapperInputs, MapperPluggable } from '../../mapper-composer';

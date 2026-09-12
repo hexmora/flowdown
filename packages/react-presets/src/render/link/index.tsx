@@ -1,6 +1,6 @@
-import type { IPluggableConfig } from '@flowdown/types';
+import type { IPluggableConfig } from '@fluxdown/types';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { isString } from 'lodash-es';
 
 import type { ReactRenderMatchParams, ReactRenderParams } from '../../base';

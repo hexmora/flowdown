@@ -1,4 +1,4 @@
-import type { Newable } from '@flowdown/utils';
+import type { Newable } from '@fluxdown/utils';
 
 declare global {
   interface MapperConfigs {}

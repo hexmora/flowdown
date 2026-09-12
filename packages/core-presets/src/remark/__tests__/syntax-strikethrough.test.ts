@@ -1,7 +1,5 @@
 import type { Paragraph } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxStrikethroughRemarkPlugin } from '..';
 import { parseMarkdown } from './utils';
 

@@ -1,18 +1,18 @@
 <!--
-Thanks for contributing to Flowdown!
+Thanks for contributing to Fluxdown!
 
 Use a Conventional Commit PR title that matches the intended squash commit:
 
   <type>(<scope>): <summary>
 
 Common types: feat, fix, docs, chore, refactor, test, build, ci.
-The scope is optional; use the affected package or area (e.g. core, reactive, react).
+The scope is optional; use the affected package or area (e.g. core, functive, react).
 Keep the summary imperative, concise, and focused on the final change.
 
 Examples:
   feat(core): add smooth streaming state closures
-  refactor(reactive): unify state closure construction and ownership
-  docs: add Flowdown brand assets
+  refactor(functive): unify state closure construction and ownership
+  docs: add Fluxdown brand assets
 
 Remove any optional sections that do not apply to this pull request.
 -->

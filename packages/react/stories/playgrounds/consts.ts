@@ -26,7 +26,7 @@ First line\\
 Second line
 
 \`\`\`tsx meta="streaming example"
-const preview = <Flowdown text={markdown} />;
+const preview = <Fluxdown text={markdown} />;
 \`\`\`
 
 Display math:
@@ -37,7 +37,7 @@ $$
 
 ---
 
-![A quiet landscape placeholder](https://picsum.photos/seed/flowdown-field/720/320 "Landscape")
+![A quiet landscape placeholder](https://picsum.photos/seed/fluxdown-field/720/320 "Landscape")
 
 [^note]: Enable Footnote to reveal this note in the rendered document.
 `;

@@ -1,7 +1,5 @@
 import type { Table } from 'mdast';
 
-import { describe, expect, test } from 'vitest';
-
 import { SyntaxTableRemarkPlugin } from '..';
 import { parseMarkdown, stripPositions } from './utils';
 

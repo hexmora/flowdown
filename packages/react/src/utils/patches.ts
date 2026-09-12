@@ -1,5 +1,5 @@
-import type { IPatchItem } from '@flowdown/core';
-import type { IRawPatchRange } from '@flowdown/types';
+import type { IPatchItem } from '@fluxdown/core';
+import type { IRawPatchRange } from '@fluxdown/types';
 
 import { isNumber } from 'lodash-es';
 

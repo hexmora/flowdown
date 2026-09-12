@@ -1,5 +1,5 @@
+import type { IReadableClosure } from 'functive';
 import type { Root as HastRoot } from 'hast';
-import type { IReadableClosure } from 'reactive';
 
 import type { IBlockState } from '../block';
 

@@ -3,8 +3,9 @@ import {
   type IPluginWithConfig,
   PluginPriority,
   type PluginSet,
-} from '@flowdown/types';
-import { assert } from '@flowdown/utils';
+} from '@fluxdown/types';
+import { assert } from '@fluxdown/utils';
+import { isOnceFunction } from 'functive';
 import {
   every,
   first,
@@ -18,7 +19,6 @@ import {
   isPlainObject,
   sortBy,
 } from 'lodash-es';
-import { isOnceFunction } from 'reactive';
 
 import type { AnyPluggable, PluggableOf } from './type';
 

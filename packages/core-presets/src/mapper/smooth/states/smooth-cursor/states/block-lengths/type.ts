@@ -1,5 +1,5 @@
-import type { IBlockState } from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+import type { IBlockState } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
 export interface BlockLengthsInputs<T> {
   /**

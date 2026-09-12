@@ -1,4 +1,4 @@
-import type { BaseShadConfig } from '@flowdown/core-presets/mapper';
+import type { BaseShadConfig } from '@fluxdown/core-presets/mapper';
 
 import { isBoolean, isFinite } from 'lodash-es';
 

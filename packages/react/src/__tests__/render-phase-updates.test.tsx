@@ -1,10 +1,9 @@
-import type { IPatchItem } from '@flowdown/core';
+import type { IPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 
 const isCrossComponentRenderWarning = (value: unknown) =>
   typeof value === 'string' &&
@@ -27,18 +26,18 @@ const createPatches = (label: string): IPatchItem<ReactNode>[] => [
 ];
 
 afterEach(() => {
-  vi.restoreAllMocks();
+  jest.restoreAllMocks();
 });
 
-describe('Flowdown render-phase updates', () => {
+describe('Fluxdown render-phase updates', () => {
   test('updates text after mount without notifying another component during render', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    const view = render(<Flowdown text="alpha" />);
+    const view = render(<Fluxdown text="alpha" />);
 
     expect(screen.getByText('alpha')).toBeInTheDocument();
 
-    view.rerender(<Flowdown text="beta" />);
+    view.rerender(<Fluxdown text="beta" />);
 
     await waitFor(() => {
       expect(screen.getByText('beta')).toBeInTheDocument();
@@ -48,13 +47,13 @@ describe('Flowdown render-phase updates', () => {
   });
 
   test('replaces only a stable-range patch callback without notifying during render', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    const view = render(<Flowdown patches={createPatches('first')} text="Hello world" />);
+    const view = render(<Fluxdown patches={createPatches('first')} text="Hello world" />);
 
     expect(screen.getByText('first:world')).toBeInTheDocument();
 
-    view.rerender(<Flowdown patches={createPatches('second')} text="Hello world" />);
+    view.rerender(<Fluxdown patches={createPatches('second')} text="Hello world" />);
 
     await waitFor(() => {
       expect(screen.getByText('second:world')).toBeInTheDocument();

@@ -1,5 +1,5 @@
-import { PRESET_MAPPER_PLUGINS } from '@flowdown/core-presets/mapper';
-import { memoReturns } from 'reactive';
+import { PRESET_MAPPER_PLUGINS } from '@fluxdown/core-presets/mapper';
+import { memoReturns } from 'functive';
 
 import type { MapperPluggable } from '../../../base';
 import type { MapperPluggablesInputs } from './type';

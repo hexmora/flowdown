@@ -1,8 +1,8 @@
-import type { IBlockState } from '@flowdown/types';
-import type { IReactiveState } from 'reactive';
+import type { IBlockState } from '@fluxdown/types';
+import type { IReactiveState } from 'functive';
 
-import { BatchScheduler, mapClosure, MutableState, ReactiveState, render, S } from 'reactive';
-import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
+import { BatchScheduler, mapClosure, MutableState, ReactiveState, render, S } from 'functive';
 
 import { Smooth } from '..';
 import { StepSmoothScheduler } from '../modules/scheduler/__tests__/utils';
@@ -61,7 +61,7 @@ describe('Smooth generic blocks', () => {
 
     const [previous] = state.value.value;
 
-    const destroy = vi.spyOn(previous, 'destroy');
+    const destroy = jest.spyOn(previous, 'destroy');
 
     source.next([replacement.block]);
 
@@ -73,7 +73,7 @@ describe('Smooth generic blocks', () => {
 
     expect(current.range.value).toEqual({ start: 0, end: 2 });
 
-    expect(destroy).toHaveBeenCalledOnce();
+    expect(destroy).toHaveBeenCalledTimes(1);
 
     state.destroy();
   });

@@ -1,6 +1,6 @@
 import type { Element, ElementContent, Root as HastRoot, RootContent } from 'hast';
 
-import { sizeOfHast, sliceHast } from '@flowdown/hast';
+import { sizeOfHast, sliceHast } from '@fluxdown/hast';
 
 /** Splits only the selected path and retains invisible nodes and untouched siblings. */
 export const splitChildren = (

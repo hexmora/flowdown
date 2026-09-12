@@ -1,6 +1,6 @@
-import type { IRawPatchItem } from '@flowdown/types';
+import type { IRawPatchItem } from '@fluxdown/types';
 
-import { memoReturns } from 'reactive';
+import { memoReturns } from 'functive';
 
 import type { RawPatchesMapperInputs } from './type';
 

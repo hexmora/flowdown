@@ -1,8 +1,7 @@
 import type { Code } from 'mdast';
 
-import { PluginPriority } from '@flowdown/types';
+import { PluginPriority } from '@fluxdown/types';
 import { last } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
 import { TrailingEmptyCodeBlockRepairPlugin } from '..';
 import { paragraph, root, runRepairs } from './utils';

@@ -1,8 +1,8 @@
-import type { IBasePluginConfig } from '@flowdown/types';
+import type { IBasePluginConfig } from '@fluxdown/types';
 import type { ElementContent, Parent } from 'hast';
 import type { ReactNode } from 'react';
 
-import { BaseRenderPlugin } from '@flowdown/core';
+import { BaseRenderPlugin } from '@fluxdown/core';
 
 import type { IReactRenderPlugin, ReactRenderExtraParams } from './type';
 

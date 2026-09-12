@@ -3,14 +3,13 @@ import type {
   IPluggableConfig,
   IPluginWithConfig,
   IRemarkPlugin,
-} from '@flowdown/types';
+} from '@fluxdown/types';
 import type { ReactNode } from 'react';
 
-import { isPluggablesEqual } from '@flowdown/core';
+import { isPluggablesEqual } from '@fluxdown/core';
 import { first } from 'lodash-es';
-import { describe, expect, test } from 'vitest';
 
-import type { FlowdownProps, IPluginItem } from '../../types';
+import type { FluxdownProps, IPluginItem } from '../../types';
 
 import { isPropsEqual } from '..';
 
@@ -85,9 +84,9 @@ describe('comparison utilities', () => {
     expect(isPluggablesEqual([plugin, replacementPlugin], [replacementPlugin, plugin])).toBe(false);
   });
 
-  test('compares Flowdown props by their rendered and plugin semantics', () => {
+  test('compares Fluxdown props by their rendered and plugin semantics', () => {
     const remark = [TestPlugin, { nested: { enabled: true } }] as TestPluggable;
-    const base: FlowdownProps = {
+    const base: FluxdownProps = {
       className: 'markdown',
       build: {},
       patches: [{ key: 'inline', range: [0, 2], render: renderPatch }],
@@ -100,7 +99,7 @@ describe('comparison utilities', () => {
       style: { color: 'red' },
       text: 'content',
     };
-    const equivalent: FlowdownProps = {
+    const equivalent: FluxdownProps = {
       className: 'markdown',
       build: {
         footnote: false,
@@ -151,9 +150,9 @@ describe('comparison utilities', () => {
   });
 
   test('compares smoothing enablement and ticker choices', () => {
-    const base: FlowdownProps = { text: 'content' };
+    const base: FluxdownProps = { text: 'content' };
 
-    const smooth: FlowdownProps = {
+    const smooth: FluxdownProps = {
       ...base,
       smooth: { enabled: true, ticker: 'raf', scheduler: 'spring' },
     };
@@ -185,7 +184,7 @@ describe('comparison utilities', () => {
   });
 
   test('short-circuits identical props before reading their values', () => {
-    const props = new Proxy<FlowdownProps>(
+    const props = new Proxy<FluxdownProps>(
       { text: 'content' },
       {
         get: () => {

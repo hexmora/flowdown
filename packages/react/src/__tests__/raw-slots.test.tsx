@@ -5,16 +5,16 @@ import type {
   RuntimeSlotProps,
   SlotInputProps,
   SlotPositionType,
-} from '@flowdown/react-presets/base';
+} from '@fluxdown/react-presets/base';
 import type { Element } from 'hast';
 import type { ComponentType } from 'react';
 
-import { createTypeOfSlot, SlotProvider } from '@flowdown/react-presets/base';
-import { PRESET_SLOT_PLUGINS } from '@flowdown/react-presets/slot';
+import { createTypeOfSlot, SlotProvider } from '@fluxdown/react-presets/base';
+import { PRESET_SLOT_PLUGINS } from '@fluxdown/react-presets/slot';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { expectTypeOf } from 'expect-type';
 
-import { Flowdown } from '..';
+import { Fluxdown } from '..';
 
 const node: Element = {
   children: [],
@@ -96,7 +96,7 @@ describe('Raw slots', () => {
   test.each(PRESET_SLOT_PLUGINS)('provides the default renderer to an override of %s', (Preset) => {
     const type = new Preset().type;
 
-    const capture = vi.fn();
+    const capture = jest.fn();
 
     class OverrideSlotPlugin {
       static readonly key = `override-${type}`;
@@ -122,14 +122,14 @@ describe('Raw slots', () => {
       </SlotProvider>,
     );
 
-    expect(capture).toHaveBeenCalledOnce();
+    expect(capture).toHaveBeenCalledTimes(1);
 
     expect(capture).toHaveBeenCalledWith(expect.any(Function));
   });
 
   test('preserves the default renderer when a custom plugin reuses its key', () => {
     const { container } = render(
-      <Flowdown plugins={[{ slots: [StyledParagraphPlugin] }]} text="styled content" />,
+      <Fluxdown plugins={[{ slots: [StyledParagraphPlugin] }]} text="styled content" />,
     );
 
     const paragraph = screen.getByText('styled content');
@@ -145,7 +145,7 @@ describe('Raw slots', () => {
 
   test('keeps earlier customizations when later overrides invoke Raw with all their props', () => {
     const { container } = render(
-      <Flowdown
+      <Fluxdown
         plugins={[{ slots: [StyledParagraphPlugin] }, { slots: [OuterParagraphPlugin] }]}
         text="layered content"
       />,
@@ -186,18 +186,18 @@ describe('Raw slots', () => {
 
   test('updates and removes overrides without losing the default renderer', () => {
     const { rerender } = render(
-      <Flowdown plugins={[{ slots: [StyledParagraphPlugin] }]} text="changing content" />,
+      <Fluxdown plugins={[{ slots: [StyledParagraphPlugin] }]} text="changing content" />,
     );
 
     expect(screen.getByText('changing content')).toHaveClass('custom-paragraph');
 
-    rerender(<Flowdown plugins={[{ slots: [OuterParagraphPlugin] }]} text="changing content" />);
+    rerender(<Fluxdown plugins={[{ slots: [OuterParagraphPlugin] }]} text="changing content" />);
 
     expect(screen.getByTestId('outer-paragraph')).toHaveTextContent('changing content');
 
     expect(screen.getByText('changing content')).not.toHaveClass('custom-paragraph');
 
-    rerender(<Flowdown text="changing content" />);
+    rerender(<Fluxdown text="changing content" />);
 
     expect(screen.queryByTestId('outer-paragraph')).not.toBeInTheDocument();
 
@@ -213,7 +213,7 @@ describe('Raw slots', () => {
     },
   ])('preserves $description when another slot changes', ({ plugins }) => {
     const { rerender } = render(
-      <Flowdown
+      <Fluxdown
         plugins={[{ slots: [...plugins, FirstCodeHeaderPlugin] }]}
         text="stable paragraph"
       />,
@@ -222,7 +222,7 @@ describe('Raw slots', () => {
     const paragraph = screen.getByText('stable paragraph');
 
     rerender(
-      <Flowdown
+      <Fluxdown
         plugins={[{ slots: [...plugins, SecondCodeHeaderPlugin] }]}
         text="stable paragraph"
       />,
@@ -245,15 +245,15 @@ describe('Raw slots', () => {
 
     render(
       <>
-        <Flowdown plugins={[{ slots: [...plugins, CapturePlugin] }]} text="first" />
-        <Flowdown plugins={[{ slots: [...plugins, CapturePlugin] }]} text="second" />
+        <Fluxdown plugins={[{ slots: [...plugins, CapturePlugin] }]} text="first" />
+        <Fluxdown plugins={[{ slots: [...plugins, CapturePlugin] }]} text="second" />
       </>,
     );
 
     expect(captured.size).toBe(2);
 
     for (const Raw of captured) {
-      expect(Raw).toBeTypeOf('function');
+      expect(typeof Raw).toBe('function');
     }
 
     expect(screen.getByText('first')).toBeInTheDocument();
@@ -262,7 +262,7 @@ describe('Raw slots', () => {
   });
 
   test('creates a fresh composition when a slot renderer remounts', () => {
-    const capture = vi.fn();
+    const capture = jest.fn();
 
     const CapturePlugin = createParagraphPlugin('capture-remounted-raw', ({ Raw, ...props }) => {
       capture(Raw);
@@ -271,18 +271,18 @@ describe('Raw slots', () => {
     });
 
     const view = (key: string) => (
-      <Flowdown key={key} plugins={[{ slots: [CapturePlugin] }]} text="content" />
+      <Fluxdown key={key} plugins={[{ slots: [CapturePlugin] }]} text="content" />
     );
 
     const { rerender } = render(view('first'));
 
     const firstRaw = capture.mock.lastCall?.[0];
 
-    expect(firstRaw).toBeTypeOf('function');
+    expect(typeof firstRaw).toBe('function');
 
     rerender(view('second'));
 
-    expect(capture.mock.lastCall?.[0]).toBeTypeOf('function');
+    expect(typeof capture.mock.lastCall?.[0]).toBe('function');
 
     expect(capture.mock.lastCall?.[0]).not.toBe(firstRaw);
 

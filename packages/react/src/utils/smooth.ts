@@ -5,9 +5,9 @@ import type {
   SmoothSchedulerClass,
   SmoothTickerClass,
   TickerType,
-} from '@flowdown/core-presets/mapper';
+} from '@fluxdown/core-presets/mapper';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 import { isBoolean, isFunction, isString } from 'lodash-es';
 
 import { ALL_SCHEDULERS, ALL_TICKERS } from '../consts';

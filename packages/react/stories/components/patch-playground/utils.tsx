@@ -1,7 +1,7 @@
-import type { IPatchItem } from '@flowdown/core';
+import type { IPatchItem } from '@fluxdown/core';
 import type { ReactNode } from 'react';
 
-import { assert } from '@flowdown/utils';
+import { assert } from '@fluxdown/utils';
 
 import { KEYLESS_ANCHOR, PATCH_MARKDOWN, POINT_ANCHOR, REPLACEMENT_ANCHOR } from './consts';
 

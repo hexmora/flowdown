@@ -1,7 +1,7 @@
-import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@flowdown/types';
-import type { IReadableClosure } from 'reactive';
+import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 
-import { BaseStateClosure, MutableState, render, S, toClosure } from 'reactive';
+import { BaseStateClosure, MutableState, render, S, toClosure } from 'functive';
 
 type ArrayBlockInputs<T> = {
   source: IReadableClosure<T[]>;

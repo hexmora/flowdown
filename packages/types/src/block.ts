@@ -1,4 +1,4 @@
-import type { IReactiveState, IReadableClosure } from 'reactive';
+import type { IReactiveState, IReadableClosure } from 'functive';
 
 import type { IRangeState } from './range';
 

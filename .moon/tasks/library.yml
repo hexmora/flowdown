@@ -1,0 +1,54 @@
+inheritedBy:
+  layers: [library]
+
+implicitInputs:
+  - /package.json
+  - /pnpm-lock.yaml
+  - /pnpm-workspace.yaml
+  - /.node-version
+  - /.moon/*.yml
+  - /.moon/tasks/**/*.yml
+  - /tsconfig*.json
+  - package.json
+
+tasks:
+  build:
+    command: pnpm run build
+    deps: ["^:build"]
+    inputs:
+      - src/**/*
+      - tsconfig*.json
+      - rslib.config.ts
+      - /rslib.shared.ts
+      - /scripts/build/**/*
+    outputs: [dist]
+
+  typecheck:
+    command: pnpm run typecheck
+    inputs:
+      - "**/*"
+      - /rslib.shared.ts
+      - /scripts/build/**/*
+      - /packages/*/package.json
+      # Workspace exports resolve to source, so these checks read other packages.
+      - /packages/*/src/**/*
+      - /jest.config.*
+      - /scripts/testing/**/*
+
+  test:
+    command: pnpm run test
+    inputs:
+      - src/**/*
+      - jest.setup.*
+      - tsconfig*.json
+      - /packages/*/src/**/*
+      - /jest.config.*
+      - /scripts/testing/**/*
+    options:
+      cache: false
+
+  lint:
+    command: pnpm run lint
+    inputs:
+      - "**/*"
+      - /.oxlintrc.json

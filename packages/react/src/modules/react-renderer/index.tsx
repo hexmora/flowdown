@@ -1,9 +1,9 @@
-import type { ReactRenderExtraParams } from '@flowdown/react-presets/base';
-import type { IBlockState } from '@flowdown/types';
+import type { ReactRenderExtraParams } from '@fluxdown/react-presets/base';
+import type { IBlockState } from '@fluxdown/types';
 import type { ElementContent, Parent, Root } from 'hast';
 import type { ReactNode } from 'react';
 
-import { BaseRenderer } from '@flowdown/core';
+import { BaseRenderer } from '@fluxdown/core';
 
 import { BlockReconciler } from '../../components';
 

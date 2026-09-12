@@ -1,4 +1,4 @@
-import type { IBlockMeta, IBlockState } from '@flowdown/types';
+import type { IBlockMeta, IBlockState } from '@fluxdown/types';
 
 import {
   type IReactiveState,
@@ -6,8 +6,7 @@ import {
   ReactiveState,
   render as renderState,
   S,
-} from 'reactive';
-import { describe, expect, test, vi } from 'vitest';
+} from 'functive';
 
 import {
   BaseRenderPlugin,
@@ -46,7 +45,7 @@ class TestRenderPlugin extends BaseRenderPlugin<string, string, RenderedItem, Te
 }
 
 class TestRenderer extends BaseRenderer<string, string, string, RenderedItem, TestRenderConfig> {
-  readonly renderItemSpy = vi.fn((item: IBlockState<string>): RenderedItem => {
+  readonly renderItemSpy = jest.fn((item: IBlockState<string>): RenderedItem => {
     const { patches, plugins } = this.inputs;
 
     return {
@@ -202,7 +201,7 @@ describe('BaseRenderer', () => {
     const block = createBlock('block', 'initial');
     const { patches, renderer } = setupRenderer([block]);
     const [rendered] = renderer.value.value;
-    const next = vi.fn();
+    const next = jest.fn();
 
     renderer.value.subscribe(next);
     next.mockClear();
@@ -218,7 +217,7 @@ describe('BaseRenderer', () => {
     expect(rendered?.content.value).toBe('updated');
     expect(rendered?.patches.value).toBe(patches.value);
 
-    expect(renderer.renderItemSpy).toHaveBeenCalledOnce();
+    expect(renderer.renderItemSpy).toHaveBeenCalledTimes(1);
 
     expect(next).not.toHaveBeenCalled();
   });
@@ -226,7 +225,7 @@ describe('BaseRenderer', () => {
   test('destroy completes the renderer without destroying its inputs', () => {
     const block = createBlock('block', 'value');
     const { patches, plugins, renderer, source } = setupRenderer([block]);
-    const complete = vi.fn();
+    const complete = jest.fn();
 
     renderer.value.subscribe({ complete });
 
@@ -236,7 +235,7 @@ describe('BaseRenderer', () => {
     renderer.destroy();
     renderer.destroy();
 
-    expect(complete).toHaveBeenCalledOnce();
+    expect(complete).toHaveBeenCalledTimes(1);
     expect(renderer.value.closed).toBe(true);
     expect(source.closed).toBe(false);
     expect(patches.closed).toBe(false);

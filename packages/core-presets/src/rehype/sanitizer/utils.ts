@@ -1,6 +1,6 @@
 import type { Schema as SanitizationSchema } from 'hast-util-sanitize';
 
-import { defaultsBy } from '@flowdown/utils';
+import { defaultsBy } from '@fluxdown/utils';
 import { concat, isArray, uniq } from 'lodash-es';
 import { defaultSchema } from 'rehype-sanitize';
 

@@ -1,12 +1,12 @@
-import '@flowdown/react-presets/render';
-import '@flowdown/react-presets/slot';
+import '@fluxdown/react-presets/render';
+import '@fluxdown/react-presets/slot';
 
-import type { BlockCompilerConfig, IPatchItem, MapperPluggable } from '@flowdown/core';
-import type { ShadConfig as _ShadConfig, SmoothConfig } from '@flowdown/core-presets/mapper';
-import type { AnySlotPluggable, IReactRenderPluggable } from '@flowdown/react-presets/base';
-import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { BlockCompilerConfig, IPatchItem, MapperPluggable } from '@fluxdown/core';
+import type { ShadConfig as CoreShadConfig, SmoothConfig } from '@fluxdown/core-presets/mapper';
+import type { AnySlotPluggable, IReactRenderPluggable } from '@fluxdown/react-presets/base';
+import type { IPluggable, IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@fluxdown/types';
+import type { IReadableClosure } from 'functive';
 import type { CSSProperties, ReactNode } from 'react';
-import type { IReadableClosure } from 'reactive';
 
 import type { Theme } from './theme';
 
@@ -33,9 +33,9 @@ export interface IPluginItem {
   slots?: AnySlotPluggable[];
 }
 
-export type FlowdownConfig = Partial<BlockCompilerConfig>;
+export type FluxdownConfig = Partial<BlockCompilerConfig>;
 
-export interface ShadConfig extends _ShadConfig {
+export interface ShadConfig extends CoreShadConfig {
   /**
    * Width of the trailing mask in pixels. Set to 0 to hide it.
    * @default 15
@@ -43,7 +43,7 @@ export interface ShadConfig extends _ShadConfig {
   maskWidth?: number;
 }
 
-export interface FlowdownProps {
+export interface FluxdownProps {
   /**
    * Additional class name applied to the rendered root.
    */
@@ -67,7 +67,7 @@ export interface FlowdownProps {
   /**
    * Compiler feature configuration.
    */
-  build?: FlowdownConfig;
+  build?: FluxdownConfig;
 
   /**
    * Smoothly reveal appended compiled content.
@@ -92,4 +92,4 @@ export interface FlowdownProps {
   plugins?: IPluginItem[];
 }
 
-export type FlowdownRef = IReadableClosure<ReactNode[]>;
+export type FluxdownRef = IReadableClosure<ReactNode[]>;

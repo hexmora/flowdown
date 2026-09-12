@@ -1,11 +1,11 @@
 /**
- * @jsxImportSource reactive
+ * @jsxImportSource functive
  */
 
-import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@flowdown/types';
+import type { IRehypePlugin, IRemarkPlugin, IRepairPlugin } from '@fluxdown/types';
 import type { ElementContent, Parent } from 'hast';
 
-import { type JSXDescriptor, once, useDefaults } from 'reactive';
+import { type JSXDescriptor, once, useDefaults } from 'functive';
 
 import type { IRenderPlugin } from '../../externals';
 import type { CoreInputs } from './type';

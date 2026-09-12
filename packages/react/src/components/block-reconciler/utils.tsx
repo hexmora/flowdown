@@ -1,15 +1,15 @@
-import type { IRenderPatchItem } from '@flowdown/core';
-import type { IReactRenderPlugin } from '@flowdown/react-presets/base';
+import type { IRenderPatchItem } from '@fluxdown/core';
+import type { IReactRenderPlugin } from '@fluxdown/react-presets/base';
+import type { IReactiveState } from 'functive';
 import type { Element, ElementContent, Parent, RootContent } from 'hast';
 import type { ReactNode } from 'react';
-import type { IReactiveState } from 'reactive';
 
 import {
   getReactProps,
   isHastElement,
   isHastParent,
   PATCH_MARKER,
-} from '@flowdown/react-presets/base';
+} from '@fluxdown/react-presets/base';
 import { isString } from 'lodash-es';
 import { Fragment } from 'react';
 

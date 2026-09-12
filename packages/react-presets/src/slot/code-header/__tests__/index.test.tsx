@@ -1,17 +1,16 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { CodeHeaderInnerActionKey } from '../../../base';
+import { type CodeHeaderAction, CodeHeaderInnerActionKey } from '../../../base';
 import { CodeHeaderRenderer } from '../renderer';
 import { COPY_FEEDBACK_MS } from '../renderer/consts';
 
 const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
 const execCommandDescriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
-const writeText = vi.fn<(text: string) => Promise<void>>();
-const execCommand = vi.fn<(command: string) => boolean>();
+const writeText = jest.fn<Promise<void>, [text: string]>();
+const execCommand = jest.fn<boolean, [command: string]>();
 
 beforeEach(() => {
-  vi.useFakeTimers();
+  jest.useFakeTimers();
   writeText.mockReset().mockResolvedValue(undefined);
   execCommand.mockReset().mockReturnValue(false);
 
@@ -27,7 +26,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  vi.useRealTimers();
+  jest.useRealTimers();
 
   if (clipboardDescriptor) {
     Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
@@ -44,8 +43,8 @@ afterEach(() => {
 
 describe('CodeHeaderRenderer', () => {
   test('keeps the default copy action and notifies after copying when a consumer extends actions', async () => {
-    const onCopy = vi.fn();
-    const extendActions = vi.fn((previous) => [
+    const onCopy = jest.fn();
+    const extendActions = jest.fn((previous: CodeHeaderAction[]) => [
       ...previous,
       { key: 'inspect', target: <button type="button">Inspect</button> },
     ]);
@@ -61,7 +60,7 @@ describe('CodeHeaderRenderer', () => {
       />,
     );
 
-    expect(extendActions).toHaveBeenCalledOnce();
+    expect(extendActions).toHaveBeenCalledTimes(1);
     expect(extendActions.mock.calls[0]?.[0]).toEqual([
       expect.objectContaining({ key: CodeHeaderInnerActionKey.Copy }),
     ]);
@@ -72,7 +71,7 @@ describe('CodeHeaderRenderer', () => {
     });
 
     expect(writeText).toHaveBeenCalledWith('const answer = 42;');
-    expect(onCopy).toHaveBeenCalledOnce();
+    expect(onCopy).toHaveBeenCalledTimes(1);
     expect(onCopy).toHaveBeenCalledWith({
       code: 'const answer = 42;',
       language: 'ts',
@@ -120,9 +119,9 @@ describe('CodeHeaderRenderer', () => {
     expect(copiedButton.querySelector('rect')).toBeNull();
     expect(copiedButton.querySelector('path')).toHaveAttribute('d', 'm5 12 4 4L19 6');
     fireEvent.click(copiedButton);
-    expect(writeText).toHaveBeenCalledOnce();
+    expect(writeText).toHaveBeenCalledTimes(1);
 
-    act(() => vi.advanceTimersByTime(COPY_FEEDBACK_MS));
+    act(() => jest.advanceTimersByTime(COPY_FEEDBACK_MS));
 
     expect(screen.getByRole('button', { name: 'Copy' }).querySelector('rect')).not.toBeNull();
   });
@@ -139,7 +138,7 @@ describe('CodeHeaderRenderer', () => {
       return true;
     });
 
-    const onCopy = vi.fn();
+    const onCopy = jest.fn();
 
     render(<CodeHeaderRenderer Raw={null} code={'line one\nline two'} onCopy={onCopy} />);
 
@@ -149,7 +148,7 @@ describe('CodeHeaderRenderer', () => {
 
     await act(async () => fireEvent.click(button));
 
-    expect(execCommand).toHaveBeenCalledOnce();
+    expect(execCommand).toHaveBeenCalledTimes(1);
     expect(document.querySelector('textarea')).toBeNull();
     expect(button).toHaveFocus();
     expect(onCopy).toHaveBeenCalledWith({
@@ -176,7 +175,7 @@ describe('CodeHeaderRenderer', () => {
     writeText.mockRejectedValue(new Error('Denied'));
     execCommand.mockReturnValue(false);
 
-    const onCopy = vi.fn();
+    const onCopy = jest.fn();
 
     render(<CodeHeaderRenderer Raw={null} code="retry this" onCopy={onCopy} />);
 
@@ -190,7 +189,7 @@ describe('CodeHeaderRenderer', () => {
 
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Copy' })));
 
-    expect(onCopy).toHaveBeenCalledOnce();
+    expect(onCopy).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Copied' })).toBeInTheDocument();
   });
 
@@ -219,12 +218,12 @@ describe('CodeHeaderRenderer', () => {
 
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Copy' })));
 
-    expect(vi.getTimerCount()).toBe(1);
+    expect(jest.getTimerCount()).toBe(1);
     unmount();
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     let resolveCopy: (() => void) | undefined;
-    const onCopy = vi.fn();
+    const onCopy = jest.fn();
 
     writeText.mockImplementation(
       () =>
@@ -241,7 +240,7 @@ describe('CodeHeaderRenderer', () => {
     await act(async () => resolveCopy?.());
 
     expect(onCopy).not.toHaveBeenCalled();
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   test('resets copy feedback when code changes and preserves DOM attributes', async () => {
@@ -262,7 +261,7 @@ describe('CodeHeaderRenderer', () => {
     expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled();
     expect(container.firstElementChild).toHaveAttribute('data-example', 'header');
     expect(container.firstElementChild).toHaveAttribute('aria-label', 'Code header');
-    expect(vi.getTimerCount()).toBe(0);
+    expect(jest.getTimerCount()).toBe(0);
 
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Copy' })));
 
