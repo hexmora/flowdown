@@ -24,7 +24,7 @@ on:
         type: string
         required: false
       bootstrap:
-        description: First beta publication using the temporary npm-beta environment token
+        description: Bootstrap beta publication or recovery using the temporary npm-beta token
         type: boolean
         required: false
         default: false
@@ -60,7 +60,10 @@ jobs:
           test "$RELEASE_ATTEMPT" = 1
           if [ "$RELEASE_BOOTSTRAP" = true ]; then
             test "$RELEASE_EVENT" = workflow_dispatch
-            test "$RELEASE_OPERATION" = beta
+            case "$RELEASE_OPERATION" in
+              beta|resume-beta) ;;
+              *) exit 1 ;;
+            esac
           fi
 
       - name: Checkout trusted release orchestration
@@ -223,7 +226,7 @@ jobs:
       (needs.resolve.outputs.channel == 'stable' || needs.resolve.outputs.channel == 'beta') &&
       (needs.prepare.result == 'success' || needs.resolve.outputs.mode == 'resume')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     # Only actual publishing shares the registry lock; unrelated main pushes may
     # resolve or prepare without cancelling an owner-approved publication.
     concurrency:
@@ -299,7 +302,10 @@ jobs:
         run: |
           trap ': > "$NPM_CONFIG_USERCONFIG"' EXIT
           if [ "$RELEASE_BOOTSTRAP" = true ]; then
-            test "$RELEASE_OPERATION" = beta
+            case "$RELEASE_OPERATION" in
+              beta|resume-beta) ;;
+              *) exit 1 ;;
+            esac
             test "$EXPECTED_RELEASE_CHANNEL" = beta
             test -n "$NPM_BOOTSTRAP_TOKEN"
             printf '%s\n' '//registry.npmjs.org/:_authToken=${NPM_BOOTSTRAP_TOKEN}' > "$NPM_CONFIG_USERCONFIG"

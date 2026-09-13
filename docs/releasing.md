@@ -78,7 +78,8 @@ Before the first publication, the owner must configure:
 
 For new names, set a one-day, publish-capable `NPM_BOOTSTRAP_TOKEN` secret only in
 `npm-beta` and dispatch `operation: beta` with `bootstrap: true`; the same package
-checks and explicit owner approval apply, and bootstrap is unavailable for recovery.
+checks and explicit owner approval apply. Use `bootstrap: true` with `resume-beta`
+if this initial publication needs recovery.
 After the first beta, configure both trusted publishers with direct publishing
 allowed, revoke the token, and delete the secret; normal releases use OIDC only.
 
