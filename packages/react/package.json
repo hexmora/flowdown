@@ -1,6 +1,6 @@
 {
   "name": "fluxdown",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "React wrapper around @fluxdown/core for high-performance rendering of streaming Markdown text.",
   "keywords": [
     "hast",
