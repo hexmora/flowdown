@@ -54,6 +54,8 @@ jobs:
         if: steps.candidate.outputs.has-changesets == 'true'
         id: version
         uses: changesets/action/version@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        env:
+          PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
         with:
           script: pnpm release:version
           pr-base-branch: main
