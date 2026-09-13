@@ -40,7 +40,6 @@ tasks:
       PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false"
     options:
       cache: false
-      runInCI: false
   publish-dry-run:
     command: tsx scripts/release.ts --dry-run
     options:
