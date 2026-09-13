@@ -32,6 +32,7 @@ export interface Candidate {
 }
 interface PullRequest {
   number: number;
+  body: string | null;
   merged_at: string | null;
   merge_commit_sha: string | null;
   base: { ref: string; sha: string; repo: { full_name: string } };
@@ -475,6 +476,14 @@ async function recordCandidate() {
   };
   validateCandidate(candidate, { headSha: pr.head.sha, baseSha, prNumber: pr.number });
   verifyVersionDiff(candidate, pr.head.sha);
+  const releases = pr.body?.match(/^# Releases\r?$/m);
+  assert(releases?.index !== undefined, 'Version PR is missing release notes');
+  await api(`/pulls/${prNumber}`, 'PATCH', {
+    body: [
+      'This PR was prepared manually by **Prepare release**. Merge after all required checks pass; publication then requires **hexmora** to approve **npm-production**. If main changes, run **Prepare release** again to refresh this PR.',
+      pr.body!.slice(releases.index),
+    ].join('\n\n'),
+  });
   saveCandidate(candidate);
   output('head-sha', candidate.headSha);
 }

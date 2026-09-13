@@ -152,7 +152,8 @@ function run(
     cwd = root,
     capture = false,
     allowFailure = false,
-  }: { cwd?: string; capture?: boolean; allowFailure?: boolean } = {},
+    timeout = 600_000,
+  }: { cwd?: string; capture?: boolean; allowFailure?: boolean; timeout?: number } = {},
 ) {
   console.log(`> ${command} ${args.join(' ')}`);
 
@@ -165,7 +166,7 @@ function run(
       PATH: `${path.join(root, 'node_modules', '.bin')}${path.delimiter}${process.env.PATH ?? ''}`,
       npm_config_registry: registry,
     },
-    timeout: 600_000,
+    timeout,
     maxBuffer: 16 * 1024 * 1024,
   });
 
@@ -445,50 +446,121 @@ contextAssert.equal(html, '<p>shared-context</p>');
   }
 }
 
+function retryableDownloadError(result: ReturnType<typeof run>): string | null {
+  if (result.error) {
+    return 'code' in result.error && result.error.code === 'ETIMEDOUT' ? 'ETIMEDOUT' : null;
+  }
+
+  let response: unknown;
+
+  try {
+    response = JSON.parse(result.stdout);
+  } catch {
+    return null;
+  }
+
+  if (!response || typeof response !== 'object' || !('error' in response)) return null;
+
+  const error = response.error;
+
+  if (!error || typeof error !== 'object' || !('code' in error)) return null;
+
+  const code = error.code;
+
+  return typeof code === 'string' &&
+    /^(?:E404|ETARGET|E408|E429|E5\d{2}|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ESOCKETTIMEDOUT|EAI_AGAIN|ENOTFOUND|ENETUNREACH|EHOSTUNREACH)$/.test(
+      code,
+    )
+    ? code
+    : null;
+}
+
 async function verifyPublished(
-  artifact: PackageArtifact,
-  expected: ArtifactPackage,
+  artifacts: PackageArtifact[],
+  metadata: Map<string, ArtifactPackage>,
   destination: string,
 ) {
-  await mkdir(destination, { recursive: true });
+  const pending = new Map(artifacts.map((artifact) => [artifact.manifest.name, artifact]));
+  const deadline = Date.now() + 20 * 60_000;
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const specifier = `${artifact.manifest.name}@${artifact.manifest.version}`;
-    const result = run(
-      'npm',
-      [
-        'pack',
-        specifier,
-        '--ignore-scripts',
-        '--pack-destination',
-        destination,
-        '--json',
-        '--registry',
-        registry,
-      ],
-      { capture: true, allowFailure: true },
-    );
+  while (pending.size > 0) {
+    for (const [name, artifact] of pending) {
+      const remaining = deadline - Date.now();
 
-    if (result.status === 0 && !result.error) {
-      const [{ filename }] = JSON.parse(result.stdout) as { filename: string }[];
+      if (remaining <= 0) break;
 
-      assert(filename && path.basename(filename) === filename, 'Invalid registry tarball filename');
+      const expected = metadata.get(name)!;
+      const specifier = `${name}@${artifact.manifest.version}`;
+      const downloadDirectory = path.join(destination, artifact.directory);
+      const timeout = Math.min(60_000, remaining);
 
-      const downloaded = await readFile(path.join(destination, filename));
+      await mkdir(downloadDirectory, { recursive: true });
 
-      assert.deepEqual(
-        tarballDigests(downloaded),
-        { sha256: expected.sha256, integrity: expected.integrity },
-        `${specifier}: published tarball differs from the approved archive`,
+      const result = run(
+        'npm',
+        [
+          'pack',
+          specifier,
+          '--ignore-scripts',
+          '--prefer-online',
+          '--fetch-retries=0',
+          `--fetch-timeout=${timeout}`,
+          '--pack-destination',
+          downloadDirectory,
+          '--json',
+          '--registry',
+          registry,
+        ],
+        { capture: true, allowFailure: true, timeout },
       );
-      console.log(`Published tarball verified: ${specifier}`);
 
-      return;
+      if (result.status === 0 && !result.error) {
+        const [{ filename }] = JSON.parse(result.stdout) as { filename: string }[];
+
+        assert(
+          filename && path.basename(filename) === filename,
+          'Invalid registry tarball filename',
+        );
+
+        const downloaded = await readFile(path.join(downloadDirectory, filename));
+
+        assert.deepEqual(
+          tarballDigests(downloaded),
+          { sha256: expected.sha256, integrity: expected.integrity },
+          `${specifier}: published tarball differs from the approved archive`,
+        );
+        console.log(`Published tarball verified: ${specifier}`);
+        pending.delete(name);
+        continue;
+      }
+
+      const retryCode = retryableDownloadError(result);
+
+      if (!retryCode) {
+        throw new Error(
+          `Published package could not be downloaded: ${specifier}\n${result.error?.message ?? ''}\n${result.stderr}\n${result.stdout}`,
+        );
+      }
+
+      console.log(`Waiting for npm availability: ${specifier} (${retryCode})`);
     }
 
-    if (attempt === 4)
-      throw new Error(`Published package could not be downloaded: ${specifier}\n${result.stderr}`);
-    await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 3000));
+    if (pending.size === 0) return;
+
+    const remaining = deadline - Date.now();
+
+    if (remaining <= 0) {
+      throw new Error(
+        `npm availability verification exceeded the shared 20-minute deadline: ${[...pending.values()].map((artifact) => `${artifact.manifest.name}@${artifact.manifest.version}`).join(', ')}`,
+      );
+    }
+
+    const delay = Math.min(30_000, remaining);
+
+    console.log(
+      `Waiting ${Math.ceil(delay / 1000)}s before checking ${pending.size} package(s) again; ${Math.ceil(remaining / 1000)}s remain`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
 
@@ -901,12 +973,11 @@ async function publishArtifact(directory: string) {
         registry,
         '--provenance',
       ]);
-      await verifyPublished(
-        artifact,
-        expected,
-        path.join(temporary, `registry-${artifact.directory}`),
-      );
     }
+
+    // npm may hold accepted uploads for scanning. Upload the complete release
+    // before waiting, and verify skipped existing versions against the same bytes.
+    await verifyPublished(ordered, metadata, path.join(temporary, 'registry'));
 
     console.log(
       `Artifact publication complete: ${manifest.packages.length} package(s), ${manifest.sourceSha}`,
