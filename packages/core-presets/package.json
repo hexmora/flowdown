@@ -1,6 +1,6 @@
 {
   "name": "@fluxdown/core-presets",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Headless preset mapper, remark, rehype, and repair plugins for Fluxdown.",
   "keywords": [
     "headless",

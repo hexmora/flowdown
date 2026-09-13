@@ -1,6 +1,6 @@
 {
   "name": "@fluxdown/hast",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "HTML AST content helpers for Fluxdown packages.",
   "keywords": [
     "hast",

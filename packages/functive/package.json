@@ -1,6 +1,6 @@
 {
   "name": "functive",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Headless reactive primitives for Fluxdown streaming state.",
   "keywords": [
     "headless",
