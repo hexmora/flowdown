@@ -1,7 +1,7 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 
+import { isMdastParent } from '@flowdown/mdast';
 import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
-import { isMdastParent } from '@flowdown/utils';
 
 import { BaseRepairPlugin } from '../base';
 import { getIncompleteTagStart } from './utils';

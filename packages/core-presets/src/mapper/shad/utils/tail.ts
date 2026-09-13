@@ -1,6 +1,6 @@
 import type { Element, Root as HastRoot, RootContent } from 'hast';
 
-import { getLengthOfHast, getTextUnits, isHiddenTagName } from '@flowdown/utils';
+import { getTextUnits, isHiddenTagName, sizeOfHast } from '@flowdown/hast';
 
 import { BLOCK_TAG_NAMES, BOUNDARY_TAG_NAMES, FORBIDDEN_TAG_NAMES } from './consts';
 
@@ -43,7 +43,7 @@ const getOffset = (
   let result = offset;
 
   for (const index of path) {
-    result += getLengthOfHast({ type: 'root', children: parent.children.slice(startIndex, index) });
+    result += sizeOfHast({ type: 'root', children: parent.children.slice(startIndex, index) });
     startIndex = 0;
 
     const child = parent.children[index];
@@ -160,11 +160,7 @@ export const getTailRange = (root: HastRoot, length: number) => {
       break;
     }
 
-    if (
-      last &&
-      node.children.length === 0 &&
-      getLengthOfHast({ type: 'root', children: [node] }) > 0
-    ) {
+    if (last && node.children.length === 0 && sizeOfHast({ type: 'root', children: [node] }) > 0) {
       break;
     }
 

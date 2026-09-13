@@ -5,11 +5,10 @@ import { ceil, floor, isArray, isNaN, max } from 'lodash-es';
 import {
   cloneTextFragment,
   getIgnoredTableWhitespaceIndexes,
-  getTextUnits,
-  isHiddenTagName,
   isTableColumnDefinition,
   isTableStructureTagName,
-} from './content-model';
+} from './base';
+import { getTextUnits, isHiddenTagName } from './content';
 
 type SliceFrame = {
   node: HastRoot | Element;

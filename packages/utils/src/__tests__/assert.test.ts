@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { assert, AssertError } from '../assert';
+import { assert } from '../assert';
 
 describe('assert', () => {
   test('does not throw for truthy values', () => {
@@ -12,6 +12,6 @@ describe('assert', () => {
   test('throws AssertError for falsy values', () => {
     expect(() => {
       assert(null, 'missing value');
-    }).toThrow(AssertError);
+    }).toThrow(expect.objectContaining({ name: 'assert_error', message: 'missing value' }));
   });
 });

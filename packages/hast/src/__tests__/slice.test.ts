@@ -3,7 +3,7 @@ import type { Element, ElementContent, Properties, Root, RootContent, Text } fro
 import { clamp, floor, last, min, toArray, values } from 'lodash-es';
 import { describe, expect, test, vi } from 'vitest';
 
-import { getLengthOfHast, sliceHast } from '../index';
+import { sizeOfHast, sliceHast } from '../index';
 
 const root = (children: RootContent[]): Root => ({
   type: 'root',
@@ -224,7 +224,7 @@ describe('sliceHast', () => {
     const output = sliceHast(source, 1, 5);
 
     expect(output).toEqual(root([text('👨‍👩‍👧‍👦🇨🇳👍🏽e\u0301')]));
-    expect(getLengthOfHast(output as Root)).toBe(4);
+    expect(sizeOfHast(output as Root)).toBe(4);
   });
 
   test('uses code points if grapheme segmentation is unavailable', async () => {
@@ -274,7 +274,7 @@ describe('sliceHast', () => {
     const source = root([text('A'), leaf('img', 'portrait'), text('B')]);
 
     expect(sliceHast(source, 1, 2)).toEqual(root([leaf('img', 'portrait')]));
-    expect(getLengthOfHast(sliceHast(source, 1, 2) as Root)).toBe(1);
+    expect(sizeOfHast(sliceHast(source, 1, 2) as Root)).toBe(1);
   });
 
   test('does not count hidden subtrees or empty table cells', () => {
@@ -291,7 +291,7 @@ describe('sliceHast', () => {
       leaf('span', 'empty-span'),
     ]);
 
-    expect(getLengthOfHast(source)).toBe(3);
+    expect(sizeOfHast(source)).toBe(3);
     expect(sliceHast(source, 1, 2)).toEqual(root([text('B')]));
     expect(sliceHast(source, 2, 3)).toEqual(root([leaf('span', 'empty-span')]));
   });
@@ -329,7 +329,7 @@ describe('sliceHast', () => {
         ]),
       ]),
     );
-    expect(getLengthOfHast(output as Root)).toBe(7);
+    expect(sizeOfHast(output as Root)).toBe(7);
   });
 
   test('filters generated table whitespace without discarding nested newlines', () => {
@@ -351,7 +351,7 @@ describe('sliceHast', () => {
       text('tail'),
     ]);
 
-    expect(getLengthOfHast(source)).toBe(6);
+    expect(sizeOfHast(source)).toBe(6);
     expect(sliceHast(source, 0, 2)).toEqual(
       root([
         element('table', [
@@ -411,7 +411,7 @@ describe('sliceHast', () => {
         ]),
       ]),
     );
-    expect(getLengthOfHast(output as Root)).toBe(1);
+    expect(sizeOfHast(output as Root)).toBe(1);
   });
 
   test('keeps sliced table-adjacent newlines in the visible index space', () => {
@@ -420,18 +420,18 @@ describe('sliceHast', () => {
       text('\nX'),
     ]);
 
-    expect(getLengthOfHast(source)).toBe(3);
+    expect(sizeOfHast(source)).toBe(3);
 
     const output = sliceHast(source, 0, 2) as Root;
     const trailingText = last(output.children) as Text;
 
     expect(trailingText.value).toBe('\n');
-    expect(getLengthOfHast(output)).toBe(2);
+    expect(sizeOfHast(output)).toBe(2);
 
     const newlineOnly = sliceHast(output, 1, 2) as Root;
 
     expect(newlineOnly.children).toEqual([expect.objectContaining({ type: 'text', value: '\n' })]);
-    expect(getLengthOfHast(newlineOnly)).toBe(1);
+    expect(sizeOfHast(newlineOnly)).toBe(1);
   });
 
   test('keeps visible newlines when zero-width siblings disappear', () => {
@@ -449,8 +449,8 @@ describe('sliceHast', () => {
 
     expect(collectVisibleUnits(afterOutput)).toEqual(['A', '\n']);
     expect(collectVisibleUnits(beforeOutput)).toEqual(['\n', 'A']);
-    expect(getLengthOfHast(afterOutput)).toBe(2);
-    expect(getLengthOfHast(beforeOutput)).toBe(2);
+    expect(sizeOfHast(afterOutput)).toBe(2);
+    expect(sizeOfHast(beforeOutput)).toBe(2);
   });
 
   test('keeps visible newlines when a nested table becomes adjacent', () => {
@@ -471,7 +471,7 @@ describe('sliceHast', () => {
     const output = sliceHast(source, 0, 2) as Root;
 
     expect(collectVisibleUnits(output)).toEqual(['A', '\n']);
-    expect(getLengthOfHast(output)).toBe(2);
+    expect(sizeOfHast(output)).toBe(2);
   });
 
   test('does not hide a distant line break when the root also contains a table', () => {
@@ -482,7 +482,7 @@ describe('sliceHast', () => {
       element('table', [element('tbody', [element('tr', [element('td', [text('C')])])])]),
     ]);
 
-    expect(getLengthOfHast(source)).toBe(4);
+    expect(sizeOfHast(source)).toBe(4);
     expect(sliceHast(source, 0, 3)).toEqual(
       root([element('p', [text('A')]), preservedWhitespace('\n'), element('p', [text('B')])]),
     );
@@ -497,7 +497,7 @@ describe('sliceHast', () => {
       text('A'),
     ]);
 
-    expect(getLengthOfHast(source)).toBe(1);
+    expect(sizeOfHast(source)).toBe(1);
     expect(sliceHast(source, 0, 1)).toEqual(root([text('A')]));
   });
 
@@ -523,7 +523,7 @@ describe('sliceHast', () => {
       for (let end = start + 1; end <= units.length; end += 1) {
         const output = sliceHast(source, start, end) as Root;
 
-        expect(getLengthOfHast(output)).toBe(end - start);
+        expect(sizeOfHast(output)).toBe(end - start);
         expect(collectVisibleUnits(output)).toEqual(units.slice(start, end));
       }
     }
@@ -622,7 +622,7 @@ describe('sliceHast', () => {
       const output = sliceHast(source, start, end);
 
       expect(output).not.toBeNull();
-      expect(getLengthOfHast(output as Root)).toBe(end - start);
+      expect(sizeOfHast(output as Root)).toBe(end - start);
     }
   });
 
@@ -636,7 +636,7 @@ describe('sliceHast', () => {
     const output = sliceHast(root([child]), 0, 1);
 
     expect(output).not.toBeNull();
-    expect(getLengthOfHast(output as Root)).toBe(1);
+    expect(sizeOfHast(output as Root)).toBe(1);
   });
 });
 
@@ -737,7 +737,7 @@ describe.each([
 ])('sliceHast fixture coverage: $name', ({ tree }) => {
   test('preserves the exact visible stream across broad windows', () => {
     const units = collectVisibleUnits(tree);
-    const total = getLengthOfHast(tree);
+    const total = sizeOfHast(tree);
 
     expect(total).toBe(units.length);
 
@@ -745,7 +745,7 @@ describe.each([
       const output = sliceHast(tree, start, end);
 
       expect(output).not.toBeNull();
-      expect(getLengthOfHast(output as Root)).toBe(end - start);
+      expect(sizeOfHast(output as Root)).toBe(end - start);
       expect(collectVisibleUnits(output as Root)).toEqual(units.slice(start, end));
     }
   });

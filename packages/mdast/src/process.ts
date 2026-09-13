@@ -1,8 +1,8 @@
 import type { Parent, RootContent } from 'mdast';
 
+import { assert } from '@flowdown/utils';
 import { first, last } from 'lodash-es';
 
-import { assert } from '../assert';
 import { isMdastParent } from './detect';
 
 export interface ProcessMdastParams<T extends RootContent | Parent = Parent> {
@@ -71,7 +71,7 @@ export type ProcessMdastRunnerParams<T extends RootContent | Parent = Parent> = 
   insertNext: (content: RootContent[], replaceCurrent?: boolean) => void;
 };
 
-export type ProcessMdastRunner<T extends RootContent | Parent = Parent> = (
+type ProcessMdastRunner<T extends RootContent | Parent = Parent> = (
   /**
    * Visit payload containing the current node, traversal context, and actions.
    */

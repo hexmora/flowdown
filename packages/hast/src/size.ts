@@ -1,15 +1,12 @@
 import type { Root as HastRoot, RootContent } from 'hast';
 
-import { isNaN, max } from 'lodash-es';
-
 import {
   getIgnoredTableWhitespaceIndexes,
-  getTextUnits,
-  isHiddenTagName,
   isTableColumnDefinition,
   isTableStructureTagName,
   isTableWhitespace,
-} from './content-model';
+} from './base';
+import { getTextUnits, isHiddenTagName } from './content';
 
 const getTextLength = (value: string) => {
   let length = 0;
@@ -28,53 +25,8 @@ type NodeEntry = {
   ignoreFormattingWhitespace: boolean;
 };
 
-export type VisibleIndexLocation = {
-  blockIndex: number;
-  localIndex: number;
-};
-
-export const findVisibleIndex = (
-  blockLengths: readonly number[],
-  visibleIndex: number,
-): VisibleIndexLocation | null => {
-  if (blockLengths.length === 0 || isNaN(visibleIndex)) {
-    return null;
-  }
-
-  const targetIndex = max([0, visibleIndex]) ?? 0;
-
-  if (targetIndex === 0) {
-    return {
-      blockIndex: 0,
-      localIndex: 0,
-    };
-  }
-
-  let blockStart = 0;
-
-  const blockIndex = blockLengths.findIndex((blockLength) => {
-    const normalizedLength = blockLength > 0 ? blockLength : 0;
-    const blockEnd = blockStart + normalizedLength;
-
-    if (targetIndex < blockEnd) {
-      return true;
-    }
-
-    blockStart = blockEnd;
-    return false;
-  });
-
-  if (blockIndex < 0) {
-    return null;
-  }
-
-  return {
-    blockIndex,
-    localIndex: targetIndex - blockStart,
-  };
-};
-
-export const getLengthOfHast = (root: HastRoot): number => {
+/** Counts visible content units using the same text and table rules as sliceHast. */
+export const sizeOfHast = (root: HastRoot): number => {
   const ignoredRootWhitespace = getIgnoredTableWhitespaceIndexes(undefined, root.children);
   const nodes: NodeEntry[] = root.children.map((node, childIndex) => ({
     node,

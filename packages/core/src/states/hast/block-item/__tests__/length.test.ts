@@ -1,7 +1,7 @@
 import type { Element, ElementContent, Root, RootContent } from 'hast';
 import type { Plugin } from 'unified';
 
-import { getLengthOfHast } from '@flowdown/utils';
+import { sizeOfHast } from '@flowdown/hast';
 import { gfmTableFromMarkdown } from 'mdast-util-gfm-table';
 import { gfmTable } from 'micromark-extension-gfm-table';
 import remarkParse from 'remark-parse';
@@ -50,19 +50,19 @@ describe('compiled HAST length', () => {
   test('ignores generated table whitespace and missing trailing cells', () => {
     const tree = parseTable('| A | B | C |\n| --- | --- | --- |\n| 1');
 
-    expect(getLengthOfHast(tree)).toBe(4);
+    expect(sizeOfHast(tree)).toBe(4);
   });
 
   test('ignores explicitly empty table cells', () => {
     const tree = parseTable('| A |   | C |\n| --- | --- | --- |\n| 1 | 2 | |');
 
-    expect(getLengthOfHast(tree)).toBe(4);
-    expect(getLengthOfHast(root([element('td'), element('TH')]))).toBe(0);
+    expect(sizeOfHast(tree)).toBe(4);
+    expect(sizeOfHast(root([element('td'), element('TH')]))).toBe(0);
   });
 
   test('does not accumulate generated whitespace in partial tables', () => {
     const lengths = [160, 220, 300, 380].map((size) => {
-      return getLengthOfHast(parseTable(COMPLEX_TABLE_SOURCE.slice(0, size)));
+      return sizeOfHast(parseTable(COMPLEX_TABLE_SOURCE.slice(0, size)));
     });
 
     expect(lengths).toEqual([37, 62, 93, 126]);
@@ -73,6 +73,6 @@ describe('compiled HAST length', () => {
       text: 'Hello **世界**\n\n👨‍👩‍👧‍👦',
     });
 
-    expect(getLengthOfHast(tree)).toBe(10);
+    expect(sizeOfHast(tree)).toBe(10);
   });
 });

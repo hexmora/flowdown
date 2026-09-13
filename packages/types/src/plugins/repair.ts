@@ -1,4 +1,5 @@
-import type { OmitWithType, ProcessMdastParams, ProcessMdastRunnerParams } from '@flowdown/utils';
+import type { ProcessMdastParams, ProcessMdastRunnerParams } from '@flowdown/mdast';
+import type { OmitWithType } from '@flowdown/utils';
 import type { Parent, RootContent } from 'mdast';
 import type { IDestructible } from 'reactive';
 
@@ -7,7 +8,7 @@ import type { IBasePluginConfig, IPluginWithConfig } from './base';
 /**
  * Framework-owned execution metadata for a repair plugin.
  */
-export type RepairPluginConfig = {
+type RepairPluginConfig = {
   /**
    * Enables the plugin only when ending repair is enabled.
    * @default false
@@ -23,7 +24,7 @@ export type RepairPluginSystemConfig = Readonly<IBasePluginConfig & RepairPlugin
 /**
  * Additional helpers available only to repair plugin runners.
  */
-export interface RepairPluginRunnerExtraParams {
+interface RepairPluginRunnerExtraParams {
   /**
    * Runs the same repair plugin recursively from another parent node.
    */
@@ -33,7 +34,7 @@ export interface RepairPluginRunnerExtraParams {
 /**
  * Parameters passed to a repair plugin runner.
  */
-export type RepairPluginRunnerParams<T extends RootContent | Parent = Parent> =
+type RepairPluginRunnerParams<T extends RootContent | Parent = Parent> =
   ProcessMdastRunnerParams<T> & RepairPluginRunnerExtraParams;
 
 /**

@@ -1,6 +1,6 @@
 import type { Element, ElementContent, Root as HastRoot, RootContent } from 'hast';
 
-import { getLengthOfHast, sliceHast } from '@flowdown/utils';
+import { sizeOfHast, sliceHast } from '@flowdown/hast';
 
 /** Splits only the selected path and retains invisible nodes and untouched siblings. */
 export const splitChildren = (
@@ -17,7 +17,7 @@ export const splitChildren = (
     }
 
     const root: HastRoot = { type: 'root', children: [child] };
-    const length = getLengthOfHast(root);
+    const length = sizeOfHast(root);
 
     if (length <= remaining) {
       remaining -= length;

@@ -1,8 +1,8 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
 
+import { processMdast } from '@flowdown/mdast';
 import { type IBasePluginConfig, type IPluggableConfig, PluginPriority } from '@flowdown/types';
-import { processMdast } from '@flowdown/utils';
 
 import { BaseRemarkPlugin } from '../base';
 

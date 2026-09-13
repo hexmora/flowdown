@@ -1,14 +1,15 @@
-import type {
-  BaseBlockItemInputs,
-  IBlockMeta,
-  IBlockState,
-  IBlockStateCloneParams,
-} from '@flowdown/types';
+import type { IBlockMeta, IBlockState, IBlockStateCloneParams, IRangeState } from '@flowdown/types';
 import type { IReadableClosure } from 'reactive';
 
 import { BaseStateClosure, MutableState, render, S, toClosure } from 'reactive';
 
-type ArrayBlockInputs<T> = Pick<BaseBlockItemInputs<T[]>, 'meta' | 'range' | 'source'>;
+type ArrayBlockInputs<T> = {
+  source: IReadableClosure<T[]>;
+
+  meta: IReadableClosure<IBlockMeta>;
+
+  range?: IReadableClosure<IRangeState | null>;
+};
 
 export class ArrayBlock<T>
   extends BaseStateClosure<T[], ArrayBlockInputs<T>>

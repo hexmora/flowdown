@@ -63,6 +63,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@flowdown/hast": "workspace:*",
+    "@flowdown/mdast": "workspace:*",
     "@flowdown/types": "workspace:*",
     "@flowdown/utils": "workspace:*",
     "@types/hast": "catalog:",

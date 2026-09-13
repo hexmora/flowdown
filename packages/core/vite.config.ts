@@ -28,6 +28,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         /^@flowdown\/core-presets(?:\/.*)?$/,
+        '@flowdown/hast',
         '@flowdown/types',
         '@flowdown/utils',
         'lodash-es',
