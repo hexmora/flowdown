@@ -39,8 +39,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/hast": "catalog:",
-    "@types/mdast": "catalog:",
     "lodash-es": "catalog:"
   },
   "devDependencies": {

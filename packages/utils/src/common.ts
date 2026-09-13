@@ -1,26 +1,12 @@
 import { isArray, reverse } from 'lodash-es';
 
-export type ComputeCalculator<T> = () => T;
+type ComputeCalculator<T> = () => T;
 
 export const compute = <T>(func: ComputeCalculator<T>): T => {
   return func();
 };
 
-export type EnumeratedItem<T> = [index: number, item: T];
-
-export const enumerate = <T>(items: Iterable<T>): EnumeratedItem<T>[] => {
-  return [...items].map((item, index) => [index, item]);
-};
-
-export const indexOfValue = <T>(array: T[] | undefined, index: number): T | undefined => {
-  return array?.[index];
-};
-
-export const ketOfValue = <T, P extends keyof T>(object: T, key: P): T[P] | undefined => {
-  return object?.[key];
-};
-
-export interface cacheDiffMapParams<T, R> {
+interface cacheDiffMapParams<T, R> {
   prev: [T, R][] | Map<T, R>;
   current: T[];
 

@@ -1,18 +1,6 @@
-import type { IReactiveState, IReadableClosure, Newable } from 'reactive';
+import type { IReactiveState, IReadableClosure } from 'reactive';
 
 import type { IRangeState } from './range';
-
-export type BaseBlockItemInputs<T> = {
-  source: IReadableClosure<T>;
-
-  meta: IReadableClosure<IBlockMeta>;
-
-  range?: IReadableClosure<IRangeState | null>;
-
-  mapper?: IBlockStateMapper<T>;
-};
-
-export type BlockItemClass<T> = Newable<IBlockState<T>, [BaseBlockItemInputs<T>]>;
 
 export interface IBlockMeta extends IBlockRawMeta {
   /** Unique block identifier */
@@ -36,7 +24,7 @@ export interface IBlockRawMeta {
   blockCount: number;
 }
 
-export interface IBlockStateMapper<T> {
+interface IBlockStateMapper<T> {
   (value: IReactiveState<T>, current: IBlockState<T>): IReactiveState<T> | IReadableClosure<T>;
 }
 

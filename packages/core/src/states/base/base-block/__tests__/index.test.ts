@@ -1,4 +1,4 @@
-import type { BaseBlockItemInputs, IBlockMeta, IRangeState } from '@flowdown/types';
+import type { IBlockMeta, IRangeState } from '@flowdown/types';
 
 import {
   D,
@@ -13,6 +13,8 @@ import {
   useMap,
 } from 'reactive';
 import { describe, expect, test, vi } from 'vitest';
+
+import type { BaseBlockItemInputs } from '../type';
 
 import { BaseBlockItem } from '../index';
 

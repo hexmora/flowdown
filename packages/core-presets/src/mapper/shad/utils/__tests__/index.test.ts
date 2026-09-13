@@ -1,6 +1,6 @@
 import type { Element, ElementContent, Properties, Root, RootContent, Text } from 'hast';
 
-import { getLengthOfHast } from '@flowdown/utils';
+import { sizeOfHast } from '@flowdown/hast';
 import { describe, expect, test } from 'vitest';
 
 import { createShadRoot, SHAD_DATA_ATTR, SHAD_HOST_VALUE, SHAD_TAG_NAME } from '../index';
@@ -74,7 +74,7 @@ describe('createShadRoot', () => {
       children: [text('abc'), { properties: { [SHAD_DATA_ATTR]: SHAD_HOST_VALUE } }],
     });
     expect(getText(output)).toBe(getText(source));
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('splits emoji and combining characters as complete graphemes', () => {
@@ -83,7 +83,7 @@ describe('createShadRoot', () => {
 
     expect(output.children[0]).toEqual(text('A'));
     expect(getParts(output)).toEqual(['👨‍👩‍👧‍👦', 'e\u0301🇨🇳']);
-    expect(getLengthOfHast(output)).toBe(4);
+    expect(sizeOfHast(output)).toBe(4);
   });
 
   test('extends across inline formatting and retains the source and unaffected references', () => {
@@ -101,7 +101,7 @@ describe('createShadRoot', () => {
     expect(host?.children[0]).toMatchObject({ children: [strong] });
     expect((host?.children[0] as Element | undefined)?.children[0]).toBe(strong);
     expect(getText(output)).toBe(getText(source));
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('keeps the host inside the deepest parent that can provide the configured tail', () => {
@@ -134,7 +134,7 @@ describe('createShadRoot', () => {
 
       expect(getParts(output)).toEqual(['b', 'c']);
       expect((output.children[0] as Element).children[2]).toBe(trailing);
-      expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+      expect(sizeOfHast(output)).toBe(sizeOfHast(source));
     },
   );
 
@@ -157,7 +157,7 @@ describe('createShadRoot', () => {
       expect(getHost(output)?.children[1]).toMatchObject({
         children: [{ tagName, children: [text('cd')] }],
       });
-      expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+      expect(sizeOfHast(output)).toBe(sizeOfHast(source));
     },
   );
 
@@ -217,7 +217,7 @@ describe('createShadRoot', () => {
     expect(getHost(output)?.children[1]).toMatchObject({
       children: [{ tagName: 'x-box', children: [{ tagName: 'p', children: [text('d')] }] }],
     });
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('includes a preceding inline wrapper even when its first child is a block', () => {
@@ -232,7 +232,7 @@ describe('createShadRoot', () => {
         text('c'),
       ],
     });
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test.each(['\n', '\r\n'])('limits the suffix to the last line after %j', (newline) => {
@@ -241,7 +241,7 @@ describe('createShadRoot', () => {
 
     expect(getParts(output)).toEqual(['ta', 'il']);
     expect(getText(output)).toBe(getText(source));
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test.each([
@@ -252,7 +252,7 @@ describe('createShadRoot', () => {
     const output = createShadRoot(source, { length: 20, activeLength: 2 });
 
     expect(getParts(output)).toEqual(expected);
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test.each([
@@ -281,7 +281,7 @@ describe('createShadRoot', () => {
       const output = createShadRoot(source, { length: 20, activeLength: 20 });
 
       expect(getParts(output)).toEqual(['', 'tail']);
-      expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+      expect(sizeOfHast(output)).toBe(sizeOfHast(source));
     }
   });
 
@@ -294,7 +294,7 @@ describe('createShadRoot', () => {
     expect(getParts(output)).toEqual(['a', 'il']);
     expect((output.children[0] as Element).children[2]).toBe(image);
     expect(output.children[1]).toBe(formatting);
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('keeps hidden subtrees and comments between affected text nodes', () => {
@@ -308,7 +308,7 @@ describe('createShadRoot', () => {
     expect(leading.children[1]).toBe(hidden);
     expect(leading.children[2]).toBe(comment);
     expect(getText(output)).toBe(getText(source));
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('retains descendants after the last text when the effect spans inline siblings', () => {
@@ -320,7 +320,7 @@ describe('createShadRoot', () => {
     expect(getParts(output)).toEqual(['B', 'CD']);
     expect(paragraph.children[2]).toMatchObject({ tagName: 'em', children: [image] });
     expect((paragraph.children[2] as Element).children[0]).toBe(image);
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 
   test('keeps table structure and empty cells while constraining the effect to its cell', () => {
@@ -351,6 +351,6 @@ describe('createShadRoot', () => {
     expect(row.children[2]).toBe(emptyCell);
     expect(row.children[1]).toMatchObject({ tagName: 'td', children: [getHost(output)] });
     expect(getParts(output)).toEqual(['', 'CD']);
-    expect(getLengthOfHast(output)).toBe(getLengthOfHast(source));
+    expect(sizeOfHast(output)).toBe(sizeOfHast(source));
   });
 });

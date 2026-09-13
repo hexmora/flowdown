@@ -1,0 +1,54 @@
+{
+  "name": "@flowdown/hast",
+  "version": "0.1.0",
+  "description": "HTML AST content helpers for Flowdown packages.",
+  "keywords": [
+    "hast",
+    "llm",
+    "markdown",
+    "streaming"
+  ],
+  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/hast#readme",
+  "bugs": {
+    "url": "https://github.com/hexmora/flowdown/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexmora/flowdown.git",
+    "directory": "packages/hast"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "publishConfig": {
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "lint": "oxlint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@types/hast": "catalog:",
+    "lodash-es": "catalog:"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "catalog:",
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:"
+  }
+}

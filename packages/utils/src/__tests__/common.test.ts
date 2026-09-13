@@ -1,25 +1,6 @@
-import { describe, expect, expectTypeOf, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
-import { cacheDiffMap, enumerate } from '../common';
-
-describe('enumerate', () => {
-  test('adds zero-based indexes to array items', () => {
-    const result = enumerate(['first', 'second'] as const);
-
-    expectTypeOf(result).toEqualTypeOf<[number, 'first' | 'second'][]>();
-    expect(result).toEqual([
-      [0, 'first'],
-      [1, 'second'],
-    ]);
-  });
-
-  test('supports arbitrary iterables', () => {
-    expect(enumerate(['first', 'second'].values())).toEqual([
-      [0, 'first'],
-      [1, 'second'],
-    ]);
-  });
-});
+import { cacheDiffMap } from '../common';
 
 describe('cacheDiffMap', () => {
   test('maps every current value when there are no previous entries', () => {

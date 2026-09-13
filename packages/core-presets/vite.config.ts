@@ -32,6 +32,8 @@ export default defineConfig({
         keepNames: true,
       },
       external: [
+        '@flowdown/hast',
+        '@flowdown/mdast',
         '@flowdown/types',
         '@flowdown/utils',
         'hast-util-sanitize',

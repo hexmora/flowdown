@@ -10,8 +10,6 @@ declare global {
   interface RepairConfigs {}
 
   interface RenderConfigs {}
-
-  interface SlotConfigs {}
 }
 
 /** A plugin list, preset configuration, or a list with configuration overrides. */

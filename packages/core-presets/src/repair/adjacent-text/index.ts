@@ -1,8 +1,8 @@
 import type { RepairPluginRunner, RepairPluginSystemConfig } from '@flowdown/types';
 import type { RootContent, Text } from 'mdast';
 
+import { isMdastParent } from '@flowdown/mdast';
 import { type IPluggableConfig, PluginPriority } from '@flowdown/types';
-import { isMdastParent } from '@flowdown/utils';
 
 import { BaseRepairPlugin } from '../base';
 

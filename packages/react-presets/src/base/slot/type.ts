@@ -2,6 +2,10 @@ import type { IBasePluginConfig, IPluggable } from '@flowdown/types';
 import type { ElementContent, Parent } from 'hast';
 import type { ComponentType, CSSProperties, MouseEvent, ReactNode } from 'react';
 
+declare global {
+  interface SlotConfigs {}
+}
+
 export type SlotType =
   | 'Blockquote'
   | 'BreakLine'

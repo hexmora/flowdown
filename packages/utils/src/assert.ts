@@ -1,6 +1,6 @@
 import { isError } from 'lodash-es';
 
-export class AssertError extends Error {
+class AssertError extends Error {
   name = 'assert_error';
 }
 
