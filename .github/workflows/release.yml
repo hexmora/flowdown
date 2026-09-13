@@ -152,7 +152,9 @@ jobs:
 
       - name: Match the pinned publishing npm version
         run: |
-          npm install --global npm@11.15.0 --ignore-scripts
+          npm install --global --prefix "$RUNNER_TEMP/publishing-npm" npm@11.15.0 --ignore-scripts
+          export PATH="$RUNNER_TEMP/publishing-npm/bin:$PATH"
+          printf '%s\n' "$RUNNER_TEMP/publishing-npm/bin" >> "$GITHUB_PATH"
           test "$(npm --version)" = 11.15.0
 
       - name: Download the exact stable candidate
@@ -269,7 +271,9 @@ jobs:
           export NPM_CONFIG_USERCONFIG="$RUNNER_TEMP/fluxdown-npmrc"
           printf '%s\n' "NPM_CONFIG_USERCONFIG=$NPM_CONFIG_USERCONFIG" >> "$GITHUB_ENV"
           : > "$NPM_CONFIG_USERCONFIG"
-          npm install --global npm@11.15.0 --ignore-scripts
+          npm install --global --prefix "$RUNNER_TEMP/publishing-npm" npm@11.15.0 --ignore-scripts
+          export PATH="$RUNNER_TEMP/publishing-npm/bin:$PATH"
+          printf '%s\n' "$RUNNER_TEMP/publishing-npm/bin" >> "$GITHUB_PATH"
           test "$(npm --version)" = 11.15.0
 
       - name: Download the exact verified release artifact
