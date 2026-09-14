@@ -86,16 +86,19 @@ describe('Fluxdown mapper plugins', () => {
 
     const received = jest.fn();
 
-    const Configured = once(function Configured({
-      source,
-      count,
-    }: MapperInputs & { count?: IReadableClosure<number> }) {
-      received(count);
+    const Configured = Object.assign(
+      once(function Configured({
+        source,
+        count,
+      }: MapperInputs & { count?: IReadableClosure<number> }) {
+        received(count);
 
-      const limit = useDefaults(count, 1);
+        const limit = useDefaults(count, 1);
 
-      return useCombineMap([source, limit], ([blocks, size]) => blocks.slice(0, size));
-    });
+        return useCombineMap([source, limit], ([blocks, size]) => blocks.slice(0, size));
+      }),
+      { key: 'configured' },
+    );
 
     const content = (count: IReadableClosure<number>) => (
       <Fluxdown

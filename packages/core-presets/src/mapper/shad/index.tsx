@@ -9,6 +9,7 @@ import { type JSXDescriptor, once, useDefaults } from 'functive';
 
 import type { ShadBaseInputs, ShadInputs } from './type';
 
+import { withKey } from '../../utils';
 import { ShadBlocks, ShadProgress } from './states';
 
 export * from './type';
@@ -20,19 +21,22 @@ declare global {
   }
 }
 
-export const Shad = /*#__PURE__*/ once(function Shad({
-  source,
-  enabled: _enabled,
-  length: _length,
-}: ShadInputs): JSXDescriptor<IBlockState<HastRoot>[]> {
-  const enabled = useDefaults(_enabled, false);
+export const Shad = /*#__PURE__*/ withKey(
+  'shad',
+  /*#__PURE__*/ once(function Shad({
+    source,
+    enabled: _enabled,
+    length: _length,
+  }: ShadInputs): JSXDescriptor<IBlockState<HastRoot>[]> {
+    const enabled = useDefaults(_enabled, false);
 
-  const length = useDefaults(_length, 2);
+    const length = useDefaults(_length, 2);
 
-  return (
-    <ShadBlocks
-      source={source}
-      progress={<ShadProgress source={source} enabled={enabled} length={length} />}
-    />
-  );
-});
+    return (
+      <ShadBlocks
+        source={source}
+        progress={<ShadProgress source={source} enabled={enabled} length={length} />}
+      />
+    );
+  }),
+);
