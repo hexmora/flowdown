@@ -1,5 +1,11 @@
 # functive
 
+## 0.5.2
+
+### Patch Changes
+
+- 70a9205: Update package links and publishing provenance for the renamed `hexmora/fluxdown` repository.
+
 ## 0.5.1
 
 ### Patch Changes
