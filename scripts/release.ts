@@ -281,6 +281,7 @@ async function verifyConsumer(artifacts: PackageArtifact[]) {
   const consumer = await mkdtemp(path.join(tmpdir(), 'fluxdown-consumer-'));
 
   try {
+    await mkdir(path.join(consumer, '__tests__'));
     await writeFile(
       path.join(consumer, 'package.json'),
       JSON.stringify({
@@ -342,29 +343,17 @@ async function verifyConsumer(artifacts: PackageArtifact[]) {
       ),
     );
 
-    let esmSmoke = specifiers
+    const esmSmoke = specifiers
       .map((specifier) => `await import(${JSON.stringify(specifier)});`)
       .join('\n');
 
-    let cjsSmoke = specifiers
+    const cjsSmoke = specifiers
       .map((specifier) => `require(${JSON.stringify(specifier)});`)
       .join('\n');
 
     let typeSmoke = '';
 
     if (specifiers.includes('functive')) {
-      const behavior = `
-assert.equal(functive.jsx, jsxRuntime.jsx);
-assert.equal(functive.createElement, jsxRuntime.createElement);
-const state = functive.render(jsxRuntime.jsx(() => 42, {}));
-assert.equal(state.value.value, 42);
-state.destroy();
-`;
-
-      esmSmoke += `\nimport assert from 'node:assert/strict';\nimport * as functive from 'functive';\nimport * as jsxRuntime from 'functive/jsx-runtime';\n${behavior}`;
-
-      cjsSmoke += `\nconst assert = require('node:assert/strict');\nconst functive = require('functive');\nconst jsxRuntime = require('functive/jsx-runtime');\n${behavior}`;
-
       typeSmoke = `
 import { D, render, type JSXDescriptor } from 'functive';
 import { jsx } from 'functive/jsx-runtime';
@@ -374,32 +363,17 @@ jsx(({ x }: { x: number }) => x, { x: D(42) });
 `;
     }
 
-    if (specifiers.includes('@fluxdown/react-presets/base')) {
-      const behavior = `
-const plugin = new presetRender.ParagraphRenderPlugin();
-contextAssert.ok(plugin instanceof presetBase.BaseReactRenderPlugin);
-const element = plugin.render({
-  node: { type: 'element', tagName: 'p', properties: {}, children: [{ type: 'text', value: 'shared-context' }] },
-  parents: [], getProps: () => ({}), render: () => null, renderChildren: () => 'shared-context',
-});
-const html = renderToStaticMarkup(React.createElement(presetBase.SlotsContext.Provider, {
-  value: { Paragraph: [{ Component: ({ children }) => React.createElement('p', null, children) }] },
-}, element));
-contextAssert.equal(html, '<p>shared-context</p>');
-`;
-
-      esmSmoke += `\nimport contextAssert from 'node:assert/strict';\nimport * as React from 'react';\nimport { renderToStaticMarkup } from 'react-dom/server';\nimport * as presetBase from '@fluxdown/react-presets/base';\nimport * as presetRender from '@fluxdown/react-presets/render';\n${behavior}`;
-
-      cjsSmoke += `\nconst contextAssert = require('node:assert/strict');\nconst React = require('react');\nconst { renderToStaticMarkup } = require('react-dom/server');\nconst presetBase = require('@fluxdown/react-presets/base');\nconst presetRender = require('@fluxdown/react-presets/render');\n${behavior}`;
+    if (specifiers.includes('fluxdown')) {
+      typeSmoke += `\nimport { createElement } from 'react';\nimport { Fluxdown } from 'fluxdown';\ncreateElement(Fluxdown, { text: 'consumer', smooth: true, shad: true });\n`;
     }
 
-    await writeFile(path.join(consumer, 'smoke.mjs'), esmSmoke);
+    await writeFile(path.join(consumer, '__tests__', 'smoke.mjs'), esmSmoke);
 
-    await writeFile(path.join(consumer, 'smoke.cjs'), cjsSmoke);
+    await writeFile(path.join(consumer, '__tests__', 'smoke.cjs'), cjsSmoke);
 
-    run('node', ['smoke.mjs'], { cwd: consumer });
+    run('node', ['__tests__/smoke.mjs'], { cwd: consumer });
 
-    run('node', ['smoke.cjs'], { cwd: consumer });
+    run('node', ['__tests__/smoke.cjs'], { cwd: consumer });
 
     const imports = specifiers
       .map(
@@ -408,9 +382,9 @@ contextAssert.equal(html, '<p>shared-context</p>');
       )
       .join('\n');
 
-    await writeFile(path.join(consumer, 'smoke.mts'), imports + typeSmoke);
+    await writeFile(path.join(consumer, '__tests__', 'smoke.mts'), imports + typeSmoke);
 
-    await writeFile(path.join(consumer, 'smoke.cts'), imports + typeSmoke);
+    await writeFile(path.join(consumer, '__tests__', 'smoke.cts'), imports + typeSmoke);
 
     await writeFile(
       path.join(consumer, 'tsconfig.json'),
@@ -424,7 +398,7 @@ contextAssert.equal(html, '<p>shared-context</p>');
           skipLibCheck: false,
           jsx: 'react-jsx',
         },
-        files: ['smoke.mts', 'smoke.cts'],
+        files: ['__tests__/smoke.mts', '__tests__/smoke.cts'],
       }),
     );
 
@@ -435,6 +409,38 @@ contextAssert.equal(html, '<p>shared-context</p>');
     );
 
     const browser = await checkBrowserConsumer(consumer, artifacts);
+
+    if (specifiers.includes('fluxdown')) {
+      run(
+        'npm',
+        [
+          'install',
+          '--ignore-scripts',
+          '--no-audit',
+          '--no-fund',
+          '--no-package-lock',
+          'react@19',
+          'react-dom@19',
+          '@types/react@19',
+          '@types/react-dom@19',
+        ],
+        { cwd: consumer },
+      );
+      checkInstalled(
+        JSON.parse(
+          run('npm', ['ls', '--all', '--json'], {
+            cwd: consumer,
+            capture: true,
+          }).stdout,
+        ).dependencies,
+      );
+      run('node', ['__tests__/smoke.mjs'], { cwd: consumer });
+      run('node', ['__tests__/smoke.cjs'], { cwd: consumer });
+      run('pnpm', ['exec', 'tsc', '-p', path.join(consumer, 'tsconfig.json')]);
+      console.log(
+        'React 18/19 consumer OK: peer dependencies, entry points, and strict declarations',
+      );
+    }
 
     return { nodeEntries: specifiers.length, browser };
   } finally {

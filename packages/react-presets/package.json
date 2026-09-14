@@ -104,7 +104,6 @@
     "katex": "catalog:",
     "lodash-es": "catalog:",
     "mathjax-full": "catalog:",
-    "react": "catalog:",
     "react-error-boundary": "catalog:",
     "shallow-equal": "catalog:",
     "shiki": "catalog:"
@@ -119,8 +118,11 @@
     "@types/react-dom": "catalog:",
     "expect-type": "catalog:",
     "oxlint": "catalog:",
-    "react-dom": "catalog:",
     "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer"
   },
   "engines": {
     "node": ">=22.18.0"

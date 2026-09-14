@@ -98,8 +98,6 @@
     "expect-type": "catalog:",
     "less": "catalog:",
     "oxlint": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "react-use": "catalog:",
     "sass": "catalog:",
     "storybook": "catalog:",
@@ -108,8 +106,8 @@
     "vite-plugin-svgr": "catalog:"
   },
   "peerDependencies": {
-    "react": "catalog:",
-    "react-dom": "catalog:"
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer"
   },
   "engines": {
     "node": ">=22.18.0"
