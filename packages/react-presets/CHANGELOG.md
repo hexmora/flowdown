@@ -1,5 +1,17 @@
 # @fluxdown/react-presets
 
+## 0.5.2
+
+### Patch Changes
+
+- 70a9205: Update package links and publishing provenance for the renamed `hexmora/fluxdown` repository.
+- Updated dependencies [70a9205]
+  - functive@0.5.2
+  - @fluxdown/utils@0.5.2
+  - @fluxdown/types@0.5.2
+  - @fluxdown/core-presets@0.5.2
+  - @fluxdown/core@0.5.2
+
 ## 0.5.1
 
 ### Patch Changes
