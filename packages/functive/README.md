@@ -120,7 +120,7 @@ This JSX describes reactive computations using `functive`'s own runtime. It does
 
 ## Contributing
 
-Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/flowdown/issues), include a minimal reproduction with the input updates and expected result.
+Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/fluxdown/issues), include a minimal reproduction with the input updates and expected result.
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for development commands and pull request guidelines.
 

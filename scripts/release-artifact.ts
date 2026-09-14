@@ -8,7 +8,7 @@ import semver from 'semver';
 
 import type { BrowserCheckResult } from './types.ts';
 
-export const RELEASE_REPOSITORY = 'hexmora/flowdown';
+export const RELEASE_REPOSITORY = 'hexmora/fluxdown';
 export const RELEASE_REGISTRY = 'https://registry.npmjs.org/';
 export const PUBLIC_PACKAGES = [
   'functive',

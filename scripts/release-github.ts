@@ -15,7 +15,8 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import semver from 'semver';
 
-export const repository = 'hexmora/flowdown';
+export const repository = 'hexmora/fluxdown';
+const githubReleasePackages = new Set(['@fluxdown/core', 'fluxdown', 'functive']);
 const releaseBranch = 'changeset-release/main';
 const preparePath = '.github/workflows/prepare-release.yml';
 const releasePath = '.github/workflows/release.yml';
@@ -612,6 +613,7 @@ async function finalize() {
       if (!(error instanceof ApiError) || error.status !== 404) throw error;
       await api('/git/refs', 'POST', { ref: `refs/tags/${tag}`, sha: manifest.sourceSha });
     }
+    if (!githubReleasePackages.has(pkg.name)) continue;
     try {
       await api(`/releases/tags/${tagPath}`);
     } catch (error) {

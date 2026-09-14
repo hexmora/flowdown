@@ -10,14 +10,14 @@
     "renderer",
     "streaming"
   ],
-  "homepage": "https://github.com/hexmora/flowdown/tree/main/packages/react#readme",
+  "homepage": "https://github.com/hexmora/fluxdown/tree/main/packages/react#readme",
   "bugs": {
-    "url": "https://github.com/hexmora/flowdown/issues"
+    "url": "https://github.com/hexmora/fluxdown/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hexmora/flowdown.git",
+    "url": "git+https://github.com/hexmora/fluxdown.git",
     "directory": "packages/react"
   },
   "files": [

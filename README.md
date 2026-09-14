@@ -65,7 +65,7 @@ Use `"light"` (default), `"dark"`, or `[preset, overrides]`. Partial token confi
 
 ## Contributing
 
-Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/flowdown/issues), include a minimal reproduction and the Markdown input that triggers it.
+Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/fluxdown/issues), include a minimal reproduction and the Markdown input that triggers it.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development commands and pull request guidelines.
 

@@ -59,6 +59,8 @@ jobs:
         with:
           script: pnpm release:version
           pr-base-branch: main
+          pr-title: "chore(release): version packages"
+          commit-message: "chore(release): version packages"
 
       - name: Record the exact release candidate
         if: steps.candidate.outputs.has-changesets == 'true'
