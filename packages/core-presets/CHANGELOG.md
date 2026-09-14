@@ -1,5 +1,11 @@
 # @fluxdown/core-presets
 
+## 0.5.3
+
+### Patch Changes
+
+- a1ceba2: Keep smooth and shad configuration working in published packages and production application bundles. Match configuration maps by explicit plugin keys only.
+
 ## 0.5.2
 
 ### Patch Changes
