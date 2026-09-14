@@ -65,7 +65,7 @@ export function StreamingMessage({ text }) {
 
 ## 参与贡献
 
-欢迎报告问题、改进文档或提交 Pull Request。[报告问题](https://github.com/hexmora/flowdown/issues)时，请提供最小复现示例，以及触发问题的 Markdown 输入。
+欢迎报告问题、改进文档或提交 Pull Request。[报告问题](https://github.com/hexmora/fluxdown/issues)时，请提供最小复现示例，以及触发问题的 Markdown 输入。
 
 开发命令和 Pull Request 指南见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 

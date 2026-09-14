@@ -87,7 +87,7 @@ Core 内置预设的 Markdown 处理插件。可以通过 `remarks` 扩展 Markd
 
 ## 参与贡献
 
-欢迎报告问题、改进文档或提交 Pull Request。[报告问题](https://github.com/hexmora/flowdown/issues)时，请提供最小复现示例、Markdown 输入，以及触发问题的更新过程。
+欢迎报告问题、改进文档或提交 Pull Request。[报告问题](https://github.com/hexmora/fluxdown/issues)时，请提供最小复现示例、Markdown 输入，以及触发问题的更新过程。
 
 开发命令和 Pull Request 指南见 [CONTRIBUTING.md](../../../CONTRIBUTING.md)。
 

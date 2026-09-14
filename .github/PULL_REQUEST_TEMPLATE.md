@@ -35,7 +35,7 @@ Remove any optional sections that do not apply to this pull request.
 
 <!-- Check the items that apply. Mark anything not applicable as N/A. -->
 
-- [ ] I have read the [contributing guidelines](https://github.com/hexmora/flowdown/blob/main/CONTRIBUTING.md).
+- [ ] I have read the [contributing guidelines](https://github.com/hexmora/fluxdown/blob/main/CONTRIBUTING.md).
 - [ ] My PR title follows Conventional Commits.
 - [ ] I have added or updated tests for behavior changes, where applicable.
 - [ ] I have updated the documentation for user-facing changes, where applicable.

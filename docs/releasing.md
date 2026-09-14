@@ -28,8 +28,9 @@ changelogs. The dry run builds and checks actual packages without publishing.
    from that merge's fixed commit SHA.
 4. Review the workflow summary and packages. **@hexmora must manually approve** the
    `npm-production` environment, even when @hexmora prepared or merged the PR.
-5. The approved packages are published to `latest`, followed by Git tags and
-   GitHub Releases. A private-only version PR does not publish to npm.
+5. The approved packages are published to `latest` and tagged in Git. GitHub
+   Releases are created only for `functive`, `fluxdown`, and `@fluxdown/core`.
+   A private-only version PR does not publish to npm.
 
 If `main` advances before merge, run **Prepare release** again. Do not use
 **Update branch** or manually edit the version PR. After merge, development may
@@ -72,7 +73,7 @@ Before the first publication, the owner must configure:
   required checks: `changeset-coverage`, `package-quality`, and `release-candidate`.
 - Create `npm-production` and `npm-beta` environments. Set `hexmora` as the required
   reviewer, allow self-review, disable administrator bypass, and allow only `main`.
-- For each npm package, configure Trusted Publishing for `hexmora/flowdown`,
+- For each npm package, configure Trusted Publishing for `hexmora/fluxdown`,
   workflow `release.yml`, and each of the two environment names. Remove old CI
   publishing tokens. New package names need npm ownership and setup first.
 

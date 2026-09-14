@@ -91,7 +91,7 @@ These inputs can be reactive, so you can update plugin configuration alongside t
 
 ## Contributing
 
-Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/flowdown/issues), include a minimal reproduction, the Markdown input, and the sequence of updates that triggers it.
+Bug reports, documentation improvements, and pull requests are welcome. When [reporting a bug](https://github.com/hexmora/fluxdown/issues), include a minimal reproduction, the Markdown input, and the sequence of updates that triggers it.
 
 See [CONTRIBUTING.md](../../CONTRIBUTING.md) for development commands and pull request guidelines.
 
