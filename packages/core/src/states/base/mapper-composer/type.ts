@@ -9,14 +9,20 @@ export type MapperResult =
   | IReadableClosure<IBlockState<HastRoot>[]>
   | JSXDescriptor<IBlockState<HastRoot>[]>;
 
-export type Mapper<C extends object = {}> = OnceFunction<(inputs: MapperInputs<C>) => MapperResult>;
+export type Mapper<C extends object = {}> = OnceFunction<
+  (inputs: MapperInputs<C>) => MapperResult
+> & {
+  readonly key?: string;
+};
 
 /** Keeps the source contract while accepting configured closures in heterogeneous lists. */
 type ConfiguredMapper = OnceFunction<
   {
     create(inputs: MapperInputs): MapperResult;
   }['create']
->;
+> & {
+  readonly key?: string;
+};
 
 export type MapperPluggable<C extends object = never> =
   | Mapper

@@ -145,22 +145,60 @@ describe('plugin sets', () => {
     ]);
   });
 
-  test('uses the lowercase name of a once mapper and replaces nested options shallowly', () => {
-    const NamedMapper = once(function NamedMapper({ source }: MapperInputs) {
-      return source;
-    });
+  test('uses the explicit key of a once mapper and replaces nested options shallowly', () => {
+    const NamedMapper = Object.assign(
+      once(function NamedMapper({ source }: MapperInputs) {
+        return source;
+      }),
+      { key: 'mapper' },
+    );
 
     const options = { nested: { first: true, second: true }, priority: PluginPriority.High };
 
     const plugins: MapperPluggable[] = [[NamedMapper, options]];
 
-    const configs = { namedmapper: { nested: { first: false } } };
+    const configs = { mapper: { nested: { first: false } } };
 
     expect(toPluggable([plugins, configs])).toEqual([
       [NamedMapper, { nested: { first: false }, priority: PluginPriority.High }],
     ]);
 
     expect(options.nested).toEqual({ first: true, second: true });
+  });
+
+  test('leaves keyless mappers unchanged even when configuration matches their function name', () => {
+    const NamedMapper = once(function NamedMapper({ source }: MapperInputs) {
+      return source;
+    });
+
+    const plugins: MapperPluggable[] = [
+      NamedMapper,
+      [NamedMapper, { priority: PluginPriority.High }],
+    ];
+
+    const configs = { namedmapper: { priority: PluginPriority.Low } };
+
+    expect(toPluggable([plugins, configs])).toEqual(plugins);
+  });
+
+  test('matches explicit mapper keys after function names are removed or mangled', () => {
+    for (const name of ['', 'a']) {
+      const Mapper = Object.assign(
+        once(({ source }: MapperInputs) => source),
+        {
+          key: 'stream',
+        },
+      );
+
+      Object.defineProperty(Mapper, 'name', { value: name });
+
+      const options = { enabled: render(true) };
+
+      expect(toPluggable({ stream: options }, [Mapper])).toEqual([[Mapper, options]]);
+    }
+
+    expect(Reflect.get(Smooth, 'key')).toBe('smooth');
+    expect(Reflect.get(Shad, 'key')).toBe('shad');
   });
 
   test('preserves reactive configuration identity when comparing plugin sets', () => {

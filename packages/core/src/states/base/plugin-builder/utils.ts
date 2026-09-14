@@ -5,7 +5,6 @@ import {
   type PluginSet,
 } from '@fluxdown/types';
 import { assert } from '@fluxdown/utils';
-import { isOnceFunction } from 'functive';
 import {
   every,
   first,
@@ -17,6 +16,7 @@ import {
   isObject,
   isObjectLike,
   isPlainObject,
+  isString,
   sortBy,
 } from 'lodash-es';
 
@@ -128,9 +128,9 @@ export function toPluggable(
   return pluggables.map((pluggable): AnyPluggable => {
     const Plugin = isArray(pluggable) ? pluggable[0] : pluggable;
 
-    const key = isOnceFunction(Plugin) ? Plugin.name.toLowerCase() : Plugin.key;
+    const { key } = Plugin;
 
-    if (!has(configs, [key])) {
+    if (!isString(key) || !has(configs, [key])) {
       return pluggable;
     }
 

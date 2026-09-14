@@ -8,6 +8,7 @@ import { D, type JSXDescriptor, once, useDefaults } from 'functive';
 
 import type { SmoothBaseInputs, SmoothInputs } from './type';
 
+import { withKey } from '../../utils';
 import { IntervalSmoothTicker, RafSmoothTicker, SpringSmoothScheduler } from './modules';
 import { CutoffBlocks, SmoothCursor } from './states';
 import { isEnableRAF } from './utils';
@@ -21,24 +22,37 @@ declare global {
   }
 }
 
-export const Smooth = /*#__PURE__*/ once(function Smooth<T>({
-  source,
-  enabled: _enabled,
-  ticker: _ticker,
-  scheduler: _scheduler,
-}: SmoothInputs<T>): JSXDescriptor<IBlockState<T>[]> {
-  const enabled = useDefaults(_enabled, false);
+export const Smooth = /*#__PURE__*/ withKey(
+  'smooth',
+  /*#__PURE__*/ once<<T>(inputs: SmoothInputs<T>) => JSXDescriptor<IBlockState<T>[]>>(
+    function Smooth<T>({
+      source,
+      enabled: _enabled,
+      ticker: _ticker,
+      scheduler: _scheduler,
+    }: SmoothInputs<T>): JSXDescriptor<IBlockState<T>[]> {
+      const enabled = useDefaults(_enabled, false);
 
-  const ticker = useDefaults(_ticker, D(isEnableRAF() ? RafSmoothTicker : IntervalSmoothTicker));
+      const ticker = useDefaults(
+        _ticker,
+        D(isEnableRAF() ? RafSmoothTicker : IntervalSmoothTicker),
+      );
 
-  const scheduler = useDefaults(_scheduler, D(SpringSmoothScheduler));
+      const scheduler = useDefaults(_scheduler, D(SpringSmoothScheduler));
 
-  return (
-    <CutoffBlocks<T>
-      items={source}
-      end={
-        <SmoothCursor<T> source={source} enabled={enabled} ticker={ticker} scheduler={scheduler} />
-      }
-    />
-  );
-});
+      return (
+        <CutoffBlocks<T>
+          items={source}
+          end={
+            <SmoothCursor<T>
+              source={source}
+              enabled={enabled}
+              ticker={ticker}
+              scheduler={scheduler}
+            />
+          }
+        />
+      );
+    },
+  ),
+);
