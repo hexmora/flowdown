@@ -1,5 +1,15 @@
 # @fluxdown/react-presets
 
+## 0.5.3
+
+### Patch Changes
+
+- dbe2442: Support React and ReactDOM 18 and 19 as peer dependencies while sharing the application's React instance across rendering presets.
+- e4daa61: Update MathJax dependencies while retaining synchronous TeX rendering and formula isolation.
+- Updated dependencies [a1ceba2]
+  - @fluxdown/core@0.5.3
+  - @fluxdown/core-presets@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes

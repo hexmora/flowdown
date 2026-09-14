@@ -1,6 +1,6 @@
 {
   "name": "@fluxdown/react-presets",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Preset render and slot plugins with shared React rendering infrastructure for Fluxdown.",
   "keywords": [
     "hast",
